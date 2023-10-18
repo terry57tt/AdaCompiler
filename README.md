@@ -6,12 +6,20 @@ Projet PCL1 & PCL2 du groupe:
 
 # Start the project
 
-mainClassName = 'org.pcl.Main'
-
+## Linux & Mac
 ```shell
 # in root project PCL
+
+# to setup the gradle project 
 ./gradlew build
+
+# all tests
+./gradlew test
+
+# specific test 
+./gradlew test --tests ProjectConfigurationTest
 
 # help menu 
 ./gradlew tasks
 ```
+## Windows
