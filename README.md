@@ -23,3 +23,18 @@ Projet PCL1 & PCL2 du groupe:
 ./gradlew tasks
 ```
 ## Windows
+```shell
+# in root project PCL
+
+# to setup the gradle project 
+gradlew.bat build
+
+# all tests
+gradlew.bat test
+
+# specific test 
+gradlew.bat test --tests ProjectConfigurationTest
+
+# help menu 
+gradlew.bat  tasks
+```
