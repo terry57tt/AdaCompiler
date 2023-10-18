@@ -38,3 +38,8 @@ gradlew.bat test --tests ProjectConfigurationTest
 # help menu 
 gradlew.bat  tasks
 ```
+
+# Environment
+- Gradle Groovy
+- Java
+- JUnit Jupiter
