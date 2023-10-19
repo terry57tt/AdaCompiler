@@ -13,6 +13,9 @@ Projet PCL1 & PCL2 du groupe:
 # to setup the gradle project 
 ./gradlew build
 
+# to run project
+./gradlew run
+
 # all tests
 ./gradlew test
 
@@ -28,6 +31,9 @@ Projet PCL1 & PCL2 du groupe:
 
 # to setup the gradle project 
 gradlew.bat build
+
+# to run project
+gradlew.bat run
 
 # all tests
 gradlew.bat test
