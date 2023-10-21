@@ -36,7 +36,7 @@ public class App {
 
         for (String file: filesToCompile) {
             System.out.println("- Compiling file: " + file);
-
+            //TODO go to the lexeur
         }
     }
 
