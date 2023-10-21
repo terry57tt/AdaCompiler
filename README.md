@@ -15,6 +15,8 @@ Projet PCL1 & PCL2 du groupe:
 
 # to run project
 ./gradlew run
+# or
+./gradlew run -Pfiles="pathFile1 pathFile2 pathFile3"
 
 # all tests
 ./gradlew test
@@ -34,6 +36,8 @@ gradlew.bat build
 
 # to run project
 gradlew.bat run
+# or
+gradlew.bat run -Pfiles="pathFile1 pathFile2 "
 
 # all tests
 gradlew.bat test

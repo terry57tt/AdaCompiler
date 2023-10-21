@@ -15,14 +15,17 @@ sourceSets {
     }
 }
 
-tasks.register('run') {
-    dependsOn 'build'
-    doLast {
-        javaexec {
-            mainClass = 'org.pcl.App'
-            classpath = sourceSets.main.runtimeClasspath
-        }
+tasks.register('run', JavaExec) {
+    description = 'Runs the main application (compiler)'
+    group = 'application'
+    mainClass = 'org.pcl.App'
+    classpath = sourceSets.main.runtimeClasspath
+
+    doFirst {
+        def argsValue = project.hasProperty("files") ? project.getProperty("files").split() : []
+        args(argsValue)
     }
+
 }
 
 repositories {
