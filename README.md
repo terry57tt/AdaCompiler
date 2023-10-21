@@ -13,8 +13,6 @@ Projet PCL1 & PCL2 du groupe:
 # to setup the gradle project 
 ./gradlew build
 
-# to run project
-./gradlew run
 # or
 ./gradlew run -Pfiles="pathFile1 pathFile2 pathFile3"
 
@@ -34,8 +32,6 @@ Projet PCL1 & PCL2 du groupe:
 # to setup the gradle project 
 gradlew.bat build
 
-# to run project
-gradlew.bat run
 # or
 gradlew.bat run -Pfiles="pathFile1 pathFile2 "
 
