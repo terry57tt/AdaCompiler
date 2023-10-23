@@ -68,4 +68,13 @@ public class AutomatonState {
         }
         throw new InvalidStateExeception(transition);
     }
+
+    /** Return the state as a string. */
+    @Override
+    public String toString() {
+        return "AutomatonState{" +
+                "transition=" + transition +
+                ", isFinal=" + isFinal +
+                '}';
+    }
 }

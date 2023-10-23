@@ -21,5 +21,33 @@ public class Automaton {
         return this.currentState.isFinal();
     }
 
-    //TODO Missing function like advance probably other don't know
+    /** Advance the automaton to the next state. */
+    public void advance(char transition) {
+        for (AutomatonState state: this.currentState.getAdjacent()) {
+            if (state.getTransition() == transition) {
+                this.currentState = state;
+                return;
+            }
+        }
+        throw new InvalidStateExeception(transition);
+    }
+
+    /** Return the current state of the automaton. */
+    public AutomatonState getCurrentState() {
+        return this.currentState;
+    }
+
+    /** Return the initial state of the automaton. */
+    public AutomatonState getInitialState() {
+        return this.initialState;
+    }
+
+    /** Return the automaton as a string. */
+    @Override
+    public String toString() {
+        return "Automaton{" +
+                "initialState=" + initialState +
+                ", currentState=" + currentState +
+                '}';
+    }
 }
