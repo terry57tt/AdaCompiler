@@ -1,7 +1,7 @@
 package org.pcl;
 
 import java.util.stream.Stream;
-
+import java.io.File;
 public class FileHandler {
 
     /** Checks if the path is valid and the file exists. */
