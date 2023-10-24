@@ -1,6 +1,5 @@
 package org.pcl.structure.automaton;
 
-
 /** Create the automaton that will be used to recognize the tokens. */
 public class Automaton {
     private final AutomatonState initialState;

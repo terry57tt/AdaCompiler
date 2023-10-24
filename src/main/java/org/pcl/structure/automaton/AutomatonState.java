@@ -15,12 +15,18 @@ public class AutomatonState {
     /** If the state is final, it means that it is a final state in the automaton. */
     private final boolean isFinal;
 
+    /** The token type is the type of the token that will be recognized if the state is final. */
+    private final TokenType tokenType;
 
-    public AutomatonState(Character transition, boolean isFinal) {
+   public AutomatonState(Character transition, boolean isFinal) {
+        this(transition, isFinal, null);
+    }
+
+    public AutomatonState(Character transition, boolean isFinal, TokenType tokenType) {
         this.transition = transition;
         this.isFinal = isFinal;
+        this.tokenType = tokenType;
         this.adjacent = new ArrayList<>();
-
     }
 
     /** Test that the automaton is deterministic with then new transition. */
@@ -56,6 +62,13 @@ public class AutomatonState {
 
     public Character getTransition() {
         return transition;
+    }
+
+    public TokenType getTokenType() {
+        if (isFinal) {
+            return tokenType;
+        }
+        return null;
     }
 
     /** Allow to get the state that can be reached with the transition.
