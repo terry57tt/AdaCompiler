@@ -3,6 +3,8 @@ package org.pcl;
 
 import java.util.ArrayList;
 
+import static org.pcl.ColorAnsiCode.*;
+
 /** Entry point of the application. */
 public class App {
 
@@ -11,8 +13,9 @@ public class App {
         ArrayList<String> filesToCompile = new ArrayList<>();
 
         if (args.length == 0) {
-            System.out.println("No files to compile.\n" +
-                    "Please enter the path of the files you want to compile with the command line argument -Pfiles=\"file1\"");
+            System.out.println(ANSI_RED + "No files to compile.\n" +
+                    "Please enter the path of the files you want to compile with the command line argument -Pfiles=\"file1\""
+            + ANSI_RESET);
             System.exit(0);
         }
 
@@ -21,15 +24,15 @@ public class App {
                 if (fileHandler.isExtensionValid(file))
                     filesToCompile.add(file);
                 else {
-                    System.out.println("- Invalid extension: " + file);
+                    System.out.println(ANSI_RED + "- Invalid extension: " + file + ANSI_RESET);
                 }
             } else {
-                System.out.println("- Invalid path: " + file);
+                System.out.println(ANSI_RED + "- Invalid path: " + file + ANSI_RESET);
             }
         }
 
         if (filesToCompile.isEmpty()) {
-            System.out.println("No valid files to compile.\n" +
+            System.out.println(ANSI_RED + "No valid files to compile.\n" + ANSI_RESET +
                     "Exit program.");
             System.exit(0);
         }
