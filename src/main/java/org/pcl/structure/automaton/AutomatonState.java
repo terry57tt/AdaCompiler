@@ -15,12 +15,26 @@ public class AutomatonState {
     /** If the state is final, it means that it is a final state in the automaton. */
     private final boolean isFinal;
 
+    /** The token type is the type of the token that will be recognized if the state is final. */
+    private final TokenType tokenType;
 
-    public AutomatonState(Character transition, boolean isFinal) {
+    /** Represents all transitions who loop */
+    private final ArrayList<Character> loop;
+
+    public AutomatonState(boolean isFinal) {
+        this(null, isFinal, null);
+    }
+
+   public AutomatonState(Character transition, boolean isFinal) {
+        this(transition, isFinal, null);
+    }
+
+    public AutomatonState(Character transition, boolean isFinal, TokenType tokenType) {
         this.transition = transition;
         this.isFinal = isFinal;
+        this.tokenType = tokenType;
         this.adjacent = new ArrayList<>();
-
+        this.loop = new ArrayList<>();
     }
 
     /** Test that the automaton is deterministic with then new transition. */
@@ -33,6 +47,12 @@ public class AutomatonState {
             }
             transitions.add(state.getTransition());
         }
+        for (Character transition_loop: this.loop) {
+            if (transitions.contains(transition_loop)) {
+                throw new IncorrectAutomatonException(transition_loop);
+            }
+            transitions.add(transition_loop);
+        }
     }
 
 
@@ -43,6 +63,13 @@ public class AutomatonState {
     public void addAdjacent(AutomatonState state) throws IncorrectAutomatonException {
         isDeterministic(state.getTransition());
         this.adjacent.add(state);
+    }
+
+    /** Add a loop to the state.
+     * with the character transition*/
+    public void addLoop(Character transition) throws IncorrectAutomatonException {
+        isDeterministic(transition);
+        this.loop.add(transition);
     }
 
     /** Return if the states is final. */
@@ -58,6 +85,13 @@ public class AutomatonState {
         return transition;
     }
 
+    public TokenType getTokenType() {
+        if (isFinal) {
+            return tokenType;
+        }
+        return null;
+    }
+
     /** Allow to get the state that can be reached with the transition.
      * Throws runTime Exception*/
     public AutomatonState naviguate(Character transition) throws InvalidStateExeception {
@@ -66,6 +100,21 @@ public class AutomatonState {
                 return state;
             }
         }
+        for (Character transition_loop: this.loop) {
+            if (transition_loop.equals(transition)) {
+                return this;
+            }
+        }
         throw new InvalidStateExeception(transition);
+    }
+
+
+    /** Return the state as a string. */
+    @Override
+    public String toString() {
+        return "AutomatonState{" +
+                "transition=" + transition +
+                ", isFinal=" + isFinal +
+                '}';
     }
 }
