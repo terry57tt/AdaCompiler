@@ -4,5 +4,6 @@ public enum TokenType {
     IDENTIFIER,
     OPERATOR,
     NUMBER,
-    STRING
+    KEYWORD,
+    SEPARATOR  // ; ( , ) { } [ ] .  : ::
 }

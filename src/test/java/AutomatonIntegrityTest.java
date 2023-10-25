@@ -2,6 +2,8 @@ import org.junit.jupiter.api.Test;
 import org.pcl.structure.automaton.AutomatonState;
 import org.pcl.structure.automaton.IncorrectAutomatonException;
 import org.pcl.structure.automaton.InvalidStateExeception;
+import org.pcl.structure.automaton.TokenType;
+import org.pcl.structure.automaton.Automaton;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -44,6 +46,34 @@ public class AutomatonIntegrityTest {
         state.naviguate('-');
         state11.naviguate('2').naviguate('3').naviguate('4');
         state3.naviguate('4');
+    }
+
+    /** Verify advance function */
+    @Test
+    public void advanceAutomatonTest(){
+        
+        AutomatonState stateA = new AutomatonState('a', false);
+        AutomatonState stateB = new AutomatonState('b', true, TokenType.KEYWORD);
+        AutomatonState stateC = new AutomatonState('c', false);
+        AutomatonState stateE = new AutomatonState('e', true, TokenType.IDENTIFIER);
+
+        stateA.addAdjacent(stateB);
+        stateB.addAdjacent(stateC);
+        stateC.addAdjacent(stateE);
+
+        Automaton automaton = new Automaton(stateA);
+
+        automaton.advance('b');
+        assert automaton.isFinal();
+        assert automaton.getCurrentState().getTokenType() == TokenType.KEYWORD;
+
+        automaton.advance('c');
+        assert !automaton.isFinal();
+        assert automaton.getCurrentState().getTokenType() == null;
+
+        automaton.advance('e');
+        assert automaton.isFinal();
+        assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER;    
     }
 
 }
