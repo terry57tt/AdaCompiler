@@ -6,7 +6,11 @@ public class Token {
     TokenType type;
     String value;
     long lineNumber;
-
+    public Token(String value){
+        this.type = null;
+        this.value = "";
+        this.lineNumber = -1;
+    }
     private Token(TokenType type, String value, long lineNumber){
         this.type = type;
         this.value = value;
