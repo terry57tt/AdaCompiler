@@ -1,13 +1,11 @@
 package org.pcl.structure.automaton;
 
-import javax.swing.plaf.TreeUI;
-
 public class Graph {
     //On cree tous les etats de l'automate avec new automatonState
     //On cree les liens entre les etats avec addAdjacent
     //M
 
-    public Automaton create() {
+    public static Automaton create() {
 
         AutomatonState init_state = new AutomatonState('?', false);
         
@@ -403,7 +401,6 @@ public class Graph {
         state128.addLoop('8');
         state128.addLoop('9');
 
-        Automaton automaton = new Automaton(init_state);
-        return automaton;
+        return new Automaton(init_state);
     }
 }

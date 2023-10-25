@@ -13,7 +13,7 @@ public class Lexeur {
     //Lecture du fichier à partir des fonctions dans fileHandler
 
     FileHandler fileHandler = new FileHandler();
-    Stream<Character> characterStream = fileHandler.getCharacters(path);
+    Stream<Character> characterStream;
 
     /*Fonction qui renvoit une liste de token : la fonction va parcourir le tableau 
      * de stream<caracter> va parcourir les transitions du graphes et si il voit 
