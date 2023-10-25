@@ -36,7 +36,8 @@ public class FileHandler {
         //Stream<Character> characterStream = lines.flatMap(str -> str.chars().mapToObj(c -> (char) c));
         Path cheminPath = Paths.get(path);
         Stream<String> lines = Files.lines(cheminPath, StandardCharsets.UTF_8);
-        Stream<Character> characterStream = lines.flatMap(str -> Stream.concat(str.chars().mapToObj(c -> (char) c), Stream.of('\n')));
+        Stream<Character> characterStream = lines.flatMap(str ->
+                Stream.concat(str.chars().mapToObj(c -> (char) c), Stream.concat(Stream.of('\\'), Stream.of('n'))));
         return characterStream;
     }
 
