@@ -21,10 +21,7 @@ public class FileHandler {
         Path chemin = Paths.get(path);
         String fileName = chemin.getFileName().toString();
         String extension = getExtension(fileName);
-        if (extension.equals("ads") || extension.equals("adb")){
-            return true;
-        }
-        return false;
+        return (extension.equals("ads") || extension.equals("adb"));
     }
 
     /** Get the extension in a fileName */
