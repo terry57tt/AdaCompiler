@@ -14,14 +14,14 @@ public class Token {
     }
 
     private TokenType getType(){
-        return type;
+        return this.type;
     }
 
     private String getValue(){
-        return value;
+        return this.value;
     }
 
     private long getLineNumber(){
-        return lineNumber;
+        return this.lineNumber;
     }
 }
