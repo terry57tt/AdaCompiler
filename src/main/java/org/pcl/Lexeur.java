@@ -8,6 +8,6 @@ public class Lexeur {
     //Lecture du fichier à partir des fonctions dans fileHandler
 
     FileHandler fileHandler = new FileHandler();
-    Stream<Character> characterStream = fileHandler.getCharacters(path);
+    Stream<Character> characterStream;
 
 }
