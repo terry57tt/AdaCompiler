@@ -364,7 +364,47 @@ public class Graph {
         init_state.addAdjacent(state133);
         init_state.addAdjacent(state134);
         //On fait en sorte qu'il boucle pour qu'il puisse reconnaitre n'importe quelle entier
-        state125.addloop("0");
+        state125.addLoop('0');
+        state125.addLoop('1');
+        state125.addLoop('2');
+        state125.addLoop('3');
+        state125.addLoop('4');
+        state125.addLoop('5');
+        state125.addLoop('6');
+        state125.addLoop('7');
+        state125.addLoop('8');
+        state125.addLoop('9');
+        state126.addLoop('0');
+        state126.addLoop('1');
+        state126.addLoop('2');
+        state126.addLoop('3');
+        state126.addLoop('4');
+        state126.addLoop('5');
+        state126.addLoop('6');
+        state126.addLoop('7');
+        state126.addLoop('8');
+        state126.addLoop('9');
+        state127.addLoop('0');
+        state127.addLoop('1');
+        state127.addLoop('2');
+        state127.addLoop('3');
+        state127.addLoop('4');
+        state127.addLoop('5');
+        state127.addLoop('6');
+        state127.addLoop('7');
+        state127.addLoop('8');
+        state127.addLoop('9');
+        state128.addLoop('0');
+        state128.addLoop('1');
+        state128.addLoop('2');
+        state128.addLoop('3');
+        state128.addLoop('4');
+        state128.addLoop('5');
+        state128.addLoop('6');
+        state128.addLoop('7');
+        state128.addLoop('8');
+        state128.addLoop('9');
+
         
 
 
