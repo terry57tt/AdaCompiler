@@ -18,6 +18,13 @@ public class AutomatonState {
     /** The token type is the type of the token that will be recognized if the state is final. */
     private final TokenType tokenType;
 
+    /** Represents all transitions who loop */
+    private final ArrayList<Character> loop;
+
+    public AutomatonState(boolean isFinal) {
+        this(null, isFinal, null);
+    }
+
    public AutomatonState(Character transition, boolean isFinal) {
         this(transition, isFinal, null);
     }
@@ -27,6 +34,7 @@ public class AutomatonState {
         this.isFinal = isFinal;
         this.tokenType = tokenType;
         this.adjacent = new ArrayList<>();
+        this.loop = new ArrayList<>();
     }
 
     /** Test that the automaton is deterministic with then new transition. */
@@ -39,6 +47,12 @@ public class AutomatonState {
             }
             transitions.add(state.getTransition());
         }
+        for (Character transition_loop: this.loop) {
+            if (transitions.contains(transition_loop)) {
+                throw new IncorrectAutomatonException(transition_loop);
+            }
+            transitions.add(transition_loop);
+        }
     }
 
 
@@ -49,6 +63,13 @@ public class AutomatonState {
     public void addAdjacent(AutomatonState state) throws IncorrectAutomatonException {
         isDeterministic(state.getTransition());
         this.adjacent.add(state);
+    }
+
+    /** Add a loop to the state.
+     * with the character transition*/
+    public void addLoop(Character transition) throws IncorrectAutomatonException {
+        isDeterministic(transition);
+        this.loop.add(transition);
     }
 
     /** Return if the states is final. */
@@ -79,8 +100,14 @@ public class AutomatonState {
                 return state;
             }
         }
+        for (Character transition_loop: this.loop) {
+            if (transition_loop.equals(transition)) {
+                return this;
+            }
+        }
         throw new InvalidStateExeception(transition);
     }
+
 
     /** Return the state as a string. */
     @Override

@@ -13,7 +13,7 @@ public class AutomatonIntegrityTest {
     /** Verify exception are thrown when they should */
     @Test
     public void automatonStateDeterminisicTest() {
-        AutomatonState state = new AutomatonState('=', false);
+        AutomatonState state = new AutomatonState(null, false);
         AutomatonState state1 = new AutomatonState('1', false);
         AutomatonState state2 = new AutomatonState('1', false);
         state.addAdjacent(state1);
@@ -29,7 +29,7 @@ public class AutomatonIntegrityTest {
     /** verify that the link are correct */
     @Test
     public void automatonStateFinalTest() {
-        AutomatonState state = new AutomatonState('=', true);
+        AutomatonState state = new AutomatonState(null, true);
         AutomatonState state11 = new AutomatonState('+', true);
         AutomatonState state12 = new AutomatonState('-', true);
         AutomatonState state2 = new AutomatonState('2', true);
@@ -74,6 +74,37 @@ public class AutomatonIntegrityTest {
         automaton.advance('e');
         assert automaton.isFinal();
         assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER;    
+    }
+
+    /** verify that the loop are correct */
+    @Test
+    public void automatonStateLoopTest() {
+        AutomatonState state = new AutomatonState(null, true);
+        AutomatonState state11 = new AutomatonState('+', true);
+        AutomatonState state12 = new AutomatonState('-', true);
+        AutomatonState state2 = new AutomatonState('2', true);
+        state11.addLoop('x');
+        state11.addLoop('a');
+
+        state.addAdjacent(state11);
+        state.addAdjacent(state12);
+        state11.addAdjacent(state2);
+
+        assertThrows(IncorrectAutomatonException.class, () -> {
+            state11.addLoop('x'); // This should throw a IncorrectAutomatonException
+            state11.addLoop('2'); // This should throw a IncorrectAutomatonException
+        });
+
+
+
+        state.naviguate('+').naviguate('x').naviguate('a').naviguate('x').naviguate('2');
+        state.naviguate('-');
+        state11.naviguate('2');
+
+        assertThrows(InvalidStateExeception.class, () -> {
+            state11.naviguate('b');
+        });
+
     }
 
 }

@@ -5,6 +5,7 @@ public class Automaton {
     private final AutomatonState initialState;
     private AutomatonState currentState;
 
+    /** The Character of the initialstate doesn't matter even recommended to put null */
     public Automaton(AutomatonState initialState) {
         this.initialState = initialState;
         this.currentState = initialState;
