@@ -21,11 +21,19 @@ public class AutomatonState {
     /** Represents all transitions who loop */
     private final ArrayList<Character> loop;
 
-    public AutomatonState(boolean isFinal) {
-        this(null, isFinal, null);
+    public AutomatonState() {
+        this(null, true, null);
     }
 
-   public AutomatonState(Character transition, boolean isFinal) {
+    public AutomatonState(Character transition) {
+        this(transition, true, null);
+    }
+
+    public AutomatonState(Character transition, TokenType tokenType) {
+        this(transition, true, tokenType);
+    }
+
+    public AutomatonState(Character transition, boolean isFinal) {
         this(transition, isFinal, null);
     }
 
@@ -36,6 +44,7 @@ public class AutomatonState {
         this.adjacent = new ArrayList<>();
         this.loop = new ArrayList<>();
     }
+
 
     /** Test that the automaton is deterministic with then new transition. */
     private void isDeterministic(Character transition) throws IncorrectAutomatonException{
