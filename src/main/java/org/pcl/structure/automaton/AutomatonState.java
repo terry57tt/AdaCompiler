@@ -2,6 +2,8 @@ package org.pcl.structure.automaton;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /** Represent a state of the automaton. */
 public class AutomatonState {
@@ -74,10 +76,20 @@ public class AutomatonState {
         this.adjacent.add(state);
     }
 
-    /** Add a loop to the state.
-     * with the character transition*/
     public void addLoop(Character transition) throws IncorrectAutomatonException {
         isDeterministic(transition);
+        for (AutomatonState state: this.adjacent) {
+            if (state.getTransition().equals(transition)) {
+                return;
+            }
+        }
+
+        Pattern pattern = Pattern.compile("[a-zA-Z0-9_]");
+        Matcher matcher = pattern.matcher(transition.toString());
+
+        if (!matcher.matches()) {
+            throw new IncorrectAutomatonException(transition);
+        }
         this.loop.add(transition);
     }
 
