@@ -3,29 +3,43 @@ package org.pcl;
 import org.pcl.structure.automaton.TokenType;
 
 public class Token {
-    TokenType type;
-    String value;
-    long lineNumber;
+    private TokenType type;
+    private String value;
+    private long lineNumber;
+
     public Token(String value){
         this.type = null;
         this.value = "";
         this.lineNumber = -1;
     }
-    private Token(TokenType type, String value, long lineNumber){
+
+    public Token(TokenType type, String value, long lineNumber){
         this.type = type;
         this.value = value;
         this.lineNumber = lineNumber;
     }
 
-    private TokenType getType(){
+    public TokenType getType(){
         return this.type;
     }
 
-    private String getValue(){
+    public void setType(TokenType type){
+        this.type = type;
+    }
+
+    public String getValue(){
         return this.value;
     }
 
-    private long getLineNumber(){
+    public void setValue(String value){
+        this.value = value;
+    }
+
+    public long getLineNumber(){
         return this.lineNumber;
+    }
+
+    public void setLineNumber(long lineNumber){
+        this.lineNumber = lineNumber;
     }
 }

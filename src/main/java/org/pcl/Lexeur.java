@@ -16,6 +16,10 @@ public class Lexeur {
 
     Stream<Character> characterStream;
 
+    public Lexeur(String path){
+        this.path = path;
+    }
+
     /*Fonction qui renvoit une liste de token : la fonction va parcourir le tableau 
      * de stream<caracter> va parcourir les transitions du graphes et si il voit 
      * un espace ou un separateur il va creer un token et le rajouter dans la liste de token
@@ -54,7 +58,7 @@ public class Lexeur {
             //update the line number of the token
             //change type of the token if possible
             if (automaton.isFinal()) {
-                token.type = automaton.getCurrentState().getTokenType();
+                token.setType(automaton.getCurrentState().getTokenType());
             }
             //add token to the list of tokens
             tokens.add(token);
