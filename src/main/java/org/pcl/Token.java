@@ -8,9 +8,7 @@ public class Token {
     private long lineNumber;
 
     public Token(String value){
-        this.type = null;
-        this.value = "";
-        this.lineNumber = -1;
+        this(null, value, -1);
     }
 
     public Token(TokenType type, String value, long lineNumber){

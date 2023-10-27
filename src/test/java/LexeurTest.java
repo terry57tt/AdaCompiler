@@ -19,32 +19,30 @@ public class LexeurTest {
 
     @Test
     public void testGetCharacters() throws IOException {
-        String testFilePath = "keywords.ada";
+        String testFilePath = "data/keywords.ada";
 
         Stream<Character> characterStream = FileHandler.getCharacters(testFilePath);
-
         assertNotNull(characterStream);
-
+        /*characterStream.forEach(
+                c -> System.out.println('\\' + c + " |" + c + " | " + (int) c )
+        );*/
         String result = characterStream.map(String::valueOf).collect(Collectors.joining());
+        // check that the content is correct
+        String expectedContent = "access and begin else elsif end\n\tif false true\n";
 
         // check that the file is read correctly
-        assertEquals(39, result.length());
+        assertEquals(expectedContent.length(), result.length());
 
-        // check that the content is correct
-        String expectedContent = "access and begin else elsif end\n    if false true\n";
         assertEquals(expectedContent, result);
 
-        // check that spaces are not ignored  
-        String space = characterStream.skip(6).findFirst().get().toString();
-        assertEquals(" ", space);
+        // check that spaces are not ignored
+        assertEquals(' ', result.charAt(6));
 
         // check that new lines are not ignored
-        String newLine = characterStream.skip(32).findFirst().get().toString();
-        assertEquals("\n", newLine);
+        assertEquals('\n', result.charAt(31));
 
         // check that tabs are not ignored
-        String tab = characterStream.skip(33).findFirst().get().toString();
-        assertEquals("\t", tab);
+        assertEquals('\t', result.charAt(32));
     }
 
     @Test
@@ -60,12 +58,12 @@ public class LexeurTest {
         String pathAdaProgram = "data/keywords.ada";
         Lexeur lexer = new Lexeur(pathAdaProgram);
         
-        ArrayList<Token> tokens = lexer.getTokens(pathAdaProgram);
+        ArrayList<Token> tokens = lexer.getTokens();
         assert tokens.size() == 7;
-        
-        for (int i = 0; i < tokens.size(); i++) {
-            assert tokens.get(i).getType() == TokenType.KEYWORD;
-            assert tokens.get(i).getLineNumber() == 1;
+
+        for (Token token : tokens) {
+            assert token.getType() == TokenType.KEYWORD;
+            assert token.getLineNumber() == 1;
         }
     }
 
@@ -74,7 +72,7 @@ public class LexeurTest {
         String pathAdaProgram = "data/program1.ada";
         Lexeur lexer = new Lexeur(pathAdaProgram);
         
-        ArrayList<Token> tokens = lexer.getTokens(pathAdaProgram);
+        ArrayList<Token> tokens = lexer.getTokens();
         assert tokens.size() == 26;
         
         assert tokens.get(0).getType() == TokenType.KEYWORD;
@@ -105,7 +103,7 @@ public class LexeurTest {
         Lexeur lexer = new Lexeur(pathAdaProgram);
 
         try {
-            lexer.getTokens(pathAdaProgram);
+            lexer.getTokens();
             assert false;
         } catch (InvalidStateExeception e) {
             assert true;

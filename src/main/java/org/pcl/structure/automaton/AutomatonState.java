@@ -27,10 +27,12 @@ public class AutomatonState {
         this(null, true, null);
     }
 
+    /** Create automatonstate final with tokenType null*/
     public AutomatonState(Character transition) {
         this(transition, true, null);
     }
 
+    /** Create automatonstate final */
     public AutomatonState(Character transition, TokenType tokenType) {
         this(transition, true, tokenType);
     }

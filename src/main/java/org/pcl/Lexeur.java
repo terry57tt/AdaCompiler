@@ -25,7 +25,7 @@ public class Lexeur {
      * un espace ou un separateur il va creer un token et le rajouter dans la liste de token
      * qui sera crée progressivement. Le token sera un triplet (type, valeur, ligne)
     */
-    public ArrayList<Token> getTokens(String path) throws IOException {
+    public ArrayList<Token> getTokens() throws IOException {
         // reste à traiter : les numéros de lignes, les symboles non reconnu, les erreurs dans l'automate (il n'y a pas de liaison),
         //les commentaires, les différents cas de séparateurs/opérateurs
 
@@ -34,8 +34,7 @@ public class Lexeur {
 
         ArrayList<Token> tokens = new ArrayList<>();
         String valueToken = "";
-        Graph graph = new Graph();
-        Automaton automaton = graph.create();
+        Automaton automaton = Graph.create();
 
         Stream<Character> characterStream = FileHandler.getCharacters(path);
         Iterator<Character> iterator = characterStream.iterator();
@@ -43,18 +42,18 @@ public class Lexeur {
 
         while (iterator.hasNext()) {
             Character current_character = iterator.next();
-            String value = "";
+            StringBuilder value = new StringBuilder();
             //in the first loop iterator.next() is the first character in the stream
 
             //while the current character is not a separator or an operator, add the character to value
-            while (!current_character.equals(TokenType.SEPARATOR) || !current_character.equals(TokenType.OPERATOR)){
+            while (!current_character.equals(TokenType.SEPARATOR) && !current_character.equals(TokenType.OPERATOR)){
                 automaton.advance(current_character);
-                value = value + current_character;
+                value.append(current_character);
                 current_character = iterator.next();
             } // at the end of the loop, the current character is a separator or a
             //create a new token with "value"
 
-            Token token = new Token(value);
+            Token token = new Token(value.toString());
             //update the line number of the token
             //change type of the token if possible
             if (automaton.isFinal()) {

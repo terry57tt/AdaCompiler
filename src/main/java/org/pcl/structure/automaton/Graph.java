@@ -275,80 +275,80 @@ public class Graph {
         //Tous les opérateurs
 
         // +
-        AutomatonState state107 = new AutomatonState('+', true);
+        AutomatonState state107 = new AutomatonState('+');
         init_state.addAdjacent(state107);
 
         // -
-        AutomatonState state108 = new AutomatonState('-', true);
+        AutomatonState state108 = new AutomatonState('-');
         init_state.addAdjacent(state108);
 
         // *
-        AutomatonState state109 = new AutomatonState('*', true);
+        AutomatonState state109 = new AutomatonState('*');
         init_state.addAdjacent(state109);
 
         // / (diviser) et /=
-        AutomatonState state110 = new AutomatonState('/', true);
-        AutomatonState state111 = new AutomatonState('=', true);
+        AutomatonState state110 = new AutomatonState('/');
+        AutomatonState state111 = new AutomatonState('=');
         init_state.addAdjacent(state110);
         state110.addAdjacent(state111);
 
         // < et <=
-        AutomatonState state112 = new AutomatonState('<', true);
-        AutomatonState state113 = new AutomatonState('=', true);
+        AutomatonState state112 = new AutomatonState('<');
+        AutomatonState state113 = new AutomatonState('=');
         init_state.addAdjacent(state112);
         state111.addAdjacent(state113);
 
         // > et >=
-        AutomatonState state114 = new AutomatonState('>', true);
-        AutomatonState state115 = new AutomatonState('=', true);
+        AutomatonState state114 = new AutomatonState('>');
+        AutomatonState state115 = new AutomatonState('=');
         init_state.addAdjacent(state114);
         state112.addAdjacent(state115);
 
         // =
-        AutomatonState state116 = new AutomatonState('=', true);
+        AutomatonState state116 = new AutomatonState('=');
         init_state.addAdjacent(state116);
 
         // (
-        AutomatonState state117 = new AutomatonState('(', true);
+        AutomatonState state117 = new AutomatonState('(');
         init_state.addAdjacent(state117);
 
         // )
-        AutomatonState state118 = new AutomatonState(')', true);
+        AutomatonState state118 = new AutomatonState(')');
         init_state.addAdjacent(state118);
 
         // ,
-        AutomatonState state119 = new AutomatonState(',', true);
+        AutomatonState state119 = new AutomatonState(',');
         init_state.addAdjacent(state119);
 
         // ;
-        AutomatonState state120 = new AutomatonState(';', true);
+        AutomatonState state120 = new AutomatonState(';');
         init_state.addAdjacent(state120);
 
         // : et :=
-        AutomatonState state121 = new AutomatonState(':', true);
-        AutomatonState state122 = new AutomatonState('=', true);
+        AutomatonState state121 = new AutomatonState(':');
+        AutomatonState state122 = new AutomatonState('=');
         init_state.addAdjacent(state121);
         state121.addAdjacent(state122);
 
         // .
-        AutomatonState state123 = new AutomatonState('.', true);
+        AutomatonState state123 = new AutomatonState('.');
         init_state.addAdjacent(state123);
 
         // '
-        AutomatonState state124 = new AutomatonState('\'', true);
+        AutomatonState state124 = new AutomatonState('\'');
         init_state.addAdjacent(state124);
 
         // Les entiers
-        AutomatonState state125 = new AutomatonState('0', true);
-        AutomatonState state126 = new AutomatonState('1', true);
-        AutomatonState state127 = new AutomatonState('2', true);
-        AutomatonState state128 = new AutomatonState('3', true);
-        AutomatonState state129 = new AutomatonState('4', true);
-        AutomatonState state130 = new AutomatonState('5', true);
-        AutomatonState state131 = new AutomatonState('6', true);
-        AutomatonState state132 = new AutomatonState('7', true);
-        AutomatonState state133 = new AutomatonState('8', true);
-        AutomatonState state134 = new AutomatonState('9', true);
+        AutomatonState state125 = new AutomatonState('0');
+        AutomatonState state126 = new AutomatonState('1');
+        AutomatonState state127 = new AutomatonState('2');
+        AutomatonState state128 = new AutomatonState('3');
+        AutomatonState state129 = new AutomatonState('4');
+        AutomatonState state130 = new AutomatonState('5');
+        AutomatonState state131 = new AutomatonState('6');
+        AutomatonState state132 = new AutomatonState('7');
+        AutomatonState state133 = new AutomatonState('8');
+        AutomatonState state134 = new AutomatonState('9');
         init_state.addAdjacent(state125);
         init_state.addAdjacent(state126);
         init_state.addAdjacent(state127);

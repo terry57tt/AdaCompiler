@@ -1,6 +1,7 @@
 package org.pcl;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.pcl.ColorAnsiCode.*;
@@ -8,8 +9,7 @@ import static org.pcl.ColorAnsiCode.*;
 /** Entry point of the application. */
 public class App {
 
-    public static void main(String[] args) {
-        FileHandler fileHandler = new FileHandler();
+    public static void main(String[] args) throws IOException {
         ArrayList<String> filesToCompile = new ArrayList<>();
 
         if (args.length == 0) {
@@ -20,8 +20,8 @@ public class App {
         }
 
         for (String file: args) {
-            if (fileHandler.isPathValid(file)) {
-                if (fileHandler.isExtensionValid(file))
+            if (FileHandler.isPathValid(file)) {
+                if (FileHandler.isExtensionValid(file))
                     filesToCompile.add(file);
                 else {
                     System.out.println(ANSI_RED + "- Invalid extension: " + file + ANSI_RESET);
@@ -39,7 +39,9 @@ public class App {
 
         for (String file: filesToCompile) {
             System.out.println("- Compiling file: " + file);
-            //TODO go to the lexeur
+            new Lexeur(file).getTokens();
+
+            //TODO
         }
     }
 
