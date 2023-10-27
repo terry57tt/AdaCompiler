@@ -18,12 +18,12 @@ public class FileHandler {
     }
 
     /** Check is the extension of the file is valid.
-     * ADA extension are [.ads .adb]*/
+     * ADA extension are [.ads .adb .ada]*/
     public static boolean isExtensionValid(String path) {
         Path chemin = Paths.get(path);
         String fileName = chemin.getFileName().toString();
         String extension = getExtension(fileName);
-        return (extension.equals("ads") || extension.equals("adb"));
+        return (extension.equals("ads") || extension.equals("adb")  || extension.equals("ada"));
     }
 
     /** Get the extension in a fileName */
