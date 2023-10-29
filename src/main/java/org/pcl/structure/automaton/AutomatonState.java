@@ -2,8 +2,8 @@ package org.pcl.structure.automaton;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Represent a state of the automaton. */
 public class AutomatonState {
@@ -78,22 +78,33 @@ public class AutomatonState {
         this.adjacent.add(state);
     }
 
-    public void addLoop(Character transition) throws IncorrectAutomatonException {
-        isDeterministic(transition);
-        for (AutomatonState state: this.adjacent) {
-            if (state.getTransition().equals(transition)) {
-                return;
+    /** Add a regex to the loop transitions. */    
+    public void addRegexLoop(String regex) {
+        loop.addAll(findMatchingCharacters(regex));
+    }
+
+    /** Find all characters that match the regex. */
+    private ArrayList<Character> findMatchingCharacters(String regex) {
+        ArrayList<Character> matchingCharacters = new ArrayList<>();
+        Pattern pattern = Pattern.compile(regex);
+
+        for (char c = 0; c < 128; c++) { // Consider ASCII characters
+            String characterString = String.valueOf(c);
+            Matcher matcher = pattern.matcher(characterString);
+
+            if (matcher.matches()) {
+                matchingCharacters.add(c);
             }
         }
 
-        Pattern pattern = Pattern.compile("[a-zA-Z0-9_]");
-        Matcher matcher = pattern.matcher(transition.toString());
+        return matchingCharacters;
+    }
 
-        if (!matcher.matches()) {
-            throw new IncorrectAutomatonException(transition);
-        }
+    public void addLoop(Character transition) throws IncorrectAutomatonException {
+        isDeterministic(transition);
         this.loop.add(transition);
     }
+
 
     /** Return if the states is final. */
     public boolean isFinal() {
