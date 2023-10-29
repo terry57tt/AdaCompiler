@@ -12,7 +12,7 @@ public class AutomatonState {
     private final ArrayList<AutomatonState> adjacent;
 
     /** The transition is the character that will be used to go to this state. */
-    private final  Character transition;
+    private final Character transition;
 
     /** If the state is final, it means that it is a final state in the automaton. */
     private final boolean isFinal;
