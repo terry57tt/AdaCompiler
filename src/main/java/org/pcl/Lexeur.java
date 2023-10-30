@@ -17,7 +17,8 @@ public class Lexeur {
     private Stream<Character> stream;
     private int lineNumber;
     private String currentToken;
- 
+
+    // Methode permettant d'initialiser le lexeur
     public Lexeur(String input) {
         this.automaton = Graph.create();
         this.stream = null;
@@ -30,6 +31,7 @@ public class Lexeur {
         this.stream = stream;
     }
 
+    //Methode permettant de recuperer les tokens
     public ArrayList<Token> getTokens() throws IOException {
         ArrayList<Token> tokens = tokenize();
         for (Token token : tokens) {
@@ -38,11 +40,13 @@ public class Lexeur {
         return tokens;
     }
 
+    //Methode verifiant si le caractere est un separateur
     public boolean isSeparator(char c) {
         String separator = " \n\t(){}[];,:.+-*/<>=";
         return separator.contains(String.valueOf(c));
     }
 
+    //Cas particulier
     public boolean specificSeparator(char c) {
         String separator = "=<>";
         return separator.contains(String.valueOf(c));

@@ -1,4 +1,5 @@
 package org.pcl.structure.automaton;
+import org.pcl.structure.automaton.TokenType; ;
 
 public class Graph {
     //On cree tous les etats de l'automate avec new automatonState
@@ -12,12 +13,12 @@ public class Graph {
         //Tous les mots clé d'abord
 
         //access
-        AutomatonState state0 = new AutomatonState('a', false);
-        AutomatonState state1 = new AutomatonState('c', false);
-        AutomatonState state2 = new AutomatonState('c', false);
-        AutomatonState state3 = new AutomatonState('e', false);
-        AutomatonState state4 = new AutomatonState('s', false);
-        AutomatonState state5 = new AutomatonState('s', true);
+        AutomatonState state0 = new AutomatonState('a', true, TokenType.IDENTIFIER);
+        AutomatonState state1 = new AutomatonState('c', true, TokenType.IDENTIFIER);
+        AutomatonState state2 = new AutomatonState('c', true, TokenType.IDENTIFIER);
+        AutomatonState state3 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state4 = new AutomatonState('s', true, TokenType.IDENTIFIER);
+        AutomatonState state5 = new AutomatonState('s', true, TokenType.KEYWORD);
         init_state.addAdjacent(state0);
         state0.addAdjacent(state1);
         state1.addAdjacent(state2);
@@ -26,17 +27,17 @@ public class Graph {
         state4.addAdjacent(state5);
 
         //and
-        AutomatonState state6 = new AutomatonState('n', false);
-        AutomatonState state7 = new AutomatonState('d', true);
+        AutomatonState state6 = new AutomatonState('n', true, TokenType.IDENTIFIER);
+        AutomatonState state7 = new AutomatonState('d', true, TokenType.KEYWORD);
         state0.addAdjacent(state6);
         state6.addAdjacent(state7);
 
         //begin
-        AutomatonState state8 = new AutomatonState('b', false);
-        AutomatonState state9 = new AutomatonState('e', false);
-        AutomatonState state10 = new AutomatonState('g', false);
-        AutomatonState state11 = new AutomatonState('i', false);
-        AutomatonState state12 = new AutomatonState('n', true);
+        AutomatonState state8 = new AutomatonState('b', true, TokenType.IDENTIFIER);
+        AutomatonState state9 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state10 = new AutomatonState('g', true, TokenType.IDENTIFIER);
+        AutomatonState state11 = new AutomatonState('i', true, TokenType.IDENTIFIER);
+        AutomatonState state12 = new AutomatonState('n', true, TokenType.KEYWORD);
         init_state.addAdjacent(state8);
         state8.addAdjacent(state9);
         state9.addAdjacent(state10);
@@ -44,33 +45,33 @@ public class Graph {
         state11.addAdjacent(state12);
 
         //else
-        AutomatonState state13 = new AutomatonState('e', false);
-        AutomatonState state14 = new AutomatonState('l', false);
-        AutomatonState state15 = new AutomatonState('s', false);
-        AutomatonState state16 = new AutomatonState('e', false);
+        AutomatonState state13 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state14 = new AutomatonState('l', true, TokenType.IDENTIFIER);
+        AutomatonState state15 = new AutomatonState('s', true, TokenType.IDENTIFIER);
+        AutomatonState state16 = new AutomatonState('e', true, TokenType.KEYWORD);
         init_state.addAdjacent(state13);
         state13.addAdjacent(state14);
         state14.addAdjacent(state15);
         state15.addAdjacent(state16);
 
         //elsif
-        AutomatonState state20 = new AutomatonState('i', false);
-        AutomatonState state21 = new AutomatonState('f', false);
+        AutomatonState state20 = new AutomatonState('i', true, TokenType.IDENTIFIER);
+        AutomatonState state21 = new AutomatonState('f', true, TokenType.KEYWORD);
         state15.addAdjacent(state20);
         state20.addAdjacent(state21);
 
         //end
-        AutomatonState state22 = new AutomatonState('n', false);
-        AutomatonState state23 = new AutomatonState('d', false);
+        AutomatonState state22 = new AutomatonState('n', true, TokenType.IDENTIFIER);
+        AutomatonState state23 = new AutomatonState('d', true, TokenType.KEYWORD);
         state13.addAdjacent(state22);
         state22.addAdjacent(state23);
 
-        //false
-        AutomatonState state24 = new AutomatonState('f', false);
-        AutomatonState state25 = new AutomatonState('a', false);
-        AutomatonState state26 = new AutomatonState('l', false);
-        AutomatonState state27 = new AutomatonState('s', false);
-        AutomatonState state28 = new AutomatonState('e', false);
+        //False
+        AutomatonState state24 = new AutomatonState('f', true, TokenType.IDENTIFIER);
+        AutomatonState state25 = new AutomatonState('a', true, TokenType.IDENTIFIER);
+        AutomatonState state26 = new AutomatonState('l', true, TokenType.IDENTIFIER);
+        AutomatonState state27 = new AutomatonState('s', true, TokenType.IDENTIFIER);
+        AutomatonState state28 = new AutomatonState('e', true, TokenType.KEYWORD);
         init_state.addAdjacent(state24);
         state24.addAdjacent(state25);
         state25.addAdjacent(state26);
@@ -78,19 +79,19 @@ public class Graph {
         state27.addAdjacent(state28);
 
         //for
-        AutomatonState state29 = new AutomatonState('o', false);
-        AutomatonState state30 = new AutomatonState('r', false);
+        AutomatonState state29 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state30 = new AutomatonState('r', true, TokenType.KEYWORD);
         state24.addAdjacent(state29);
         state29.addAdjacent(state30);
 
         //function
-        AutomatonState state31 = new AutomatonState('u', false);
-        AutomatonState state32 = new AutomatonState('n', false);
-        AutomatonState state33 = new AutomatonState('c', false);
-        AutomatonState state34 = new AutomatonState('t', false);
-        AutomatonState state35 = new AutomatonState('i', false);
-        AutomatonState state36 = new AutomatonState('o', false);
-        AutomatonState state37 = new AutomatonState('n', false);
+        AutomatonState state31 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state32 = new AutomatonState('n', true, TokenType.IDENTIFIER);
+        AutomatonState state33 = new AutomatonState('c', true, TokenType.IDENTIFIER);
+        AutomatonState state34 = new AutomatonState('t', true, TokenType.IDENTIFIER);
+        AutomatonState state35 = new AutomatonState('i', true, TokenType.IDENTIFIER);
+        AutomatonState state36 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state37 = new AutomatonState('n', true, TokenType.KEYWORD);
         state24.addAdjacent(state31);
         state31.addAdjacent(state32);
         state32.addAdjacent(state33);
@@ -100,73 +101,73 @@ public class Graph {
         state36.addAdjacent(state37);
 
         //if
-        AutomatonState state38 = new AutomatonState('i', false);
-        AutomatonState state39 = new AutomatonState('f', false);
+        AutomatonState state38 = new AutomatonState('i', true, TokenType.IDENTIFIER);
+        AutomatonState state39 = new AutomatonState('f', true, TokenType.KEYWORD);
         init_state.addAdjacent(state38);
         state38.addAdjacent(state39);
 
         //in 
-        AutomatonState state40 = new AutomatonState('n', false);
+        AutomatonState state40 = new AutomatonState('n', true, TokenType.KEYWORD);
         state38.addAdjacent(state40);
 
         //is
-        AutomatonState state41 = new AutomatonState('s', false);
+        AutomatonState state41 = new AutomatonState('s', true, TokenType.KEYWORD);
         state38.addAdjacent(state41);
 
         //loop
-        AutomatonState state42 = new AutomatonState('l', false);
-        AutomatonState state43 = new AutomatonState('o', false);
-        AutomatonState state44 = new AutomatonState('o', false);
-        AutomatonState state45 = new AutomatonState('p', false);
+        AutomatonState state42 = new AutomatonState('l', true, TokenType.IDENTIFIER);
+        AutomatonState state43 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state44 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state45 = new AutomatonState('p', true, TokenType.KEYWORD);
         init_state.addAdjacent(state42);
         state42.addAdjacent(state43);
         state43.addAdjacent(state44);
         state44.addAdjacent(state45);
 
         //new 
-        AutomatonState state46 = new AutomatonState('n', false);
-        AutomatonState state47 = new AutomatonState('e', false);
-        AutomatonState state48 = new AutomatonState('w', false);
+        AutomatonState state46 = new AutomatonState('n', true, TokenType.IDENTIFIER);
+        AutomatonState state47 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state48 = new AutomatonState('w', true, TokenType.KEYWORD);
         init_state.addAdjacent(state46);
         state46.addAdjacent(state47);
         state47.addAdjacent(state48);
 
         //not
-        AutomatonState state49 = new AutomatonState('o', false);
-        AutomatonState state50 = new AutomatonState('t', false);
+        AutomatonState state49 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state50 = new AutomatonState('t', true, TokenType.KEYWORD);
         state46.addAdjacent(state49);
         state49.addAdjacent(state50);
 
         //null
-        AutomatonState state51 = new AutomatonState('u', false);
-        AutomatonState state52 = new AutomatonState('l', false);
-        AutomatonState state53 = new AutomatonState('l', false);
+        AutomatonState state51 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state52 = new AutomatonState('l', true, TokenType.IDENTIFIER);
+        AutomatonState state53 = new AutomatonState('l', true, TokenType.KEYWORD);
         state46.addAdjacent(state51);
         state51.addAdjacent(state52);
         state52.addAdjacent(state53);
 
         //or
-        AutomatonState state54 = new AutomatonState('o', false);
-        AutomatonState state55 = new AutomatonState('r', false);
+        AutomatonState state54 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state55 = new AutomatonState('r', true, TokenType.KEYWORD);
         init_state.addAdjacent(state54);
         state54.addAdjacent(state55);
 
         //out
-        AutomatonState state56 = new AutomatonState('u', false);
-        AutomatonState state57 = new AutomatonState('t', false);
+        AutomatonState state56 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state57 = new AutomatonState('t', true, TokenType.KEYWORD);
         state54.addAdjacent(state56);
         state56.addAdjacent(state57);
 
         //procedure
-        AutomatonState state58 = new AutomatonState('p', false);
-        AutomatonState state59 = new AutomatonState('r', false);
-        AutomatonState state60 = new AutomatonState('o', false);
-        AutomatonState state61 = new AutomatonState('c', false);
-        AutomatonState state62 = new AutomatonState('e', false);
-        AutomatonState state63 = new AutomatonState('d', false);
-        AutomatonState state64 = new AutomatonState('u', false);
-        AutomatonState state65 = new AutomatonState('r', false);
-        AutomatonState state66 = new AutomatonState('e', false);
+        AutomatonState state58 = new AutomatonState('p', true, TokenType.IDENTIFIER);
+        AutomatonState state59 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state60 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state61 = new AutomatonState('c', true, TokenType.IDENTIFIER);
+        AutomatonState state62 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state63 = new AutomatonState('d', true, TokenType.IDENTIFIER);
+        AutomatonState state64 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state65 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state66 = new AutomatonState('e', true, TokenType.KEYWORD);
         init_state.addAdjacent(state58);
         state58.addAdjacent(state59);
         state59.addAdjacent(state60);
@@ -178,12 +179,12 @@ public class Graph {
         state65.addAdjacent(state66);
 
         //record 
-        AutomatonState state67 = new AutomatonState('r', false);
-        AutomatonState state68 = new AutomatonState('e', false);
-        AutomatonState state69 = new AutomatonState('c', false);
-        AutomatonState state70 = new AutomatonState('o', false);
-        AutomatonState state71 = new AutomatonState('r', false);
-        AutomatonState state72 = new AutomatonState('d', false);
+        AutomatonState state67 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state68 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state69 = new AutomatonState('c', true, TokenType.IDENTIFIER);
+        AutomatonState state70 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state71 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state72 = new AutomatonState('d', true, TokenType.KEYWORD);
         init_state.addAdjacent(state67);
         state67.addAdjacent(state68);
         state68.addAdjacent(state69);
@@ -192,14 +193,14 @@ public class Graph {
         state71.addAdjacent(state72);
 
         //rem
-        AutomatonState state74 = new AutomatonState('m', false);
+        AutomatonState state74 = new AutomatonState('m', true, TokenType.KEYWORD);
         state68.addAdjacent(state74);
 
         //return
-        AutomatonState state76 = new AutomatonState('t', false);
-        AutomatonState state77 = new AutomatonState('u', false);
-        AutomatonState state78 = new AutomatonState('r', false);
-        AutomatonState state79 = new AutomatonState('n', false);
+        AutomatonState state76 = new AutomatonState('t', true, TokenType.IDENTIFIER);
+        AutomatonState state77 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state78 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state79 = new AutomatonState('n', true, TokenType.KEYWORD);
         state68.addAdjacent(state76);
         state76.addAdjacent(state77);
         state77.addAdjacent(state78);
@@ -207,11 +208,11 @@ public class Graph {
 
 
         //reverse
-        AutomatonState state81 = new AutomatonState('v', false);
-        AutomatonState state82 = new AutomatonState('e', false);
-        AutomatonState state83 = new AutomatonState('r', false);
-        AutomatonState state84 = new AutomatonState('s', false);
-        AutomatonState state85 = new AutomatonState('e', false);
+        AutomatonState state81 = new AutomatonState('v', true, TokenType.IDENTIFIER);
+        AutomatonState state82 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state83 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state84 = new AutomatonState('s', true, TokenType.IDENTIFIER);
+        AutomatonState state85 = new AutomatonState('e', true, TokenType.KEYWORD);
         state68.addAdjacent(state81);
         state81.addAdjacent(state82);
         state82.addAdjacent(state83);
@@ -219,45 +220,45 @@ public class Graph {
         state84.addAdjacent(state85);
 
         //then 
-        AutomatonState state86 = new AutomatonState('t', false);
-        AutomatonState state87 = new AutomatonState('h', false);
-        AutomatonState state88 = new AutomatonState('e', false);
-        AutomatonState state89 = new AutomatonState('n', false);
+        AutomatonState state86 = new AutomatonState('t', true, TokenType.IDENTIFIER);
+        AutomatonState state87 = new AutomatonState('h', true, TokenType.IDENTIFIER);
+        AutomatonState state88 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state89 = new AutomatonState('n', true, TokenType.KEYWORD);
         init_state.addAdjacent(state86);
         state86.addAdjacent(state87);
         state87.addAdjacent(state88);
         state88.addAdjacent(state89);
 
-        //true
-        AutomatonState state90 = new AutomatonState('r', false);
-        AutomatonState state91 = new AutomatonState('u', false);
-        AutomatonState state92 = new AutomatonState('e', false);
+        //true, TokenType.IDENTIFIER
+        AutomatonState state90 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state91 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state92 = new AutomatonState('e', true, TokenType.KEYWORD);
         state86.addAdjacent(state90);
         state90.addAdjacent(state91);
         state91.addAdjacent(state92);
 
         //type
-        AutomatonState state93 = new AutomatonState('y', false);
-        AutomatonState state94 = new AutomatonState('p', false);
-        AutomatonState state95 = new AutomatonState('e', false);
+        AutomatonState state93 = new AutomatonState('y', true, TokenType.IDENTIFIER);
+        AutomatonState state94 = new AutomatonState('p', true, TokenType.IDENTIFIER);
+        AutomatonState state95 = new AutomatonState('e', true, TokenType.KEYWORD);
         state86.addAdjacent(state93);
         state93.addAdjacent(state94);
         state94.addAdjacent(state95);
 
         //use 
-        AutomatonState state96 = new AutomatonState('u', false);
-        AutomatonState state97 = new AutomatonState('s', false);
-        AutomatonState state98 = new AutomatonState('e', false);
+        AutomatonState state96 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state97 = new AutomatonState('s', true, TokenType.IDENTIFIER);
+        AutomatonState state98 = new AutomatonState('e', true, TokenType.KEYWORD);
         init_state.addAdjacent(state96);
         state96.addAdjacent(state97);
         state97.addAdjacent(state98);
 
         //while
-        AutomatonState state99 = new AutomatonState('w', false);
-        AutomatonState state100 = new AutomatonState('h', false);
-        AutomatonState state101 = new AutomatonState('i', false);
-        AutomatonState state102 = new AutomatonState('l', false);
-        AutomatonState state103 = new AutomatonState('e', false);
+        AutomatonState state99 = new AutomatonState('w', true, TokenType.IDENTIFIER);
+        AutomatonState state100 = new AutomatonState('h', true, TokenType.IDENTIFIER);
+        AutomatonState state101 = new AutomatonState('i', true, TokenType.IDENTIFIER);
+        AutomatonState state102 = new AutomatonState('l', true, TokenType.IDENTIFIER);
+        AutomatonState state103 = new AutomatonState('e', true, TokenType.KEYWORD);
         init_state.addAdjacent(state99);
         state99.addAdjacent(state100);
         state100.addAdjacent(state101);
@@ -265,9 +266,9 @@ public class Graph {
         state102.addAdjacent(state103);
 
         //with
-        AutomatonState state104 = new AutomatonState('i', false);
-        AutomatonState state105 = new AutomatonState('t', false);
-        AutomatonState state106 = new AutomatonState('h', false);
+        AutomatonState state104 = new AutomatonState('i', true, TokenType.IDENTIFIER);
+        AutomatonState state105 = new AutomatonState('t', true, TokenType.IDENTIFIER);
+        AutomatonState state106 = new AutomatonState('h', true, TokenType.KEYWORD);
         state99.addAdjacent(state104);
         state104.addAdjacent(state105);
         state105.addAdjacent(state106);
@@ -275,80 +276,80 @@ public class Graph {
         //Tous les opérateurs
 
         // +
-        AutomatonState state107 = new AutomatonState('+');
+        AutomatonState state107 = new AutomatonState('+', true, TokenType.OPERATOR);
         init_state.addAdjacent(state107);
 
         // -
-        AutomatonState state108 = new AutomatonState('-');
+        AutomatonState state108 = new AutomatonState('-', true, TokenType.OPERATOR);
         init_state.addAdjacent(state108);
 
         // *
-        AutomatonState state109 = new AutomatonState('*');
+        AutomatonState state109 = new AutomatonState('*', true, TokenType.OPERATOR);
         init_state.addAdjacent(state109);
 
         // / (diviser) et /=
-        AutomatonState state110 = new AutomatonState('/');
-        AutomatonState state111 = new AutomatonState('=');
+        AutomatonState state110 = new AutomatonState('/', true, TokenType.OPERATOR);
+        AutomatonState state111 = new AutomatonState('=', true, TokenType.OPERATOR);
         init_state.addAdjacent(state110);
         state110.addAdjacent(state111);
 
         // < et <=
-        AutomatonState state112 = new AutomatonState('<');
-        AutomatonState state113 = new AutomatonState('=');
+        AutomatonState state112 = new AutomatonState('<', true, TokenType.OPERATOR);
+        AutomatonState state113 = new AutomatonState('=', true, TokenType.OPERATOR);
         init_state.addAdjacent(state112);
         state111.addAdjacent(state113);
 
         // > et >=
-        AutomatonState state114 = new AutomatonState('>');
-        AutomatonState state115 = new AutomatonState('=');
+        AutomatonState state114 = new AutomatonState('>', true, TokenType.OPERATOR);
+        AutomatonState state115 = new AutomatonState('=', true, TokenType.OPERATOR);
         init_state.addAdjacent(state114);
         state112.addAdjacent(state115);
 
         // =
-        AutomatonState state116 = new AutomatonState('=');
+        AutomatonState state116 = new AutomatonState('=', true, TokenType.OPERATOR);
         init_state.addAdjacent(state116);
 
         // (
-        AutomatonState state117 = new AutomatonState('(');
+        AutomatonState state117 = new AutomatonState('(', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state117);
 
         // )
-        AutomatonState state118 = new AutomatonState(')');
+        AutomatonState state118 = new AutomatonState(')', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state118);
 
         // ,
-        AutomatonState state119 = new AutomatonState(',');
+        AutomatonState state119 = new AutomatonState(',', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state119);
 
         // ;
-        AutomatonState state120 = new AutomatonState(';');
+        AutomatonState state120 = new AutomatonState(';', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state120);
 
         // : et :=
-        AutomatonState state121 = new AutomatonState(':');
-        AutomatonState state122 = new AutomatonState('=');
+        AutomatonState state121 = new AutomatonState(':', true, TokenType.SEPARATOR);
+        AutomatonState state122 = new AutomatonState('=', true, TokenType.OPERATOR);
         init_state.addAdjacent(state121);
         state121.addAdjacent(state122);
 
         // .
-        AutomatonState state123 = new AutomatonState('.');
+        AutomatonState state123 = new AutomatonState('.', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state123);
 
         // '
-        AutomatonState state124 = new AutomatonState('\'');
+        AutomatonState state124 = new AutomatonState('\'', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state124);
 
         // Les entiers
-        AutomatonState state125 = new AutomatonState('0');
-        AutomatonState state126 = new AutomatonState('1');
-        AutomatonState state127 = new AutomatonState('2');
-        AutomatonState state128 = new AutomatonState('3');
-        AutomatonState state129 = new AutomatonState('4');
-        AutomatonState state130 = new AutomatonState('5');
-        AutomatonState state131 = new AutomatonState('6');
-        AutomatonState state132 = new AutomatonState('7');
-        AutomatonState state133 = new AutomatonState('8');
-        AutomatonState state134 = new AutomatonState('9');
+        AutomatonState state125 = new AutomatonState('0', true, TokenType.NUMBER);
+        AutomatonState state126 = new AutomatonState('1', true, TokenType.NUMBER);
+        AutomatonState state127 = new AutomatonState('2', true, TokenType.NUMBER);
+        AutomatonState state128 = new AutomatonState('3', true, TokenType.NUMBER);
+        AutomatonState state129 = new AutomatonState('4', true, TokenType.NUMBER);
+        AutomatonState state130 = new AutomatonState('5', true, TokenType.NUMBER);
+        AutomatonState state131 = new AutomatonState('6', true, TokenType.NUMBER);
+        AutomatonState state132 = new AutomatonState('7', true, TokenType.NUMBER);
+        AutomatonState state133 = new AutomatonState('8', true, TokenType.NUMBER);
+        AutomatonState state134 = new AutomatonState('9', true, TokenType.NUMBER);
         init_state.addAdjacent(state125);
         init_state.addAdjacent(state126);
         init_state.addAdjacent(state127);
@@ -360,46 +361,166 @@ public class Graph {
         init_state.addAdjacent(state133);
         init_state.addAdjacent(state134);
         //On fait en sorte qu'il boucle pour qu'il puisse reconnaitre n'importe quelle entier
-        state125.addLoop('0');
-        state125.addLoop('1');
-        state125.addLoop('2');
-        state125.addLoop('3');
-        state125.addLoop('4');
-        state125.addLoop('5');
-        state125.addLoop('6');
-        state125.addLoop('7');
-        state125.addLoop('8');
-        state125.addLoop('9');
-        state126.addLoop('0');
-        state126.addLoop('1');
-        state126.addLoop('2');
-        state126.addLoop('3');
-        state126.addLoop('4');
-        state126.addLoop('5');
-        state126.addLoop('6');
-        state126.addLoop('7');
-        state126.addLoop('8');
-        state126.addLoop('9');
-        state127.addLoop('0');
-        state127.addLoop('1');
-        state127.addLoop('2');
-        state127.addLoop('3');
-        state127.addLoop('4');
-        state127.addLoop('5');
-        state127.addLoop('6');
-        state127.addLoop('7');
-        state127.addLoop('8');
-        state127.addLoop('9');
-        state128.addLoop('0');
-        state128.addLoop('1');
-        state128.addLoop('2');
-        state128.addLoop('3');
-        state128.addLoop('4');
-        state128.addLoop('5');
-        state128.addLoop('6');
-        state128.addLoop('7');
-        state128.addLoop('8');
-        state128.addLoop('9');
+        state125.addRegexLoop("[0-9]*");
+        state126.addRegexLoop("[0-9]*");
+        state127.addRegexLoop("[0-9]*");
+        state128.addRegexLoop("[0-9]*");
+        state129.addRegexLoop("[0-9]*");
+        state130.addRegexLoop("[0-9]*");
+        state131.addRegexLoop("[0-9]*");
+        state132.addRegexLoop("[0-9]*");
+        state133.addRegexLoop("[0-9]*");
+        state134.addRegexLoop("[0-9]*");
+
+        //Etats avec majuscule et minuscule pour les identifiants
+        AutomatonState state135 = new AutomatonState('A', true, TokenType.IDENTIFIER);
+        AutomatonState state136 = new AutomatonState('B', true, TokenType.IDENTIFIER);
+        AutomatonState state137 = new AutomatonState('C', true, TokenType.IDENTIFIER);
+        AutomatonState state138 = new AutomatonState('D', true, TokenType.IDENTIFIER);
+        AutomatonState state139 = new AutomatonState('E', true, TokenType.IDENTIFIER);
+        AutomatonState state140 = new AutomatonState('F', true, TokenType.IDENTIFIER);
+        AutomatonState state141 = new AutomatonState('G', true, TokenType.IDENTIFIER);
+        AutomatonState state142 = new AutomatonState('H', true, TokenType.IDENTIFIER);
+        AutomatonState state143 = new AutomatonState('I', true, TokenType.IDENTIFIER);
+        AutomatonState state144 = new AutomatonState('J', true, TokenType.IDENTIFIER);
+        AutomatonState state145 = new AutomatonState('K', true, TokenType.IDENTIFIER);
+        AutomatonState state146 = new AutomatonState('K', true, TokenType.IDENTIFIER);
+        AutomatonState state147 = new AutomatonState('L', true, TokenType.IDENTIFIER);
+        AutomatonState state148 = new AutomatonState('M', true, TokenType.IDENTIFIER);
+        AutomatonState state149 = new AutomatonState('N', true, TokenType.IDENTIFIER);
+        AutomatonState state150 = new AutomatonState('O', true, TokenType.IDENTIFIER);
+        AutomatonState state151 = new AutomatonState('P', true, TokenType.IDENTIFIER);
+        AutomatonState state152 = new AutomatonState('Q', true, TokenType.IDENTIFIER);
+        AutomatonState state153 = new AutomatonState('R', true, TokenType.IDENTIFIER);
+        AutomatonState state154 = new AutomatonState('S', true, TokenType.IDENTIFIER);
+        AutomatonState state155 = new AutomatonState('T', true, TokenType.IDENTIFIER);
+        AutomatonState state156 = new AutomatonState('U', true, TokenType.IDENTIFIER);
+        AutomatonState state157 = new AutomatonState('V', true, TokenType.IDENTIFIER);
+        AutomatonState state158 = new AutomatonState('W', true, TokenType.IDENTIFIER);
+        AutomatonState state159 = new AutomatonState('X', true, TokenType.IDENTIFIER);
+        AutomatonState state160 = new AutomatonState('Y', true, TokenType.IDENTIFIER);
+        AutomatonState state161 = new AutomatonState('Z', true, TokenType.IDENTIFIER);
+        AutomatonState state162 = new AutomatonState('a', true, TokenType.IDENTIFIER);
+        AutomatonState state163 = new AutomatonState('b', true, TokenType.IDENTIFIER);
+        AutomatonState state164 = new AutomatonState('c', true, TokenType.IDENTIFIER);
+        AutomatonState state165 = new AutomatonState('d', true, TokenType.IDENTIFIER);
+        AutomatonState state166 = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState state167 = new AutomatonState('f', true, TokenType.IDENTIFIER);
+        AutomatonState state168 = new AutomatonState('g', true, TokenType.IDENTIFIER);
+        AutomatonState state169 = new AutomatonState('h', true, TokenType.IDENTIFIER);
+        AutomatonState state170 = new AutomatonState('i', true, TokenType.IDENTIFIER);
+        AutomatonState state171 = new AutomatonState('j', true, TokenType.IDENTIFIER);
+        AutomatonState state172 = new AutomatonState('k', true, TokenType.IDENTIFIER);
+        AutomatonState state173 = new AutomatonState('l', true, TokenType.IDENTIFIER);
+        AutomatonState state174 = new AutomatonState('m', true, TokenType.IDENTIFIER);
+        AutomatonState state175 = new AutomatonState('n', true, TokenType.IDENTIFIER);
+        AutomatonState state176 = new AutomatonState('o', true, TokenType.IDENTIFIER);
+        AutomatonState state177 = new AutomatonState('p', true, TokenType.IDENTIFIER);
+        AutomatonState state178 = new AutomatonState('q', true, TokenType.IDENTIFIER);
+        AutomatonState state179 = new AutomatonState('r', true, TokenType.IDENTIFIER);
+        AutomatonState state180 = new AutomatonState('s', true, TokenType.IDENTIFIER);
+        AutomatonState state181 = new AutomatonState('t', true, TokenType.IDENTIFIER);
+        AutomatonState state182 = new AutomatonState('u', true, TokenType.IDENTIFIER);
+        AutomatonState state183 = new AutomatonState('v', true, TokenType.IDENTIFIER);
+        AutomatonState state184 = new AutomatonState('w', true, TokenType.IDENTIFIER);
+        AutomatonState state185 = new AutomatonState('x', true, TokenType.IDENTIFIER);
+        AutomatonState state186 = new AutomatonState('y', true, TokenType.IDENTIFIER);
+        AutomatonState state187 = new AutomatonState('z', true, TokenType.IDENTIFIER);
+        init_state.addAdjacent(state135);
+        init_state.addAdjacent(state136);
+        init_state.addAdjacent(state137);
+        init_state.addAdjacent(state138);
+        init_state.addAdjacent(state139);
+        init_state.addAdjacent(state140);
+        init_state.addAdjacent(state141);
+        init_state.addAdjacent(state142);
+        init_state.addAdjacent(state143);
+        init_state.addAdjacent(state144);
+        init_state.addAdjacent(state145);
+        init_state.addAdjacent(state146);
+        init_state.addAdjacent(state147);
+        init_state.addAdjacent(state148);
+        init_state.addAdjacent(state149);
+        init_state.addAdjacent(state150);
+        init_state.addAdjacent(state151);
+        init_state.addAdjacent(state152);
+        init_state.addAdjacent(state153);
+        init_state.addAdjacent(state154);
+        init_state.addAdjacent(state155);
+        init_state.addAdjacent(state156);
+        init_state.addAdjacent(state157);
+        init_state.addAdjacent(state158);
+        init_state.addAdjacent(state159);
+        init_state.addAdjacent(state160);
+        init_state.addAdjacent(state161);
+        //Pour les minuscules, on relie à l'état initial ceux qui sont des mots clés qui commence pas par cette lettre
+        init_state.addAdjacent(state164); //c
+        init_state.addAdjacent(state165); //d
+        init_state.addAdjacent(state168); //g
+        init_state.addAdjacent(state169); //h
+        init_state.addAdjacent(state171); //j
+        init_state.addAdjacent(state172); //k
+        init_state.addAdjacent(state174); //m
+        init_state.addAdjacent(state178); //q
+        init_state.addAdjacent(state180); //s
+        init_state.addAdjacent(state183); //v
+        init_state.addAdjacent(state185); //x
+        init_state.addAdjacent(state186); //y
+        init_state.addAdjacent(state187); //z
+        //chaque etat est ensuite à tous les autres etats boucle pour reconnaitre n'importe quel identifiant
+        state135.addRegexLoop("[a-zA-Z0-9_]*");
+        state136.addRegexLoop("[a-zA-Z0-9_]*");
+        state137.addRegexLoop("[a-zA-Z0-9_]*");
+        state138.addRegexLoop("[a-zA-Z0-9_]*");
+        state139.addRegexLoop("[a-zA-Z0-9_]*");
+        state140.addRegexLoop("[a-zA-Z0-9_]*");
+        state141.addRegexLoop("[a-zA-Z0-9_]*");
+        state142.addRegexLoop("[a-zA-Z0-9_]*");
+        state143.addRegexLoop("[a-zA-Z0-9_]*");
+        state144.addRegexLoop("[a-zA-Z0-9_]*");
+        state145.addRegexLoop("[a-zA-Z0-9_]*");
+        state146.addRegexLoop("[a-zA-Z0-9_]*");
+        state147.addRegexLoop("[a-zA-Z0-9_]*");
+        state148.addRegexLoop("[a-zA-Z0-9_]*");
+        state149.addRegexLoop("[a-zA-Z0-9_]*");
+        state150.addRegexLoop("[a-zA-Z0-9_]*");
+        state151.addRegexLoop("[a-zA-Z0-9_]*");
+        state152.addRegexLoop("[a-zA-Z0-9_]*");
+        state153.addRegexLoop("[a-zA-Z0-9_]*");
+        state154.addRegexLoop("[a-zA-Z0-9_]*");
+        state155.addRegexLoop("[a-zA-Z0-9_]*");
+        state156.addRegexLoop("[a-zA-Z0-9_]*");
+        state157.addRegexLoop("[a-zA-Z0-9_]*");
+        state158.addRegexLoop("[a-zA-Z0-9_]*");
+        state159.addRegexLoop("[a-zA-Z0-9_]*");
+        state160.addRegexLoop("[a-zA-Z0-9_]*");
+        state161.addRegexLoop("[a-zA-Z0-9_]*");
+        state162.addRegexLoop("[a-zA-Z0-9_]*");
+        state163.addRegexLoop("[a-zA-Z0-9_]*");
+        state164.addRegexLoop("[a-zA-Z0-9_]*");
+        state165.addRegexLoop("[a-zA-Z0-9_]*");
+        state166.addRegexLoop("[a-zA-Z0-9_]*");
+        state167.addRegexLoop("[a-zA-Z0-9_]*");
+        state168.addRegexLoop("[a-zA-Z0-9_]*");
+        state169.addRegexLoop("[a-zA-Z0-9_]*");
+        state170.addRegexLoop("[a-zA-Z0-9_]*");
+        state171.addRegexLoop("[a-zA-Z0-9_]*");
+        state172.addRegexLoop("[a-zA-Z0-9_]*");
+        state173.addRegexLoop("[a-zA-Z0-9_]*");
+        state174.addRegexLoop("[a-zA-Z0-9_]*");
+        state175.addRegexLoop("[a-zA-Z0-9_]*");
+        state176.addRegexLoop("[a-zA-Z0-9_]*");
+        state177.addRegexLoop("[a-zA-Z0-9_]*");
+        state178.addRegexLoop("[a-zA-Z0-9_]*");
+        state179.addRegexLoop("[a-zA-Z0-9_]*");
+        state180.addRegexLoop("[a-zA-Z0-9_]*");
+        state181.addRegexLoop("[a-zA-Z0-9_]*");
+        state182.addRegexLoop("[a-zA-Z0-9_]*");
+        state183.addRegexLoop("[a-zA-Z0-9_]*");
+        state184.addRegexLoop("[a-zA-Z0-9_]*");
+        state185.addRegexLoop("[a-zA-Z0-9_]*");
+        state186.addRegexLoop("[a-zA-Z0-9_]*");
+        state187.addRegexLoop("[a-zA-Z0-9_]*");
 
         return new Automaton(init_state);
     }
