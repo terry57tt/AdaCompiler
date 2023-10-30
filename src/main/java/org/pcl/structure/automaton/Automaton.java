@@ -22,7 +22,7 @@ public class Automaton {
     }
 
     /** Advance the automaton to the next state. */
-    public void advance(char transition) throws InvalidStateExeception {
+    public void advance(char transition) throws InvalidStateException {
         this.currentState = this.currentState.naviguate(transition);
     }
 

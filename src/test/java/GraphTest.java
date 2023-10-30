@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Test;
-import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.TokenType;
+import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
 
 public class GraphTest {

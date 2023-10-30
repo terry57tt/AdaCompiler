@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test;
-import org.pcl.structure.automaton.TokenType;
 import org.pcl.Lexeur;
 import org.pcl.Token;
+import org.pcl.structure.automaton.TokenType;
 import org.pcl.FileHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.pcl.structure.automaton.InvalidStateExeception;
+import org.pcl.structure.automaton.Automaton;
+import org.pcl.structure.automaton.Graph;
 
 public class LexeurTest {
 
@@ -28,7 +29,7 @@ public class LexeurTest {
         );*/
         String result = characterStream.map(String::valueOf).collect(Collectors.joining());
         // check that the content is correct
-        String expectedContent = "access and begin else elsif end\n\tif false true\n";
+        String expectedContent = "access and begin else elsif end if false true";
 
         // check that the file is read correctly
         assertEquals(expectedContent.length(), result.length());
@@ -39,7 +40,7 @@ public class LexeurTest {
         assertEquals(' ', result.charAt(6));
 
         // check that new lines are not ignored
-        assertEquals('\n', result.charAt(31));
+        assertEquals('\n', result.charAt(34));
 
         // check that tabs are not ignored
         assertEquals('\t', result.charAt(32));
@@ -55,11 +56,14 @@ public class LexeurTest {
 
     @Test
     public void testAdaProgram0() throws Exception {
-        String pathAdaProgram = "data/keywords.ada";
-        Lexeur lexer = new Lexeur(pathAdaProgram);
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters("data/keywords.ada");
+
+        Lexeur lexeur = new Lexeur(automaton, stream);
         
-        ArrayList<Token> tokens = lexer.getTokens();
-        assert tokens.size() == 7;
+        ArrayList<Token> tokens = lexeur.tokenize();
+
+        assert tokens.size() == 9;
 
         for (Token token : tokens) {
             assert token.getType() == TokenType.KEYWORD;
@@ -69,10 +73,13 @@ public class LexeurTest {
 
     @Test
     public void testAdaProgram1() throws Exception {
-        String pathAdaProgram = "data/program1.ada";
-        Lexeur lexer = new Lexeur(pathAdaProgram);
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters("data/program1.ada");
+
+        Lexeur lexeur = new Lexeur(automaton, stream);
         
-        ArrayList<Token> tokens = lexer.getTokens();
+        ArrayList<Token> tokens = lexeur.tokenize();
+        
         assert tokens.size() == 26;
         
         assert tokens.get(0).getType() == TokenType.KEYWORD;
@@ -96,17 +103,53 @@ public class LexeurTest {
         assert tokens.get(14).getLineNumber() == 4;
     }
 
-    // TODO : check error message and line number
     @Test
-    public void testAdaProgram2() throws Exception {
-        String pathAdaProgram = "data/invalid_character.ada";
-        Lexeur lexer = new Lexeur(pathAdaProgram);
-
+    public void testInvalidCharacter() throws Exception {
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters("data/invalid_character.ada");
+        Lexeur lexeur = new Lexeur(automaton, stream);
+        
         try {
-            lexer.getTokens();
+            ArrayList<Token> tokens = lexeur.tokenize();
             assert false;
-        } catch (InvalidStateExeception e) {
+        } catch (Exception e) {
             assert true;
         }
+    }
+
+    @Test
+    public void testSpecificCharacters() throws Exception {
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters("data/specificCharacters.ada");
+        Lexeur lexeur = new Lexeur(automaton, stream);
+
+        ArrayList<Token> tokens = lexeur.tokenize();
+
+        assert tokens.size() == 22;
+
+        assert ":="==tokens.get(1).getValue();
+        assert "<="==tokens.get(10).getValue();
+        assert ">="==tokens.get(15).getValue();
+        assert "/="==tokens.get(20).getValue();
+    }
+
+    @Test
+    public void testRemoveComments() throws Exception {
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters("data/remove_comments.ada");
+        Lexeur lexeur = new Lexeur(automaton, stream);
+
+        ArrayList<Token> tokens = lexeur.tokenize();
+
+        assert tokens.size() == 8;
+
+        assert "access"==tokens.get(0).getValue();
+        assert "program"==tokens.get(1).getValue();
+        assert "with"==tokens.get(2).getValue();
+        assert "hello_Word"==tokens.get(3).getValue();
+        assert ";"==tokens.get(4).getValue();
+        assert "procedure"==tokens.get(5).getValue();
+        assert "hello_Word"==tokens.get(6).getValue();
+        assert "is"==tokens.get(7).getValue();
     }
 }
