@@ -1,5 +1,7 @@
 package org.pcl.structure.automaton;
-import org.pcl.structure.automaton.TokenType; ;
+import org.pcl.structure.automaton.TokenType; 
+import java.util.Arrays;
+import java.util.List;
 
 public class Graph {
     //On cree tous les etats de l'automate avec new automatonState
@@ -467,7 +469,7 @@ public class Graph {
         init_state.addAdjacent(state185); //x
         init_state.addAdjacent(state186); //y
         init_state.addAdjacent(state187); //z
-        //chaque etat est ensuite à tous les autres etats boucle pour reconnaitre n'importe quel identifiant
+        //chaque etat boucle pour reconnaitre n'importe quel identifiant
         state135.addRegexLoop("[a-zA-Z0-9_]*");
         state136.addRegexLoop("[a-zA-Z0-9_]*");
         state137.addRegexLoop("[a-zA-Z0-9_]*");
@@ -522,6 +524,196 @@ public class Graph {
         state186.addRegexLoop("[a-zA-Z0-9_]*");
         state187.addRegexLoop("[a-zA-Z0-9_]*");
 
+        //On ajoute à chaque etats la liste des etats de state135 à state187 en utilisant addadjacents
+        List<AutomatonState> statesList = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_a = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_b = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_c = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_d = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_e = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_f = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_g = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_h = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_i = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_j = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_k = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_l = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_m = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_n = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_o = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_p = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state178, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_q = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state179, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_r = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state180, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_s = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state181, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_t = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state182, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_u = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state183, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_v = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state184, state185, state186, state187);
+        List<AutomatonState> statesList_without_w = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state185, state186, state187);
+        List<AutomatonState> statesList_without_x = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state186, state187);
+        List<AutomatonState> statesList_without_y = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state187);
+        List<AutomatonState> statesList_without_z = Arrays.asList(state135, state136, state137, state138, state139, state140, state141, state142, state143, state144, state145, state146, state147, state148, state149, state150, state151, state152, state153, state154, state155, state156, state157, state158, state159, state160, state161, state162, state163, state164, state165, state166, state167, state168, state169, state170, state171, state172, state173, state174, state175, state176, state177, state178, state179, state180, state181, state182, state183, state184, state185, state186);
+
+        //On ajoute à chaque etats la liste des etats de state135 à state187 en utilisant addadjacents
+        //access
+        state0.addAdjacents(statesList_without_c);
+        state1.addAdjacents(statesList_without_c);
+        state2.addAdjacents(statesList_without_e);
+        state3.addAdjacents(statesList_without_s);
+        state4.addAdjacents(statesList_without_s);
+        state5.addAdjacents(statesList);
+
+        //and
+        state6.addAdjacents(statesList_without_d);
+        state7.addAdjacents(statesList);
+
+        //begin
+        state8.addAdjacents(statesList_without_e);
+        state9.addAdjacents(statesList_without_g);
+        state10.addAdjacents(statesList_without_i);
+        state11.addAdjacents(statesList_without_n);
+        state12.addAdjacents(statesList);
+
+        //else
+        state13.addAdjacents(statesList_without_l);
+        state14.addAdjacents(statesList_without_s);
+        state15.addAdjacents(statesList_without_e);
+        state16.addAdjacents(statesList);
+
+        //elsif
+        state20.addAdjacents(statesList_without_f);
+        state21.addAdjacents(statesList);
+
+        //end
+        state22.addAdjacents(statesList_without_d);
+        state23.addAdjacents(statesList);
+
+        //false
+        state24.addAdjacents(statesList_without_a);
+        state25.addAdjacents(statesList_without_l);
+        state26.addAdjacents(statesList_without_s);
+        state27.addAdjacents(statesList_without_e);
+        state28.addAdjacents(statesList);
+
+        //for
+        state29.addAdjacents(statesList_without_r);
+        state30.addAdjacents(statesList);
+
+        //function
+        state31.addAdjacents(statesList_without_n);
+        state32.addAdjacents(statesList_without_c);
+        state33.addAdjacents(statesList_without_t);
+        state34.addAdjacents(statesList_without_i);
+        state35.addAdjacents(statesList_without_o);
+        state36.addAdjacents(statesList_without_n);
+        state37.addAdjacents(statesList);
+
+        //if
+        state38.addAdjacents(statesList_without_f);
+        state39.addAdjacents(statesList);
+
+        //in
+        state40.addAdjacents(statesList);
+
+        //is
+        state41.addAdjacents(statesList);
+
+        //loop
+        state42.addAdjacents(statesList_without_o);
+        state43.addAdjacents(statesList_without_o);
+        state44.addAdjacents(statesList_without_p);
+        state45.addAdjacents(statesList);
+
+        //new
+        state46.addAdjacents(statesList_without_e);
+        state47.addAdjacents(statesList_without_w);
+        state48.addAdjacents(statesList);
+
+        //not
+        state49.addAdjacents(statesList_without_t);
+        state50.addAdjacents(statesList);
+
+        //null
+        state51.addAdjacents(statesList_without_l);
+        state52.addAdjacents(statesList_without_l);
+        state53.addAdjacents(statesList);
+
+        //or
+        state54.addAdjacents(statesList_without_r);
+        state55.addAdjacents(statesList);
+
+        //out
+        state56.addAdjacents(statesList_without_t);
+        state57.addAdjacents(statesList);
+
+        //procedure
+        state58.addAdjacents(statesList_without_r);
+        state59.addAdjacents(statesList_without_o);
+        state60.addAdjacents(statesList_without_c);
+        state61.addAdjacents(statesList_without_e);
+        state62.addAdjacents(statesList_without_d);
+        state63.addAdjacents(statesList_without_u);
+        state64.addAdjacents(statesList_without_r);
+        state65.addAdjacents(statesList_without_e);
+        state66.addAdjacents(statesList);
+
+        //record
+        state67.addAdjacents(statesList_without_e);
+        state68.addAdjacents(statesList_without_c);
+        state69.addAdjacents(statesList_without_o);
+        state70.addAdjacents(statesList_without_r);
+        state71.addAdjacents(statesList_without_d);
+        state72.addAdjacents(statesList);
+
+        //rem
+        state74.addAdjacents(statesList);
+
+        //return
+        state76.addAdjacents(statesList_without_u);
+        state77.addAdjacents(statesList_without_r);
+        state78.addAdjacents(statesList_without_n);
+        state79.addAdjacents(statesList);
+
+        //reverse
+        state81.addAdjacents(statesList_without_e);
+        state82.addAdjacents(statesList_without_r);
+        state83.addAdjacents(statesList_without_s);
+        state84.addAdjacents(statesList_without_e);
+        state85.addAdjacents(statesList);
+
+        //then
+        state86.addAdjacents(statesList_without_h);
+        state87.addAdjacents(statesList_without_e);
+        state88.addAdjacents(statesList_without_n);
+        state89.addAdjacents(statesList);
+
+        //true
+        state90.addAdjacents(statesList_without_u);
+        state91.addAdjacents(statesList_without_e);
+        state92.addAdjacents(statesList);
+
+        //type
+        state93.addAdjacents(statesList_without_p);
+        state94.addAdjacents(statesList_without_e);
+        state95.addAdjacents(statesList);
+
+        //use
+        state96.addAdjacents(statesList_without_s);
+        state97.addAdjacents(statesList_without_e);
+        state98.addAdjacents(statesList);
+
+        //while
+        state99.addAdjacents(statesList_without_h);
+        state100.addAdjacents(statesList_without_i);
+        state101.addAdjacents(statesList_without_l);
+        state102.addAdjacents(statesList_without_e);
+        state103.addAdjacents(statesList);
+
+        //with
+        state104.addAdjacents(statesList_without_t);
+        state105.addAdjacents(statesList_without_h);
+        state106.addAdjacents(statesList);
+
+        
         return new Automaton(init_state);
     }
 }

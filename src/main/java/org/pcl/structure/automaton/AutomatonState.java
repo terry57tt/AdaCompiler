@@ -1,5 +1,5 @@
 package org.pcl.structure.automaton;
-
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.regex.Matcher;
@@ -76,6 +76,13 @@ public class AutomatonState {
     public void addAdjacent(AutomatonState state) throws IncorrectAutomatonException {
         isDeterministic(state.getTransition());
         this.adjacent.add(state);
+    }
+
+
+    public void addAdjacents(List<AutomatonState> Liststates) throws IncorrectAutomatonException {
+        for (AutomatonState state : Liststates) {
+            this.addAdjacent(state);
+        }
     }
 
     /** Add a regex to the loop transitions. */    
