@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
+import org.pcl.structure.automaton.InvalidStateException;
 
 public class LexeurTest {
 
@@ -74,7 +75,7 @@ public class LexeurTest {
         
         ArrayList<Token> tokens = lexeur.tokenize();
         
-        assert tokens.size() == 26;
+        assert tokens.size() == 25;
         
         assert tokens.get(0).getType() == TokenType.KEYWORD;
         assert tokens.get(0).getValue().equals("with");
@@ -84,17 +85,17 @@ public class LexeurTest {
         assert tokens.get(1).getValue().equals("Ada");
         assert tokens.get(1).getLineNumber() == 1;
 
-        assert tokens.get(2).getType() == TokenType.OPERATOR;
+        assert tokens.get(2).getType() == TokenType.SEPARATOR;
         assert tokens.get(2).getValue().equals(".");
         assert tokens.get(2).getLineNumber() == 1;
 
         assert tokens.get(6).getType() == TokenType.IDENTIFIER;
         assert tokens.get(6).getValue().equals("Hello_World");
-        assert tokens.get(6).getLineNumber() == 2;
+        assert tokens.get(6).getLineNumber() == 3;
 
-        assert tokens.get(14).getType() == TokenType.OPERATOR;
+        assert tokens.get(14).getType() == TokenType.SEPARATOR;
         assert tokens.get(14).getValue().equals("(");
-        assert tokens.get(14).getLineNumber() == 4;
+        assert tokens.get(14).getLineNumber() == 5;
     }
 
     @Test
@@ -106,7 +107,7 @@ public class LexeurTest {
         try {
             ArrayList<Token> tokens = lexeur.tokenize();
             assert false;
-        } catch (Exception e) {
+        } catch (InvalidStateException e) {
             assert true;
         }
     }
@@ -114,17 +115,17 @@ public class LexeurTest {
     @Test
     public void testSpecificCharacters() throws Exception {
         Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters("data/specificCharacters.ada");
+        Stream<Character> stream = FileHandler.getCharacters("data/specific_characters.ada");
         Lexeur lexeur = new Lexeur(automaton, stream);
 
         ArrayList<Token> tokens = lexeur.tokenize();
 
-        assert tokens.size() == 22;
+        assert tokens.size() == 34;
 
-        assert ":="==tokens.get(1).getValue();
-        assert "<="==tokens.get(10).getValue();
-        assert ">="==tokens.get(15).getValue();
-        assert "/="==tokens.get(20).getValue();
+        assert tokens.get(1).getValue().equals(":=");
+        assert tokens.get(10).getValue().equals("<=");
+        assert tokens.get(15).getValue().equals(">=");
+        assert tokens.get(20).getValue().equals("/=");
     }
 
     @Test
@@ -137,13 +138,28 @@ public class LexeurTest {
 
         assert tokens.size() == 8;
 
-        assert "access"==tokens.get(0).getValue();
-        assert "program"==tokens.get(1).getValue();
-        assert "with"==tokens.get(2).getValue();
-        assert "hello_Word"==tokens.get(3).getValue();
-        assert ";"==tokens.get(4).getValue();
-        assert "procedure"==tokens.get(5).getValue();
-        assert "hello_Word"==tokens.get(6).getValue();
-        assert "is"==tokens.get(7).getValue();
+        assert tokens.get(0).getValue().equals("access");
+        assert tokens.get(0).getLineNumber() == 2;
+
+        assert tokens.get(1).getValue().equals("program");
+        assert tokens.get(1).getLineNumber() == 2;
+
+        assert tokens.get(2).getValue().equals("with");
+        assert tokens.get(2).getLineNumber() == 2;
+
+        assert tokens.get(3).getValue().equals("hello_Word");
+        assert tokens.get(3).getLineNumber() == 2;
+
+        assert tokens.get(4).getValue().equals(";");
+        assert tokens.get(4).getLineNumber() == 2;
+
+        assert tokens.get(5).getValue().equals("procedure");
+        assert tokens.get(5).getLineNumber() == 4;
+
+        assert tokens.get(6).getValue().equals("hello_Word");
+        assert tokens.get(6).getLineNumber() == 4;
+
+        assert tokens.get(7).getValue().equals("is");
+        assert tokens.get(7).getLineNumber() == 4;
     }
 }

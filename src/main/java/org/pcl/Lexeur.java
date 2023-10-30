@@ -39,7 +39,7 @@ public class Lexeur {
     }
 
     public boolean isSeparator(char c) {
-        String separator = " \n\t(){}[];,:.+-*/<>=\"";
+        String separator = " \n\t(){}[];,:.+-*/<>=\"\'";
         return separator.contains(String.valueOf(c));
     }
 
@@ -50,7 +50,7 @@ public class Lexeur {
     }
     
     public boolean tokenSeparator(char c) {
-        String separator = "(){}[];,:.+-*/<>=";
+        String separator = "(){}[];,:.+-*/<>=\"\'";
         return separator.contains(String.valueOf(c));
     }
 
@@ -64,14 +64,15 @@ public class Lexeur {
             char c = characterList.get(i);
 
             if (isSeparator(c)) {    
-                if (c == '\n') {
-                    this.lineNumber++;
-                }
-    
+                
                 if (!this.currentToken.isEmpty()) {
                     addToken(tokens, this.currentToken, this.lineNumber);
                 }
                 
+                if (c == '\n') {
+                    this.lineNumber++;
+                }
+
                 if(tokenSeparator(c)) {
                     if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList);
                     else tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
@@ -84,7 +85,7 @@ public class Lexeur {
                     this.currentToken += c;
                     automaton.advance(c);
                 } catch (InvalidStateException e) {
-                    //System.out.println("Invalid state: " + e.getMessage());
+                    throw new InvalidStateException(c);
                 }
             }
         };
@@ -114,7 +115,6 @@ public class Lexeur {
                 while(i + 1 < characterList.size() && characterList.get(i + 1) != '\n') {
                     i++;
                 }
-                this.lineNumber++;
                 return i;
             case "/=":
                 tokens.add(new Token(TokenType.SEPARATOR, separator, this.lineNumber));
