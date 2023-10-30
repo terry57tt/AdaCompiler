@@ -24,12 +24,10 @@ public class LexeurTest {
 
         Stream<Character> characterStream = FileHandler.getCharacters(testFilePath);
         assertNotNull(characterStream);
-        /*characterStream.forEach(
-                c -> System.out.println('\\' + c + " |" + c + " | " + (int) c )
-        );*/
+        
         String result = characterStream.map(String::valueOf).collect(Collectors.joining());
         // check that the content is correct
-        String expectedContent = "access and begin else elsif end if false true";
+        String expectedContent = "access and begin else elsif end if false true\n";
 
         // check that the file is read correctly
         assertEquals(expectedContent.length(), result.length());
@@ -40,10 +38,7 @@ public class LexeurTest {
         assertEquals(' ', result.charAt(6));
 
         // check that new lines are not ignored
-        assertEquals('\n', result.charAt(34));
-
-        // check that tabs are not ignored
-        assertEquals('\t', result.charAt(32));
+        assertEquals('\n', result.charAt(45));
     }
 
     @Test
@@ -52,7 +47,6 @@ public class LexeurTest {
 
         assertThrows(IOException.class, () -> FileHandler.getCharacters(nonExistentFilePath));
     }
-
 
     @Test
     public void testAdaProgram0() throws Exception {
