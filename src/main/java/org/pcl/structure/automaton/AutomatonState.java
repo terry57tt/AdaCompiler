@@ -128,7 +128,7 @@ public class AutomatonState {
 
     /** Allow to get the state that can be reached with the transition.
      * Throws runTime Exception*/
-    public AutomatonState naviguate(Character transition) throws InvalidStateExeception {
+    public AutomatonState naviguate(Character transition) throws InvalidStateException {
         for (AutomatonState state: this.adjacent) {
             if (state.getTransition().equals(transition)) {
                 return state;
@@ -139,7 +139,7 @@ public class AutomatonState {
                 return this;
             }
         }
-        throw new InvalidStateExeception(transition);
+        throw new InvalidStateException(transition);
     }
 
 

@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test;
 import org.pcl.structure.automaton.AutomatonState;
 import org.pcl.structure.automaton.IncorrectAutomatonException;
-import org.pcl.structure.automaton.InvalidStateExeception;
+import org.pcl.structure.automaton.InvalidStateException;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.automaton.Automaton;
 
@@ -23,7 +23,7 @@ public class AutomatonIntegrityTest {
 
         state1.addAdjacent(state2);
         state.naviguate('1').naviguate('1');
-        assertThrows(InvalidStateExeception.class, () -> state.naviguate('1').naviguate('2'));
+        assertThrows(InvalidStateException.class, () -> state.naviguate('1').naviguate('2'));
     }
 
     /** verify that the link are correct */
@@ -101,7 +101,7 @@ public class AutomatonIntegrityTest {
         state.naviguate('-');
         state11.naviguate('2');
 
-        assertThrows(InvalidStateExeception.class, () -> {
+        assertThrows(InvalidStateException.class, () -> {
             state11.naviguate('b');
         });
 
