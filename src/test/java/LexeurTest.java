@@ -1,21 +1,17 @@
 import org.junit.jupiter.api.Test;
+import org.pcl.FileHandler;
 import org.pcl.Lexeur;
 import org.pcl.Token;
+import org.pcl.structure.automaton.Automaton;
+import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.automaton.TokenType;
-import org.pcl.FileHandler;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.pcl.structure.automaton.Automaton;
-import org.pcl.structure.automaton.Graph;
-import org.pcl.structure.automaton.InvalidStateException;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LexeurTest {
 
@@ -51,10 +47,11 @@ public class LexeurTest {
 
     @Test
     public void testAdaProgram0() throws Exception {
+        String file = "data/keywords.ada";
         Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters("data/keywords.ada");
+        Stream<Character> stream = FileHandler.getCharacters(file);
 
-        Lexeur lexeur = new Lexeur(automaton, stream);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
         
         ArrayList<Token> tokens = lexeur.tokenize();
 
@@ -68,10 +65,11 @@ public class LexeurTest {
 
     @Test
     public void testAdaProgram1() throws Exception {
+        String file = "data/program1.ada";
         Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters("data/program1.ada");
+        Stream<Character> stream = FileHandler.getCharacters(file);
 
-        Lexeur lexeur = new Lexeur(automaton, stream);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
         
         ArrayList<Token> tokens = lexeur.tokenize();
         
@@ -100,23 +98,24 @@ public class LexeurTest {
 
     @Test
     public void testInvalidCharacter() throws Exception {
+        String file = "data/invalid_character.ada";
         Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters("data/invalid_character.ada");
-        Lexeur lexeur = new Lexeur(automaton, stream);
-        
-        try {
-            ArrayList<Token> tokens = lexeur.tokenize();
-            assert false;
-        } catch (InvalidStateException e) {
-            assert true;
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
+        ArrayList<Token> tokens = lexeur.tokenize();
+
+        for (Token token: tokens) {
+            assert !token.getValue().equals("#");
+            assert !token.getValue().equals("!");
         }
     }
 
     @Test
     public void testSpecificCharacters() throws Exception {
+        String file = "data/specific_characters.ada";
         Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters("data/specific_characters.ada");
-        Lexeur lexeur = new Lexeur(automaton, stream);
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
 
         ArrayList<Token> tokens = lexeur.tokenize();
 
@@ -130,9 +129,10 @@ public class LexeurTest {
 
     @Test
     public void testRemoveComments() throws Exception {
+        String file = "data/remove_comments.ada";
         Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters("data/remove_comments.ada");
-        Lexeur lexeur = new Lexeur(automaton, stream);
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
 
         ArrayList<Token> tokens = lexeur.tokenize();
 

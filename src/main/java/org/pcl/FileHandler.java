@@ -32,6 +32,13 @@ public class FileHandler {
         return parties[parties.length-1];
     }
 
+
+    /** Return only the name of the file remove the path part */
+    public static String getFileName(String path) {
+        Path chemin = Paths.get(path);
+        return chemin.getFileName().toString();
+    }
+
     /** Return the character stream of the file */
     public static Stream<Character> getCharacters(String path) throws FileNotFoundException { //file can be a path or a file name
         Stream<String> lines = new BufferedReader(new InputStreamReader(new FileInputStream(path), Charset.defaultCharset())).lines();

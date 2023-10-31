@@ -1,16 +1,17 @@
 package org.pcl;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
+import org.pcl.structure.automaton.Graph;
 
-import static org.pcl.ColorAnsiCode.*;
+import java.io.IOException;
+
+import static org.pcl.ColorAnsiCode.ANSI_RED;
+import static org.pcl.ColorAnsiCode.ANSI_RESET;
 
 /** Entry point of the application. */
 public class App {
 
     public static void main(String[] args) throws IOException {
-        ArrayList<String> filesToCompile = new ArrayList<>();
 
         if (args.length == 0) {
             System.out.println(ANSI_RED + "No files to compile.\n" +
@@ -19,27 +20,21 @@ public class App {
             System.exit(0);
         }
 
+
+
         for (String file: args) {
-            if (FileHandler.isPathValid(file)) {
-                if (FileHandler.isExtensionValid(file))
-                    filesToCompile.add(file);
-                else {
-                    System.out.println(ANSI_RED + "- Invalid extension: " + file + ANSI_RESET);
-                }
-            } else {
-                System.out.println(ANSI_RED + "- Invalid path: " + file + ANSI_RESET);
+            if (!FileHandler.isPathValid(file)) {
+                System.out.println(ANSI_RED + "- Invalid path: " + file + ANSI_RESET + "\n");
+                continue;
             }
-        }
+            if (!FileHandler.isExtensionValid(file)) {
+                    System.out.println(ANSI_RED + "- Invalid extension: " + file + ANSI_RESET + "\n");
+                    continue;
+            }
 
-        if (filesToCompile.isEmpty()) {
-            System.out.println(ANSI_RED + "No valid files to compile.\n" + ANSI_RESET +
-                    "Exit program.");
-            System.exit(0);
-        }
+            System.out.println("- Compiling file: " + file + "\n");
 
-        for (String file: filesToCompile) {
-            System.out.println("- Compiling file: " + file);
-            new Lexeur(file).getTokens();
+            new Lexeur(Graph.create(), FileHandler.getCharacters(file), file).getTokens();
 
             //TODO
         }
