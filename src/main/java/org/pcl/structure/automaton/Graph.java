@@ -284,6 +284,39 @@ public class Graph {
         // -
         AutomatonState state108 = new AutomatonState('-', true, TokenType.OPERATOR);
         init_state.addAdjacent(state108);
+        // ajout des nombres négatifs
+        AutomatonState state108_0 = new AutomatonState('0', true, TokenType.NUMBER);
+        AutomatonState state108_1 = new AutomatonState('1', true, TokenType.NUMBER);
+        AutomatonState state108_2 = new AutomatonState('2', true, TokenType.NUMBER);
+        AutomatonState state108_3 = new AutomatonState('3', true, TokenType.NUMBER);
+        AutomatonState state108_4 = new AutomatonState('4', true, TokenType.NUMBER);
+        AutomatonState state108_5 = new AutomatonState('5', true, TokenType.NUMBER);
+        AutomatonState state108_6 = new AutomatonState('6', true, TokenType.NUMBER);
+        AutomatonState state108_7 = new AutomatonState('7', true, TokenType.NUMBER);
+        AutomatonState state108_8 = new AutomatonState('8', true, TokenType.NUMBER);
+        AutomatonState state108_9 = new AutomatonState('9', true, TokenType.NUMBER);
+        state108.addAdjacent(state108_0);
+        state108.addAdjacent(state108_1);
+        state108.addAdjacent(state108_2);
+        state108.addAdjacent(state108_3);
+        state108.addAdjacent(state108_4);
+        state108.addAdjacent(state108_5);
+        state108.addAdjacent(state108_6);
+        state108.addAdjacent(state108_7);
+        state108.addAdjacent(state108_8);
+        state108.addAdjacent(state108_9);
+        //On fait en sorte qu'il boucle pour qu'il puisse reconnaitre n'importe quel entier négatif
+        state108_0.addRegexLoop("[0-9]*");
+        state108_1.addRegexLoop("[0-9]*");
+        state108_2.addRegexLoop("[0-9]*");
+        state108_3.addRegexLoop("[0-9]*");
+        state108_4.addRegexLoop("[0-9]*");
+        state108_5.addRegexLoop("[0-9]*");
+        state108_6.addRegexLoop("[0-9]*");
+        state108_7.addRegexLoop("[0-9]*");
+        state108_8.addRegexLoop("[0-9]*");
+        state108_9.addRegexLoop("[0-9]*");
+
 
         // *
         AutomatonState state109 = new AutomatonState('*', true, TokenType.OPERATOR);
