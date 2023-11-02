@@ -374,6 +374,10 @@ public class Graph {
         AutomatonState state124 = new AutomatonState('\'', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state124);
 
+        // "
+        AutomatonState state_quotes = new AutomatonState('\"', true, TokenType.SEPARATOR);
+        init_state.addAdjacent(state_quotes);
+
         // Les entiers
         AutomatonState state125 = new AutomatonState('0', true, TokenType.NUMBER);
         AutomatonState state126 = new AutomatonState('1', true, TokenType.NUMBER);

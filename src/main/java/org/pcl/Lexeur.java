@@ -82,7 +82,7 @@ public class Lexeur {
                 } catch (InvalidStateException e) {
                     lineStack.remove(lineStack.size() - 1);
 
-                    System.out.print( fileName + ':' + lineNumber + ':' + lineStack.size() + ": " +
+                    System.out.print( fileName + ':' + lineNumber + ':' + (lineStack.size()+1) + ": " +
                             ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + "invalid character " +
                             "'" + ColorAnsiCode.ANSI_RED + c + ColorAnsiCode.ANSI_RESET + "'\n" +
                             lineStack.stream().map(String::valueOf).collect(Collectors.joining()));
