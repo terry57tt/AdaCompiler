@@ -15,8 +15,8 @@ public class GraphTest {
         };
         for (String key : symbolKeys) {
             navigateWordHelper(key, automaton);
-            assert automaton.isFinal();
-            assert automaton.getCurrentState().getTokenType() == TokenType.KEYWORD;
+            assert automaton.isFinal(): "expected final state";
+            assert automaton.getCurrentState().getTokenType() == TokenType.KEYWORD: "expected TokenType.KEYWORD got " + automaton.getCurrentState().getTokenType() + " instead for " + key;
             automaton.reset();
         }
     }
@@ -32,8 +32,8 @@ public class GraphTest {
         };
         for (String key : testKey) {
             navigateWordHelper(key, automaton);
-            assert automaton.isFinal();
-            assert automaton.getCurrentState().getTokenType() == TokenType.NUMBER;
+            assert automaton.isFinal(): "expected final state";
+            assert automaton.getCurrentState().getTokenType() == TokenType.NUMBER: "expected TokenType.NUMBER got " + automaton.getCurrentState().getTokenType() + " instead for " + key;
             automaton.reset();
         }
     }
@@ -46,8 +46,8 @@ public class GraphTest {
         };
         for (String key : testKey) {
             navigateWordHelper(key, automaton);
-            assert automaton.isFinal();
-            assert automaton.getCurrentState().getTokenType() == TokenType.OPERATOR;
+            assert automaton.isFinal(): "expected final state";
+            assert automaton.getCurrentState().getTokenType() == TokenType.OPERATOR : "expected operator TokenType.OPERATOR got " + automaton.getCurrentState().getTokenType() + " instead for " + key ;
             automaton.reset();
         }
     }
@@ -61,8 +61,8 @@ public class GraphTest {
         };
         for (String key : testKey) {
             navigateWordHelper(key, automaton);
-            assert automaton.isFinal();
-            assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER;
+            assert automaton.isFinal(): "expected final state";
+            assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER: "expected operator TokenType.IDENTIFER got " + automaton.getCurrentState().getTokenType() + " instead for " + key ;
             automaton.reset();
         }
     }
@@ -75,8 +75,8 @@ public class GraphTest {
         };
         for (String key : testKey) {
             navigateWordHelper(key, automaton);
-            assert automaton.isFinal();
-            assert automaton.getCurrentState().getTokenType() == TokenType.SEPARATOR;
+            assert automaton.isFinal(): "expected final state";
+            assert automaton.getCurrentState().getTokenType() == TokenType.SEPARATOR: "expected operator TokenType.IDENTIFER got " + automaton.getCurrentState().getTokenType() + " instead for " + key ;
             automaton.reset();
         }
     }
