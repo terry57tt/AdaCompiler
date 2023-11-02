@@ -6,6 +6,7 @@ import org.pcl.structure.automaton.InvalidStateException;
 import org.pcl.structure.automaton.TokenType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +40,7 @@ public class Lexeur {
 
     
     public boolean specificSeparator(char c) {
-        String separator = "-/=<>:";
+        String separator = "-/=<>:\"";
         return separator.contains(String.valueOf(c));
     }
     
@@ -54,11 +55,9 @@ public class Lexeur {
         List<Character> characterList = stream.collect(Collectors.toList());
         List<Character> lineStack = new ArrayList<>();
         for (int i = 0; i < characterList.size(); i++) {
-
             char c = characterList.get(i);
             lineStack.add(c);
-            if (isSeparator(c)) {    
-                
+            if (isSeparator(c)) {
                 if (!this.currentToken.isEmpty()) {
                     addToken(tokens, this.currentToken, this.lineNumber);
                 }
@@ -93,10 +92,11 @@ public class Lexeur {
 
                     System.out.println("\n" + " ".repeat(lineStack.size()) + ColorAnsiCode.ANSI_GREEN + "^"
                             + ColorAnsiCode.ANSI_RESET + "\n");
+
+                    this.currentToken = "";
                 }
             }
         }
-    
         if (!this.currentToken.isEmpty()) {
             addToken(tokens, this.currentToken, this.lineNumber);
         }
@@ -120,6 +120,19 @@ public class Lexeur {
     public int treatCompoundSeparator(ArrayList<Token> tokens, char c, int i, List<Character> characterList) {
         
         String separator;
+
+        /* case of Strings */
+        if (String.valueOf(c).equals("\"")) {
+            separator = "" + c;
+            while (i + 1 < characterList.size() && characterList.get(i + 1) != '\"' && characterList.get(i + 1) != '\n') {
+                i++;
+                separator = separator + characterList.get(i + 1);
+            }
+            tokens.add(new Token(TokenType.SEPARATOR, separator, this.lineNumber));
+            return i + 1;
+        }
+            // case : the string is not finished
+
 
         /* case end of file */
         if (i + 1 < characterList.size()) separator = c + String.valueOf(characterList.get(i + 1));
