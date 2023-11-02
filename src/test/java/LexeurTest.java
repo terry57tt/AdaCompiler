@@ -112,6 +112,23 @@ public class LexeurTest {
     }
 
     @Test
+    public void testString() throws FileNotFoundException {
+        String file = "data/strings.ada";
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
+
+        ArrayList<Token> tokens = lexeur.tokenize();
+        assert tokens.size() == 4: "expected 4 tokens got " + tokens.size();
+        assert tokens.get(0).getValue().equals("aaa"): "expected 'aaa' got " + tokens.get(0).getValue();
+        assert tokens.get(1).getValue().equals("b"): "expected 'b' got " + tokens.get(1).getValue();
+        assert tokens.get(2).getValue().equals("aa\"aa"): "expected 'aa\"aa' got " + tokens.get(2).getValue();
+        assert tokens.get(3).getValue().equals("'"): "expected ''' got " + tokens.get(3).getValue();
+    }
+
+
+
+    @Test
     public void testSpecificCharacters() throws Exception {
         String file = "data/specific_characters.ada";
         Automaton automaton = Graph.create();
