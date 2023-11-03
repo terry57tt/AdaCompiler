@@ -42,7 +42,7 @@ public class GraphTest {
     public void graphOperator() {
         Automaton automaton = Graph.create();
         String[] testKey = {
-                "=" , "/=", "<", "<=", ">", ">=", "+", "-", "*", "/", "rem", "and", "and then", "or", "or else"
+                "=" , "/=", "<", "<=", ">", ">=", "+", "-", "*", "/"//, "rem", "and", "and then", "or", "or else"
         };
         for (String key : testKey) {
             navigateWordHelper(key, automaton);

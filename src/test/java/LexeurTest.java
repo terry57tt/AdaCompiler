@@ -9,6 +9,7 @@ import org.pcl.structure.automaton.TokenType;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,8 +74,7 @@ public class LexeurTest {
         Lexeur lexeur = new Lexeur(automaton, stream, file);
         
         ArrayList<Token> tokens = lexeur.tokenize();
-        
-        assert tokens.size() == 25: "expected 25 tokens got " + tokens.size();
+        assert tokens.size() == 21 : "expected 21 tokens got " + tokens.size();
         
         assert tokens.get(0).getType() == TokenType.KEYWORD: "expected TokenType.KEYWORD got " + tokens.get(0).getType() + " instead for " + tokens.get(0).getValue();
         assert tokens.get(0).getValue().equals("with"): "expected 'with' got " + tokens.get(0).getValue();
@@ -95,6 +95,11 @@ public class LexeurTest {
         assert tokens.get(14).getType() == TokenType.SEPARATOR: "expected TokenType.SEPARATOR got " + tokens.get(14).getType() + " instead for " + tokens.get(14).getValue();
         assert tokens.get(14).getValue().equals("("): "expected '(' got " + tokens.get(14).getValue();
         assert tokens.get(14).getLineNumber() == 5: "expected line number 5 got " + tokens.get(14).getLineNumber() + " instead for " + tokens.get(14).getValue();
+
+        System.out.println(tokens.get(15));
+        assert tokens.get(15).getType() == TokenType.STRING: "expected TokenType.STRING got " + tokens.get(15).getType() + " instead for " + tokens.get(14).getValue();
+        assert tokens.get(15).getValue().equals("\"Hello, \" promised \" World\""): "expected \"Hello, \" promised \" World\" got " + tokens.get(15).getValue();
+        assert tokens.get(15).getLineNumber() == 5: "expected line number 5 got " + tokens.get(15).getLineNumber() + " instead for " + tokens.get(14).getValue();
     }
 
     @Test
@@ -119,11 +124,16 @@ public class LexeurTest {
         Lexeur lexeur = new Lexeur(automaton, stream, file);
 
         ArrayList<Token> tokens = lexeur.tokenize();
-        assert tokens.size() == 4: "expected 4 tokens got " + tokens.size();
-        assert tokens.get(0).getValue().equals("aaa"): "expected 'aaa' got " + tokens.get(0).getValue();
-        assert tokens.get(1).getValue().equals("b"): "expected 'b' got " + tokens.get(1).getValue();
-        assert tokens.get(2).getValue().equals("aa\"aa"): "expected 'aa\"aa' got " + tokens.get(2).getValue();
-        assert tokens.get(3).getValue().equals("'"): "expected ''' got " + tokens.get(3).getValue();
+
+        System.out.println(Arrays.toString(tokens.toArray()));
+        assert tokens.size() == 7: "expected 7 tokens got " + tokens.size();
+        assert tokens.get(0).getValue().equals("\"aaa\""): "expected \"aaa\" got " + tokens.get(0).getValue();
+        assert tokens.get(1).getValue().equals("'a'"): "expected 'a' got " + tokens.get(1).getValue();
+        assert tokens.get(2).getValue().equals("\"aa\"aa\""): "expected \"aa\"aa\" got " + tokens.get(2).getValue();
+        assert tokens.get(3).getValue().equals("'''"): "expected ' got " + tokens.get(3).getValue();
+        assert tokens.get(4).getValue().equals("\"\"\""): "expected \" got " + tokens.get(4).getValue();
+        assert tokens.get(5).getValue().equals("\'aa\'aa\'"): "expected \'aa\'aa\' got " + tokens.get(5).getValue();
+        assert tokens.get(6).getValue().equals("'\"'"): "expected \" got " + tokens.get(6).getValue();
     }
 
 

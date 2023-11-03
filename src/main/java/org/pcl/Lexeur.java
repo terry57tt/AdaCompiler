@@ -126,14 +126,14 @@ public class Lexeur {
 
             while (((i + 1) < characterList.size()) && (characterList.get(i + 1) != '\n') && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n')
                     && ((characterList.get(i + 1) != '\"') || (characterList.get(i + 2) == '\"') || (characterList.get(i) == '\"'))) {
-
                 separator += characterList.get(i + 1);
                 i++;
             } // when leaving the loop, separator do not contain the second '"',  characterList.get(i + 1) = '"'
-            separator += characterList.get(i + 1);
+            separator += characterList.get(i + 1); //add to separator the closing quote
 
             // case : end of line or file before the string close
             if ((characterList.get(i + 1) == '\n') || ((i + 1) > characterList.size())) { //error string unfinished
+                separator = removeEscapeCharacter(separator);
                 tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
                 System.out.println("unfinished string");
                 return i;
@@ -142,9 +142,11 @@ public class Lexeur {
             else if (((i + 2) > characterList.size()) && (characterList.get(i + 2) == '\n')) {
                 i++; // characterList.get(i) = '\"'
                 separator += characterList.get(i);
+                separator = removeEscapeCharacter(separator);
                 tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
                 return i + 1;
             } else {
+                separator = removeEscapeCharacter(separator);
                 tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
                 return i + 1;
             }
@@ -153,18 +155,21 @@ public class Lexeur {
         // case of characters or strings with ' --> the same as ", with count
         if (String.valueOf(c).equals("'")){
 
-            while ((i + 1 < characterList.size()) && (characterList.get(i + 1) != '\n')
-                    && ((characterList.get(i + 1) != '\'') || (characterList.get(i) == '\"'))) {
+            while ((i + 1 < characterList.size()) && (characterList.get(i + 1) != '\n' && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n'))
+                    && ((characterList.get(i + 1) != '\'') || (characterList.get(i + 2) == '\'') || (characterList.get(i) == '\''))) {
                 separator += characterList.get(i + 1);
                 i++;
             } // when leaving the loop, separator do not contain the second '"',  characterList.get(i + 1) = '"'
-            separator += characterList.get(i + 1);
+            separator += characterList.get(i + 1); //add to separator the closing quote
+
             // case : end of line or file before the string close
             if (characterList.get(i + 1) == '\n' || i + 1 > characterList.size()) { //error string unfinished
                 if (separator.length() <= 3) {
+                    separator = removeEscapeCharacter(separator);
                     tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
                 }
                 else {
+                    separator = removeEscapeCharacter(separator);
                     tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
                 }
                 System.out.println("unfinished string");
@@ -175,17 +180,22 @@ public class Lexeur {
                 i++; // characterList.get(i) = '\"'
                 separator += characterList.get(i);
                 if (separator.length() <= 3) {
+                    separator = removeEscapeCharacter(separator);
                     tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
                 }
                 else {
+                    separator = removeEscapeCharacter(separator);
                     tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
                 }
                 return i + 1;
+
             } else {
                 if (separator.length() <= 3) {
+                    separator = removeEscapeCharacter(separator);
                     tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
                 }
                 else {
+                    separator = removeEscapeCharacter(separator);
                     tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
                 }
                 return i + 1;
@@ -213,4 +223,37 @@ public class Lexeur {
             }
         };
     }
+
+    // remove the escape character of a string
+    public static String removeEscapeCharacter(String separator) {
+        // case "
+        if(separator.charAt(0) == '\"') {
+        String string = "\"";
+        for (int i = 1; i < separator.length() - 1; i ++) {
+            if(i == 1 || !(separator.charAt(i) == '\"' && separator.charAt(i - 1) == '\"')) {
+                string += separator.charAt(i);
+            }
+        }
+        string += "\"";
+        return string;
+        }
+
+        // case '
+        if(separator.charAt(0) == '\'') {
+            String string = "\'";
+            for (int j = 1; j < separator.length() - 1; j ++) {
+                if(j == 1 || !(separator.charAt(j) == '\'' && string.charAt(string.length() - 1) == '\'')) {
+                    string += separator.charAt(j);
+                }
+            }
+            string += "\'";
+            return string;
+        }
+        else {
+            System.out.println("error in string : do not begin with quotes");
+            return null;
+        }
+
+    }
+
 }
