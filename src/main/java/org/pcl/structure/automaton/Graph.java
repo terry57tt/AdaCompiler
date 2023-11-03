@@ -352,6 +352,22 @@ public class Graph {
         AutomatonState state118 = new AutomatonState(')', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state118);
 
+        // {
+        AutomatonState state_bracket1 = new AutomatonState('{', true, TokenType.SEPARATOR);
+        init_state.addAdjacent(state_bracket1);
+
+        // }
+        AutomatonState state_bracket2 = new AutomatonState('}', true, TokenType.SEPARATOR);
+        init_state.addAdjacent(state_bracket2);
+
+        // [
+        AutomatonState state_angle_bracket1 = new AutomatonState('[', true, TokenType.SEPARATOR);
+        init_state.addAdjacent(state_angle_bracket1);
+
+        // ]
+        AutomatonState state_angle_bracket2 = new AutomatonState(']', true, TokenType.SEPARATOR);
+        init_state.addAdjacent(state_angle_bracket2);
+
         // ,
         AutomatonState state119 = new AutomatonState(',', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state119);
@@ -362,7 +378,7 @@ public class Graph {
 
         // : et :=
         AutomatonState state121 = new AutomatonState(':', true, TokenType.SEPARATOR);
-        AutomatonState state122 = new AutomatonState('=', true, TokenType.OPERATOR);
+        AutomatonState state122 = new AutomatonState('=', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state121);
         state121.addAdjacent(state122);
 
