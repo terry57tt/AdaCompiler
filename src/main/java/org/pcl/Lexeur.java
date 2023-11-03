@@ -40,7 +40,7 @@ public class Lexeur {
 
     
     public boolean specificSeparator(char c) {
-        String separator = "-/=<>:\"";
+        String separator = "-/=<>:\"'";
         return separator.contains(String.valueOf(c));
     }
     
@@ -61,14 +61,14 @@ public class Lexeur {
                 if (!this.currentToken.isEmpty()) {
                     addToken(tokens, this.currentToken, this.lineNumber);
                 }
-                
+
                 if (c == '\n') {
                     this.lineNumber++;
                     lineStack.clear();
                 }
 
                 if(tokenSeparator(c)) {
-                    if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList);
+                    if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList, lineStack);
                     else tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
                 }
 
@@ -100,7 +100,7 @@ public class Lexeur {
         if (!this.currentToken.isEmpty()) {
             addToken(tokens, this.currentToken, this.lineNumber);
         }
-    
+
         return tokens;
     }
 
@@ -117,25 +117,83 @@ public class Lexeur {
         }
     }
 
-    public int treatCompoundSeparator(ArrayList<Token> tokens, char c, int i, List<Character> characterList) {
-        
-        String separator;
+    public int treatCompoundSeparator(ArrayList<Token> tokens, char c, int i, List<Character> characterList, List<Character> lineStack) {
 
+        String separator;
+        separator = "" + c;
         /* case of Strings */
         if (String.valueOf(c).equals("\"")) {
-            separator = "" + c;
-            while (i + 1 < characterList.size() && characterList.get(i + 1) != '\"' && characterList.get(i + 1) != '\n') {
-                i++;
-                separator = separator + characterList.get(i + 1);
-            }
-            tokens.add(new Token(TokenType.SEPARATOR, separator, this.lineNumber));
-            return i + 1;
-        }
-            // case : the string is not finished
 
+            while (((i + 1) < characterList.size()) && (characterList.get(i + 1) != '\n') && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n')
+                    && ((characterList.get(i + 1) != '\"') || (characterList.get(i + 2) == '\"') || (characterList.get(i) == '\"'))) {
+
+                separator += characterList.get(i + 1);
+                i++;
+            } // when leaving the loop, separator do not contain the second '"',  characterList.get(i + 1) = '"'
+            separator += characterList.get(i + 1);
+
+            // case : end of line or file before the string close
+            if ((characterList.get(i + 1) == '\n') || ((i + 1) > characterList.size())) { //error string unfinished
+                tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                System.out.println("unfinished string");
+                return i;
+            }
+            // case : characterList.get(i+1) is the last character of the line
+            else if (((i + 2) > characterList.size()) && (characterList.get(i + 2) == '\n')) {
+                i++; // characterList.get(i) = '\"'
+                separator += characterList.get(i);
+                tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                return i + 1;
+            } else {
+                tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                return i + 1;
+            }
+        }
+
+        // case of characters or strings with ' --> the same as ", with count
+        if (String.valueOf(c).equals("'")){
+
+            while ((i + 1 < characterList.size()) && (characterList.get(i + 1) != '\n')
+                    && ((characterList.get(i + 1) != '\'') || (characterList.get(i) == '\"'))) {
+                separator += characterList.get(i + 1);
+                i++;
+            } // when leaving the loop, separator do not contain the second '"',  characterList.get(i + 1) = '"'
+            separator += characterList.get(i + 1);
+            // case : end of line or file before the string close
+            if (characterList.get(i + 1) == '\n' || i + 1 > characterList.size()) { //error string unfinished
+                if (separator.length() <= 3) {
+                    tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                }
+                else {
+                    tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                }
+                System.out.println("unfinished string");
+                return i;
+            }
+            // case : characterList.get(i+1) is the last character of the line
+            else if (i + 2 > characterList.size() && characterList.get(i + 2) == '\n') {
+                i++; // characterList.get(i) = '\"'
+                separator += characterList.get(i);
+                if (separator.length() <= 3) {
+                    tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                }
+                else {
+                    tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                }
+                return i + 1;
+            } else {
+                if (separator.length() <= 3) {
+                    tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                }
+                else {
+                    tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                }
+                return i + 1;
+            }
+    }
 
         /* case end of file */
-        if (i + 1 < characterList.size()) separator = c + String.valueOf(characterList.get(i + 1));
+        if (i + 1 < characterList.size()) separator += String.valueOf(characterList.get(i + 1));
         else return i;
 
         return switch (separator) {
