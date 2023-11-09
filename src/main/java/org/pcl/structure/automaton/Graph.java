@@ -376,11 +376,13 @@ public class Graph {
         AutomatonState state120 = new AutomatonState(';', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state120);
 
-        // : et :=
+        // : et := et ::
         AutomatonState state121 = new AutomatonState(':', true, TokenType.SEPARATOR);
         AutomatonState state122 = new AutomatonState('=', true, TokenType.SEPARATOR);
+        AutomatonState state122_1 = new AutomatonState(':', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state121);
         state121.addAdjacent(state122);
+        state121.addAdjacent(state122_1);
 
         // .
         AutomatonState state123 = new AutomatonState('.', true, TokenType.SEPARATOR);

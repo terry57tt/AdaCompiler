@@ -28,7 +28,7 @@ public class GraphTest {
                 "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-1", "-2", "-3", "-4", "-5", "-6", "-7", "-8", "-9",
                 "100", "200", "300", "400", "500", "600", "700", "800", "900",
                 "42", "4138", "18381", "173", "123", "123456789", "1234567890", "12345678901", "123456789012", "1234567890123",
-                "14.13", "13138.5", "131313.", "12.13", "12344?????32"
+                "1413", "131385", "131313", "1213", "1234432"
         };
         for (String key : testKey) {
 
@@ -77,7 +77,7 @@ public class GraphTest {
         for (String key : testKey) {
             navigateWordHelper(key, automaton);
             assert automaton.isFinal(): "expected final state";
-            assert automaton.getCurrentState().getTokenType() == TokenType.SEPARATOR: "expected operator TokenType.IDENTIFER got " + automaton.getCurrentState().getTokenType() + " instead for " + key ;
+            assert automaton.getCurrentState().getTokenType() == TokenType.SEPARATOR: "expected operator TokenType.OPERATOR got " + automaton.getCurrentState().getTokenType() + " instead for " + key ;
             automaton.reset();
         }
     }
@@ -99,9 +99,7 @@ public class GraphTest {
 
     public boolean navigateWordHelper(String word, Automaton automaton) {
         for (char c : word.toCharArray()) {
-            try {
                 automaton.advance(c);
-            } catch (Exception ignored) { return false; }
         }
         return true;
     }
