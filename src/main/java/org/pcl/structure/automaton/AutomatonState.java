@@ -150,7 +150,6 @@ public class AutomatonState {
                 return this;
             }
         }
-        System.out.println(transition);
         throw new InvalidStateException(transition);
     }
 

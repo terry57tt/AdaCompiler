@@ -5,8 +5,5 @@ public class InvalidStateException extends RuntimeException {
 
     public InvalidStateException(Character transition) {
         super("Invalid transition : '" + transition + "'");
-        if (transition.equals('?')) {
-            System.out.println("il y a un pépin avec ?");
-        }
     }
 }
