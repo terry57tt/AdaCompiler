@@ -99,9 +99,7 @@ public class GraphTest {
 
     public boolean navigateWordHelper(String word, Automaton automaton) {
         for (char c : word.toCharArray()) {
-            try {
-                automaton.advance(c);
-            } catch (Exception ignored) { return false; }
+            automaton.advance(c);
         }
         return true;
     }
