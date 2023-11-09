@@ -28,9 +28,10 @@ public class GraphTest {
                 "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-1", "-2", "-3", "-4", "-5", "-6", "-7", "-8", "-9",
                 "100", "200", "300", "400", "500", "600", "700", "800", "900",
                 "42", "4138", "18381", "173", "123", "123456789", "1234567890", "12345678901", "123456789012", "1234567890123",
-                "14.13", "13138.5", "131313.", "12.13"
+                "14.13", "13138.5", "131313.", "12.13", "12344?????32"
         };
         for (String key : testKey) {
+
             navigateWordHelper(key, automaton);
             assert automaton.isFinal(): "expected final state";
             assert automaton.getCurrentState().getTokenType() == TokenType.NUMBER: "expected TokenType.NUMBER got " + automaton.getCurrentState().getTokenType() + " instead for " + key;

@@ -27,6 +27,10 @@ public class AutomatonState {
         this(null, true, null);
     }
 
+    public ArrayList<Character> getLoop() {
+        return this.loop;
+    }
+
     /** Create automatonstate final with tokenType null*/
     public AutomatonState(Character transition) {
         this(transition, true, null);
@@ -146,6 +150,7 @@ public class AutomatonState {
                 return this;
             }
         }
+        System.out.println(transition);
         throw new InvalidStateException(transition);
     }
 

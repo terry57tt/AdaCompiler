@@ -55,7 +55,7 @@ public class AutomatonIntegrityTest {
         AutomatonState stateA = new AutomatonState('a', false);
         AutomatonState stateB = new AutomatonState('b', true, TokenType.KEYWORD);
         AutomatonState stateC = new AutomatonState('c', false);
-        AutomatonState stateE = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState stateE = new AutomatonState('d', true, TokenType.IDENTIFIER);
 
         stateA.addAdjacent(stateB);
         stateB.addAdjacent(stateC);
@@ -71,7 +71,7 @@ public class AutomatonIntegrityTest {
         assert !automaton.isFinal();
         assert automaton.getCurrentState().getTokenType() == null;
 
-        automaton.advance('e');
+        automaton.advance('d');
         assert automaton.isFinal();
         assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER;    
     }
