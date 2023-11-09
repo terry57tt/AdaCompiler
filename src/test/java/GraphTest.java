@@ -99,8 +99,8 @@ public class GraphTest {
 
     public boolean navigateWordHelper(String word, Automaton automaton) {
         for (char c : word.toCharArray()) {
-                automaton.advance(c);
+            automaton.advance(c);
         }
         return true;
     }
-}
+
