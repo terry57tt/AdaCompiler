@@ -101,6 +101,7 @@ public class Lexeur {
                     System.out.println("\n" + " ".repeat(lineStack.size()) + ColorAnsiCode.ANSI_GREEN + "^"
                             + ColorAnsiCode.ANSI_RESET + "\n");
 
+                    lineStack.add(c);
                     this.currentToken = "";
                 }
             }
