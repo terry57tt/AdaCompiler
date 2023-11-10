@@ -1,7 +1,10 @@
 import org.junit.jupiter.api.Test;
+import org.pcl.structure.automaton.InvalidStateException;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GraphTest {
 
@@ -88,13 +91,13 @@ public class GraphTest {
         String[] testKey = {
                 ";aad", ",1", "(as", ")1zd", "1aead", "1a_", "6aaa_a1", "_aeadh", "Begin", "beGin", "begiN", "1313a1313", "1313.121.121", "ajiè'", ">==", "++", "-t", "%a1"
         };
-        for (String key : testKey) {
-            if (!navigateWordHelper(key, automaton)) {
-                continue;
+        assertThrows(InvalidStateException.class, () -> {
+            for (String key : testKey) {
+                navigateWordHelper(key, automaton);
+                assert !automaton.isFinal();
+                automaton.reset();
             }
-            assert !automaton.isFinal();
-            automaton.reset();
-        }
+        });
     }
 
     public boolean navigateWordHelper(String word, Automaton automaton) {
