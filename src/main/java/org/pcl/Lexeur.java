@@ -1,12 +1,10 @@
 package org.pcl;
 
 import org.pcl.structure.automaton.Automaton;
-import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.automaton.InvalidStateException;
 import org.pcl.structure.automaton.TokenType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,17 +18,27 @@ public class Lexeur {
 
     private final String fileName;
 
+    private int number_errors;
 
     public Lexeur(Automaton automaton, Stream<Character> stream, String path) {
-        this.automaton = Graph.create();
+        this.automaton = automaton;
         this.stream = stream;
         this.lineNumber = 1;
         this.currentToken = "";
+        this.number_errors = 0;
         this.fileName = FileHandler.getFileName(path);
     }
 
     public ArrayList<Token> getTokens() {
+        resetState();
         return tokenize();
+    }
+
+    private void resetState() {
+        this.lineNumber = 1;
+        this.currentToken = "";
+        this.number_errors = 0;
+        this.automaton.reset();
     }
 
     public boolean isSeparator(char c) {
@@ -80,7 +88,7 @@ public class Lexeur {
                     automaton.advance(c);
                 } catch (InvalidStateException e) {
                     lineStack.remove(lineStack.size() - 1);
-
+                    number_errors++;
                     System.out.print( fileName + ':' + lineNumber + ':' + (lineStack.size()+1) + ": " +
                             ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + "invalid character " +
                             "'" + ColorAnsiCode.ANSI_RED + c + ColorAnsiCode.ANSI_RESET + "'\n" +
@@ -256,4 +264,7 @@ public class Lexeur {
 
     }
 
+    public int getNumber_errors() {
+        return number_errors;
+    }
 }
