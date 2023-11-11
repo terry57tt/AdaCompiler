@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test;
 import org.pcl.structure.automaton.AutomatonState;
 import org.pcl.structure.automaton.IncorrectAutomatonException;
-import org.pcl.structure.automaton.InvalidStateExeception;
+import org.pcl.structure.automaton.InvalidStateException;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.automaton.Automaton;
 
@@ -23,7 +23,7 @@ public class AutomatonIntegrityTest {
 
         state1.addAdjacent(state2);
         state.naviguate('1').naviguate('1');
-        assertThrows(InvalidStateExeception.class, () -> state.naviguate('1').naviguate('2'));
+        assertThrows(InvalidStateException.class, () -> state.naviguate('1').naviguate('2'));
     }
 
     /** verify that the link are correct */
@@ -55,7 +55,7 @@ public class AutomatonIntegrityTest {
         AutomatonState stateA = new AutomatonState('a', false);
         AutomatonState stateB = new AutomatonState('b', true, TokenType.KEYWORD);
         AutomatonState stateC = new AutomatonState('c', false);
-        AutomatonState stateE = new AutomatonState('e', true, TokenType.IDENTIFIER);
+        AutomatonState stateE = new AutomatonState('d', true, TokenType.IDENTIFIER);
 
         stateA.addAdjacent(stateB);
         stateB.addAdjacent(stateC);
@@ -71,7 +71,7 @@ public class AutomatonIntegrityTest {
         assert !automaton.isFinal();
         assert automaton.getCurrentState().getTokenType() == null;
 
-        automaton.advance('e');
+        automaton.advance('d');
         assert automaton.isFinal();
         assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER;    
     }
@@ -101,7 +101,7 @@ public class AutomatonIntegrityTest {
         state.naviguate('-');
         state11.naviguate('2');
 
-        assertThrows(InvalidStateExeception.class, () -> {
+        assertThrows(InvalidStateException.class, () -> {
             state11.naviguate('b');
         });
 

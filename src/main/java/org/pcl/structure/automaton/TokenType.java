@@ -2,8 +2,13 @@ package org.pcl.structure.automaton;
 
 public enum TokenType {
     IDENTIFIER,
-    OPERATOR,
+    OPERATOR, // = < > <= >= + - *
     NUMBER,
+    INTEGER,
+    FLOAT,
     KEYWORD,
-    SEPARATOR  // ; ( , ) { } [ ] .  : ::
+    SEPARATOR,  // ; ( , ) { } [ ] .  : ::
+    STRING,
+    CHARACTER,
+
 }

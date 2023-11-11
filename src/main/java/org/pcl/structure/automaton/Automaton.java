@@ -22,14 +22,8 @@ public class Automaton {
     }
 
     /** Advance the automaton to the next state. */
-    public void advance(char transition) {
-        for (AutomatonState state: this.currentState.getAdjacent()) {
-            if (state.getTransition() == transition) {
-                this.currentState = state;
-                return;
-            }
-        }
-        throw new InvalidStateExeception(transition);
+    public void advance(char transition) throws InvalidStateException {
+        this.currentState = this.currentState.naviguate(transition);
     }
 
     /** Return the current state of the automaton. */
