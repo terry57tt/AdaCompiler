@@ -46,12 +46,12 @@ public class Lexeur {
         return separator.contains(String.valueOf(c));
     }
 
-    
+
     public boolean specificSeparator(char c) {
         String separator = "-/=<>:\"'";
         return separator.contains(String.valueOf(c));
     }
-    
+
     public boolean tokenSeparator(char c) {
         String separator = "(){}[];,:.+-*/<>=\"'";
         return separator.contains(String.valueOf(c));
@@ -87,6 +87,7 @@ public class Lexeur {
                     this.currentToken += c;
                     automaton.advance(c);
                 } catch (InvalidStateException e) {
+                    automaton.reset();
                     lineStack.remove(lineStack.size() - 1);
                     number_errors++;
                     System.out.print( fileName + ':' + lineNumber + ':' + (lineStack.size()+1) + ": " +
@@ -209,7 +210,7 @@ public class Lexeur {
                 }
                 return i + 1;
             }
-    }
+        }
 
         /* case end of file */
         if (i + 1 < characterList.size()) separator += String.valueOf(characterList.get(i + 1));
@@ -237,14 +238,14 @@ public class Lexeur {
     public static String removeEscapeCharacter(String separator) {
         // case "
         if(separator.charAt(0) == '\"') {
-        String string = "\"";
-        for (int i = 1; i < separator.length() - 1; i ++) {
-            if(i == 1 || !(separator.charAt(i) == '\"' && separator.charAt(i - 1) == '\"')) {
-                string += separator.charAt(i);
+            String string = "\"";
+            for (int i = 1; i < separator.length() - 1; i ++) {
+                if(i == 1 || !(separator.charAt(i) == '\"' && separator.charAt(i - 1) == '\"')) {
+                    string += separator.charAt(i);
+                }
             }
-        }
-        string += "\"";
-        return string;
+            string += "\"";
+            return string;
         }
 
         // case '
