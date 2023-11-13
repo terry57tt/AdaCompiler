@@ -18,6 +18,7 @@ public class Node {
 
     /* Associated token */
     private Token token;
+    private String value;
 
     public Node() {
         this.children = new ArrayList<>();
@@ -36,6 +37,15 @@ public class Node {
         this.token = token;
         this.children = new ArrayList<>();
         this.isFinal = true;
+        this.value = token.getValue();
+    }
+
+    /* Create intermediate node with a non_terminal */
+
+    public Node(String value){
+        this.children = new ArrayList<>();
+        this.isFinal = false;
+        this.value = value;
     }
 
     /* Add a child to the node. */
@@ -69,6 +79,8 @@ public class Node {
         return token;
     }
 
+    /** Return the value associated with the node. */
+    public String getValue() {return this.value;}
     /** Return the node as a string. */
     @Override
     public String toString() {

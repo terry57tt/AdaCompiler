@@ -1,0 +1,133 @@
+# Attention : priorité des opérateurs partiellement géré (non terminal Expr)
+
+FICHIER -> with ADA_TEXT_IO point_virgule USE ADA_TEXT_IO point_virgule procedure IDENT is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule eof .
+
+IDENT -> idf .
+
+DECLSTAR -> DECL DECLSTAR .
+DECLSTAR -> .
+# suivants de DECLSTAR = {begin}
+
+INSTRSTAR -> INSTR INSTRSTAR .
+INSTRSTAR -> .
+# suivants de INSTRSTAR = { ) end ( }
+
+IDENTINTERRO -> IDENT .
+IDENTINTERRO -> .
+# suivants de IDENTINTERRO = { ; is ( return }
+
+IDENTSTAR -> IDENT IDENTSTAR .
+IDENTSTAR -> .
+# suivants de IDENTSTAR = { , ; is  }
+
+DECL -> type IDENT DECL2 .
+DECL -> IDENT IDENTSTAR virgule deux_points TYPE EXPRINTERRO point_virgule .
+DECL -> procedure IDENT PARAMSINTERRO is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule .
+DECL -> function IDENT PARAMSINTERRO return TYPE is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule .
+
+DECL2 -> point_virgule .
+DECL2 -> is DECL3 .
+
+DECL3 -> access IDENT point_virgule .
+DECL3 -> record CHAMPS CHAMPSSTAR end record point_virgule .
+
+
+CHAMPS -> IDENT IDENTSTAR virgule deux_points TYPE point_virgule .
+
+EXPRINTERRO -> deux_points egal EXPR .
+EXPRINTERRO -> .
+
+CHAMPSSTAR -> CHAMPS CHAMPSSTAR .
+CHAMPSSTAR -> .
+
+PARAMSINTERRO -> PARAMS .
+PARAMSINTERRO -> .
+
+TYPE -> IDENT .
+TYPE -> access IDENT point_virgule .
+
+PARAMS -> parenthese_ouvrante PARAM PARAMSTAR point_virgule parenthese_fermante point_virgule .
+
+PARAMSTAR -> PARAM PARAMSTAR .
+PARAMSTAR -> .
+
+PARAM -> IDENT IDENTSTAR virgule deux_points MODEINTERRO TYPE point_virgule .
+
+MODE -> in .
+MODE -> inout point_virgule .
+
+MODEINTERRO -> MODE .
+MODEINTERRO -> .
+
+
+EXPR -> TERME EXPR_PRIME EXPR2 .
+EXPR -> not EXPR EXPR2 .
+EXPR -> moins EXPR EXPR2 .
+EXPR -> new IDENT EXPR2 .
+EXPR -> IDENT parenthese_ouvrante EXPR EXPRSTAR virgule parenthese_fermante EXPR2 .
+EXPR -> character apostrophe val parenthese_ouvrante EXPR parenthese_fermante EXPR2 .
+
+EXPR2 -> point IDENT EXPR2 .
+EXPR2 -> OPERATEUR_COMPARAISON EXPR EXPR2 .
+EXPR2 -> .
+
+EXPR_PRIME -> OPERATEUR_ADDITION TERME EXPR_PRIME .
+EXPR_PRIME -> .
+
+TERME -> FACTEUR TERME_PRIME .
+
+TERME_PRIME -> OPERATEUR_MULTIPLICATION FACTEUR TERME_PRIME .
+TERME_PRIME -> .
+
+FACTEUR -> parenthese_ouvrante EXPR parenthese_fermante .
+FACTEUR -> entier .
+FACTEUR -> caractere .
+FACTEUR -> true .
+FACTEUR -> false .
+FACTEUR -> null .
+
+
+INSTR -> EXPR point IDENT INSTR2 .
+INSTR -> IDENT INSTR2 .
+INSTR -> return EXPRINTERRO point_virgule .
+INSTR -> begin INSTR INSTRSTAR end point_virgule .
+INSTR -> if EXPR then INSTR INSTRSTAR ELSIFSTAR end if point_virgule .
+INSTR -> for IDENT in REVERSEINTERRO EXPR point_point EXPR loop INSTR INSTRSTAR end loop point_virgule .
+INSTR -> while EXPR loop INSTR INSTRSTAR end loop point_virgule .
+
+INSTR2 -> deux_points_egal EXPR point_virgule .
+INSTR2 -> point_virgule .
+INSTR2 -> parenthese_ouvrante EXPR EXPRSTAR virgule parenthese_fermante point_virgule .
+
+REVERSEINTERRO -> reverse .
+REVERSEINTERRO -> .
+
+ELSIFSTAR -> parenthese_ouvrante ELSIFSTAR2 .
+ELSIFSTAR -> .
+
+ELSIFSTAR2 -> elsif EXPR then INSTR INSTRSTAR parenthese_fermante ELSIFSTAR .
+ELSIFSTAR2 -> else INSTR INSTRSTAR parenthese_fermante .
+
+EXPRSTAR -> EXPR EXPRSTAR .
+EXPRSTAR -> .
+
+OPERATEUR_COMPARAISON -> egal .
+OPERATEUR_COMPARAISON -> slash_egal .
+OPERATEUR_COMPARAISON -> inferieur .
+OPERATEUR_COMPARAISON -> inferieur_egal .
+OPERATEUR_COMPARAISON -> superieur .
+OPERATEUR_COMPARAISON -> superieur_egal .
+
+OPERATEUR_ADDITION -> plus .
+OPERATEUR_ADDITION -> moins .
+OPERATEUR_ADDITION -> or OPERATEUR2 .
+
+OPERATEUR_MULTIPLICATION -> fois .
+OPERATEUR_MULTIPLICATION -> divise .
+OPERATEUR_MULTIPLICATION -> rem .
+OPERATEUR_MULTIPLICATION -> and .
+OPERATEUR_MULTIPLICATION -> andthen .
+
+
+OPERATEUR2 -> .
+OPERATEUR2 -> else point_virgule .

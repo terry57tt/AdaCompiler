@@ -6,6 +6,7 @@ public class SyntaxTree {
     /** Root node of the syntax tree. */
     private final Node rootNode;
 
+    public SyntaxTree(){ this.rootNode = null; }
     public SyntaxTree(Node rootNode) {
         this.rootNode = rootNode;
     }
