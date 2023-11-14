@@ -1,5 +1,4 @@
 package org.pcl.structure.automaton;
-import org.pcl.structure.automaton.TokenType; 
 import java.util.Arrays;
 import java.util.List;
 
@@ -352,22 +351,6 @@ public class Graph {
         AutomatonState state118 = new AutomatonState(')', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state118);
 
-        // {
-        AutomatonState state_bracket1 = new AutomatonState('{', true, TokenType.SEPARATOR);
-        init_state.addAdjacent(state_bracket1);
-
-        // }
-        AutomatonState state_bracket2 = new AutomatonState('}', true, TokenType.SEPARATOR);
-        init_state.addAdjacent(state_bracket2);
-
-        // [
-        AutomatonState state_angle_bracket1 = new AutomatonState('[', true, TokenType.SEPARATOR);
-        init_state.addAdjacent(state_angle_bracket1);
-
-        // ]
-        AutomatonState state_angle_bracket2 = new AutomatonState(']', true, TokenType.SEPARATOR);
-        init_state.addAdjacent(state_angle_bracket2);
-
         // ,
         AutomatonState state119 = new AutomatonState(',', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state119);
@@ -391,11 +374,6 @@ public class Graph {
         // '
         AutomatonState state124 = new AutomatonState('\'', true, TokenType.SEPARATOR);
         init_state.addAdjacent(state124);
-
-        // "
-        AutomatonState state_quotes = new AutomatonState('\"', true, TokenType.STRING);
-        init_state.addAdjacent(state_quotes);
-        state_quotes.addRegexLoop("[a-zA-Z0-9$-/:-?{-~\"^_`\\[\\] ]*");
 
         // Les entiers
         AutomatonState state125 = new AutomatonState('0', true, TokenType.NUMBER);

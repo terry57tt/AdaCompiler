@@ -75,7 +75,7 @@ public class GraphTest {
     public void graphSeparator() {
         Automaton automaton = Graph.create();
         String[] testKey = {
-                ";", ",", "(", ")", "{", "}", "[", "]", ".", ":", "::", ":="
+                ";", ",", "(", ")", ".", ":", ":="
         };
         for (String key : testKey) {
             navigateWordHelper(key, automaton);
