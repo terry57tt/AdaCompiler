@@ -11,6 +11,9 @@ import java.util.stream.Stream;
 
 
 public class Lexeur {
+
+    private static final int MAX_LEN_ID = 1000;
+
     private final Automaton automaton;
     private final Stream<Character> stream;
     private int lineNumber;
@@ -59,11 +62,14 @@ public class Lexeur {
 
     public ArrayList<Token> tokenize() throws InvalidStateException {
         ArrayList<Token> tokens = new ArrayList<>();
-
         List<Character> characterList = stream.collect(Collectors.toList());
         List<Character> lineStack = new ArrayList<>();
         for (int i = 0; i < characterList.size(); i++) {
             char c = characterList.get(i);
+            if (currentToken.length() >= MAX_LEN_ID && automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER) {
+                handlingDataError();
+                print_error(lineStack, c, characterList, i, "Identifiant too long ", false);
+            }
             lineStack.add(c);
             if (isSeparator(c)) {
                 if (!this.currentToken.isEmpty()) {
@@ -87,23 +93,9 @@ public class Lexeur {
                     this.currentToken += c;
                     automaton.advance(c);
                 } catch (InvalidStateException e) {
-                    automaton.reset();
-                    lineStack.remove(lineStack.size() - 1);
-                    number_errors++;
-                    System.out.print( fileName + ':' + lineNumber + ':' + (lineStack.size()+1) + ": " +
-                            ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + "invalid character " +
-                            "'" + ColorAnsiCode.ANSI_RED + c + ColorAnsiCode.ANSI_RESET + "'\n" +
-                            lineStack.stream().map(String::valueOf).collect(Collectors.joining()));
-
-                    System.out.print(c);
-
-                    printRestOfLine(characterList, i + 1);
-
-                    System.out.println("\n" + " ".repeat(lineStack.size()) + ColorAnsiCode.ANSI_GREEN + "^"
-                            + ColorAnsiCode.ANSI_RESET + "\n");
-
-                    lineStack.add(c);
-                    this.currentToken = "";
+                    addToken(tokens, this.currentToken.substring(0, currentToken.length() - 1), this.lineNumber);
+                    handlingDataError();
+                    print_error(lineStack, c, characterList, i, "invalid character ", true);
                 }
             }
         }
@@ -189,4 +181,30 @@ public class Lexeur {
     public int getNumber_errors() {
         return number_errors;
     }
+
+    private void handlingDataError() {
+        automaton.reset();
+        number_errors++;
+        this.currentToken = "";
+    }
+
+    private void print_error(List<Character> lineStack, char c, List<Character> characterList, int i, String message, boolean displayLocalisator) {
+        lineStack.remove(lineStack.size() - 1);
+        System.out.print( fileName + ':' + lineNumber + ':' + (lineStack.size()+1) + ": " +
+                ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + message +
+                "'" + ColorAnsiCode.ANSI_RED + c + ColorAnsiCode.ANSI_RESET + "'\n" +
+                lineStack.stream().map(String::valueOf).collect(Collectors.joining()));
+
+        System.out.print(c);
+
+        printRestOfLine(characterList, i + 1);
+        if (displayLocalisator)
+            System.out.println("\n" + " ".repeat(lineStack.size()) + ColorAnsiCode.ANSI_GREEN + "^"
+                    + ColorAnsiCode.ANSI_RESET + "\n");
+        else
+            System.out.println("\n");
+
+        lineStack.add(c);
+    }
+
 }

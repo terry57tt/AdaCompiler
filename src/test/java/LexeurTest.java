@@ -9,7 +9,6 @@ import org.pcl.structure.automaton.TokenType;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,7 +73,7 @@ public class LexeurTest {
         Lexeur lexeur = new Lexeur(automaton, stream, file);
         
         ArrayList<Token> tokens = lexeur.tokenize();
-        assert tokens.size() == 23 : "expected 30 tokens got " + tokens.size();
+        assert tokens.size() == 23 : "expected 23 tokens got " + tokens.size();
         
         assert tokens.get(0).getType() == TokenType.KEYWORD: "expected TokenType.KEYWORD got " + tokens.get(0).getType() + " instead for " + tokens.get(0).getValue();
         assert tokens.get(0).getValue().equals("with"): "expected 'with' got " + tokens.get(0).getValue();
