@@ -128,6 +128,25 @@ public class LexeurTest {
     }
 
     @Test
+    public void testInsensitiveCase() throws Exception {
+        String file = "data/insensitive_case.ada";
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
+
+        ArrayList<Token> tokens = lexeur.tokenize();
+
+        assert tokens.size() == 6;
+
+        assert tokens.get(0).getType().equals(TokenType.KEYWORD): "expected 'KEYWORD' got " + tokens.get(0).getType();
+        assert tokens.get(1).getType().equals(TokenType.KEYWORD): "expected 'KEYWORD' got " + tokens.get(1).getType();
+        assert tokens.get(2).getType().equals(TokenType.KEYWORD): "expected 'KEYWORD' got " + tokens.get(2).getType();
+        assert tokens.get(3).getType().equals(TokenType.KEYWORD): "expected 'KEYWORD' got " + tokens.get(3).getType();
+        assert tokens.get(4).getType().equals(TokenType.IDENTIFIER): "expected 'IDENTIFIER' got " + tokens.get(4).getType();
+        assert tokens.get(5).getType().equals(TokenType.KEYWORD): "expected 'KEYWORD' got " + tokens.get(5).getType();
+    }
+
+    @Test
     public void testRemoveComments() throws Exception {
         String file = "data/remove_comments.ada";
         Automaton automaton = Graph.create();
@@ -229,6 +248,5 @@ public class LexeurTest {
         assert tokens.get(54).getValue().equals("return"): "expected 'return' got " + tokens.get(54).getValue();
         assert tokens.get(55).getValue().equals("integer"): "expected 'integer' got " + tokens.get(55).getValue();
         assert tokens.get(56).getValue().equals("is"): "expected 'is' got " + tokens.get(56).getValue();
-
     }
 }
