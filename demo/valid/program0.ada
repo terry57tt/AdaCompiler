@@ -1,12 +1,12 @@
 with Ada.Text_IO;
 use Ada.Text_IO;
 
-procedure AfficherDateHeure is
+procEDure AfficherDateHeure is
 
     now : Ada.Calendar.Time;
 
-begin
+begiN
     now := Ada.Calendar.Clock;
     -- Affiche l'heure
     WriteLn(Ada.Calendar.Second(now));
-end AfficherDateHeure;
+END AfficherDateHeure;
