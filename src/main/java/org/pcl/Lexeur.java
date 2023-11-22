@@ -93,7 +93,10 @@ public class Lexeur {
                     this.currentToken += c;
                     automaton.advance(Character.toLowerCase(c));
                 } catch (InvalidStateException e) {
-                    addToken(tokens, this.currentToken.substring(0, currentToken.length() - 1), this.lineNumber);
+                    String tokenContent = this.currentToken.substring(0, currentToken.length() - 1);
+                    if(tokenContent.length()!=0) {
+                        addToken(tokens, tokenContent, this.lineNumber);
+                    }
                     handlingDataError();
                     print_error(lineStack, c, characterList, i, "invalid character ", true);
                 }
