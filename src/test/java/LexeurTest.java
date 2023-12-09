@@ -136,6 +136,15 @@ public class LexeurTest {
         assert tokens.get(6).getValue().equals("'\"'"): "expected \" got " + tokens.get(6).getValue();
     }
 
+    @Test
+    public void testCharacter() throws FileNotFoundException {
+        String file = "data/characters.ada";
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
+        ArrayList<Token> tokens = lexeur.tokenize();
+        assert tokens.get(0).getType() == TokenType.KEYWORD: "expected TokenType.KEYWORD got " + tokens.get(0).getType() + " instead for " + tokens.get(0).getValue();
+    }
 
 
     @Test

@@ -116,6 +116,9 @@ public class Lexeur {
 
     public void addToken(ArrayList<Token> tokens, String currentToken, int lineNumber) {
         TokenType tokenType = automaton.getCurrentState().getTokenType();
+        if (currentToken.equalsIgnoreCase("CHARACTER")) {
+            tokenType = TokenType.KEYWORD;
+        }
         tokens.add(new Token(tokenType, currentToken, lineNumber));
     }
 
