@@ -3,6 +3,7 @@
 FICHIER -> with ADA_TEXT_IO point_virgule USE ADA_TEXT_IO point_virgule procedure IDENT is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule eof .
 
 IDENT -> idf .
+#premiers de IDENT = {idf}
 
 DECLSTAR -> DECL DECLSTAR .
 DECLSTAR -> .
@@ -18,7 +19,7 @@ IDENTINTERRO -> .
 
 IDENTSTAR -> IDENT IDENTSTAR .
 IDENTSTAR -> .
-# suivants de IDENTSTAR = { , ; is  }
+# suivants de IDENTSTAR = { , ; is  }       
 
 DECL -> type IDENT DECL2 .
 DECL -> IDENT IDENTSTAR virgule deux_points TYPE EXPRINTERRO point_virgule .
@@ -36,29 +37,37 @@ CHAMPS -> IDENT IDENTSTAR virgule deux_points TYPE point_virgule .
 
 EXPRINTERRO -> deux_points egal EXPR .
 EXPRINTERRO -> .
+#suivants de EXPRINTERRO = {;}
 
 CHAMPSSTAR -> CHAMPS CHAMPSSTAR .
 CHAMPSSTAR -> .
+#suivants de CHAMPSSTAR =  {end}
 
 PARAMSINTERRO -> PARAMS .
 PARAMSINTERRO -> .
+#suivants de PARAMSINTERRO = {is, return}
 
 TYPE -> IDENT .
 TYPE -> access IDENT point_virgule .
+#premiers de TYPE = {idf, access}
 
 PARAMS -> parenthese_ouvrante PARAM PARAMSTAR point_virgule parenthese_fermante point_virgule .
+#premiers de PARAMS = { ( }
 
 PARAMSTAR -> PARAM PARAMSTAR .
 PARAMSTAR -> .
+#suivants de PARAMSTAR = {;}
 
 PARAM -> IDENT IDENTSTAR virgule deux_points MODEINTERRO TYPE point_virgule .
+#premiers de PARAM = {idf}
 
 MODE -> in .
 MODE -> inout point_virgule .
+#premiers de mode = {in}
 
 MODEINTERRO -> MODE .
 MODEINTERRO -> .
-
+#suivants de MODEINTERRO = premiers de TYPE = {idf, access}
 
 EXPR -> TERME EXPR_PRIME EXPR2 .
 EXPR -> not EXPR EXPR2 .
@@ -70,14 +79,18 @@ EXPR -> character apostrophe val parenthese_ouvrante EXPR parenthese_fermante EX
 EXPR2 -> point IDENT EXPR2 .
 EXPR2 -> OPERATEUR_COMPARAISON EXPR EXPR2 .
 EXPR2 -> .
+#suivants de
 
 EXPR_PRIME -> OPERATEUR_ADDITION TERME EXPR_PRIME .
 EXPR_PRIME -> .
+#suivants de
 
 TERME -> FACTEUR TERME_PRIME .
+premiers de TERME = premiers de FACTEUR = { (, entier, caractere, true, false, null}
 
 TERME_PRIME -> OPERATEUR_MULTIPLICATION FACTEUR TERME_PRIME .
 TERME_PRIME -> .
+#suivants de
 
 FACTEUR -> parenthese_ouvrante EXPR parenthese_fermante .
 FACTEUR -> entier .
@@ -85,7 +98,7 @@ FACTEUR -> caractere .
 FACTEUR -> true .
 FACTEUR -> false .
 FACTEUR -> null .
-
+premiers de FACTEUR = { (, entier, caractere, true, false, null}
 
 INSTR -> EXPR point IDENT INSTR2 .
 INSTR -> IDENT INSTR2 .
@@ -101,15 +114,18 @@ INSTR2 -> parenthese_ouvrante EXPR EXPRSTAR virgule parenthese_fermante point_vi
 
 REVERSEINTERRO -> reverse .
 REVERSEINTERRO -> .
+#suivants de
 
 ELSIFSTAR -> parenthese_ouvrante ELSIFSTAR2 .
 ELSIFSTAR -> .
+#suivants de
 
 ELSIFSTAR2 -> elsif EXPR then INSTR INSTRSTAR parenthese_fermante ELSIFSTAR .
 ELSIFSTAR2 -> else INSTR INSTRSTAR parenthese_fermante .
 
 EXPRSTAR -> EXPR EXPRSTAR .
 EXPRSTAR -> .
+#suivants de
 
 OPERATEUR_COMPARAISON -> egal .
 OPERATEUR_COMPARAISON -> slash_egal .
@@ -131,3 +147,4 @@ OPERATEUR_MULTIPLICATION -> andthen .
 
 OPERATEUR2 -> .
 OPERATEUR2 -> else point_virgule .
+#suivants de
