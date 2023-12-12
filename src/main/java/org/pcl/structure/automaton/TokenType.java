@@ -5,10 +5,8 @@ public enum TokenType {
     OPERATOR, // = < > <= >= + - *
     NUMBER,
     INTEGER,
-    FLOAT,
     KEYWORD,
     SEPARATOR,  // ; ( , ) { } [ ] .  : ::
     STRING,
     CHARACTER,
-
 }

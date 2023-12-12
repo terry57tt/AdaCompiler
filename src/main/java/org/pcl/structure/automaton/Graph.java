@@ -393,7 +393,7 @@ public class Graph {
         init_state.addAdjacent(state124);
 
         // "
-        AutomatonState state_quotes = new AutomatonState('\"', true, TokenType.STRING);
+        AutomatonState state_quotes = new AutomatonState('\"', true, TokenType.CHARACTER);
         init_state.addAdjacent(state_quotes);
         state_quotes.addRegexLoop("[a-zA-Z0-9$-/:-?{-~\"^_`\\[\\] ]*");
 

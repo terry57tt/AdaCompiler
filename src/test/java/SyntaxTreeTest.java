@@ -15,4 +15,5 @@ public class SyntaxTreeTest {
         assert node.getToken() == null;
         assert node.getType() == NodeType.PROGRAM;
     }
+
 }

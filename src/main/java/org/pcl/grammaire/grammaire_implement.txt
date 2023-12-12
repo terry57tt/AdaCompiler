@@ -5,17 +5,17 @@ INSTRSTAR -> INSTR INSTRSTAR .
 INSTRSTAR -> .
 IDENTINTERRO -> IDENT .
 IDENTINTERRO -> .
-IDENTSTAR -> IDENT IDENTSTAR .
-IDENTSTAR -> .
+IDENTSTAR_VIRGULE -> VIRGULE IDENT IDENTSTAR_VIRGULE.
+IDENTSTAR_VIRGULE -> .
 DECL -> type IDENT DECL2 .
 DECL2 -> point_virgule .
 DECL2 -> is DECL3 .
 DECL3 -> access IDENT point_virgule .
 DECL3 -> record CHAMPS CHAMPSSTAR end record point_virgule .
-DECL -> IDENT IDENTSTAR virgule deux_points TYPE EXPRINTERRO point_virgule .
+DECL -> IDENT IDENTSTAR_VIRGULE deux_points TYPE EXPRINTERRO point_virgule .
 DECL -> procedure IDENT PARAMSINTERRO is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule .
 DECL -> function IDENT PARAMSINTERRO return TYPE is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule .
-CHAMPS -> IDENT IDENTSTAR virgule deux_points TYPE point_virgule .
+CHAMPS -> IDENT IDENTSTAR_VIRGULE deux_points TYPE point_virgule .
 EXPRINTERRO -> deux_points egal EXPR .
 EXPRINTERRO -> .
 CHAMPSSTAR -> CHAMPS CHAMPSSTAR .
@@ -24,10 +24,10 @@ PARAMSINTERRO -> PARAMS .
 PARAMSINTERRO -> .
 TYPE -> IDENT .
 TYPE -> access IDENT point_virgule .
-PARAMS -> parenthese_ouvrante PARAM PARAMSTAR point_virgule parenthese_fermante point_virgule .
-PARAMSTAR -> PARAM PARAMSTAR .
-PARAMSTAR -> .
-PARAM -> IDENT IDENTSTAR virgule deux_points MODEINTERRO TYPE point_virgule .
+PARAMS -> parenthese_ouvrante PARAM PARAMSTAR_VIRGULE point_virgule parenthese_fermante point_virgule .
+PARAMSTAR_VIRGULE -> VIRGULE PARAM PARAMSTAR_VIRGULE .
+PARAMSTAR_VIRGULE -> .
+PARAM -> IDENT IDENTSTAR_VIRGULE deux_points MODEINTERRO TYPE point_virgule .
 MODE -> in .
 MODE -> inout point_virgule .
 MODEINTERRO -> MODE .
@@ -119,7 +119,7 @@ REVERSEINTERRO -> .
 
 ELSIFSTAR -> elsif EXPR then INSTR INSTRSTAR ELSIFSTAR .
 ELSIFSTAR -> else INSTR INSTRSTAR parenthese_fermante .
-ELSIFSTAR -
+ELSIFSTAR -> .
 
 EXPRSTAR_VIRGULE -> virgule EXPR EXPRSTAR_VIRGULE .
 EXPRSTAR_VIRGULE -> .
