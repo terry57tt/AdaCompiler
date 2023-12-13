@@ -37,6 +37,14 @@ repositories {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    implementation("org.jgrapht:jgrapht-core:1.5.2")
+    implementation("org.jgrapht:jgrapht-ext:1.5.2")
+    implementation("net.sf.jung:jung-api:2.1.1") // Core module
+    implementation("net.sf.jung:jung-graph-impl:2.1.1")
+    implementation("net.sf.jung:jung-visualization:2.1.1")
+    implementation("net.sf.jung:jung-graph-impl:2.1.1") // Graph implementation module
+    implementation("net.sf.jung:jung-algorithms:2.1.1") // Algorithms module
+
 }
 
 

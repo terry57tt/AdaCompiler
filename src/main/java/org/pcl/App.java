@@ -1,7 +1,9 @@
 package org.pcl;
 
 
+import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Graph;
+import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,10 +46,8 @@ public class App {
                         ANSI_RESET);
             }
 
-            System.out.println();
-            for (Token token: tokens) {
-                System.out.println(token);
-            }
+
+            new PClWindows(tokens, new SyntaxTree()).start();
             //TODO
         }
     }
