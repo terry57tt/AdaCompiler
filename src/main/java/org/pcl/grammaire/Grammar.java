@@ -139,6 +139,7 @@ public class Grammar {
                 Node nodeInstrstar = new Node("nodeInstrstar");
                 node.addChild(nodeInstrstar);
                 instr(nodeInstrstar);
+                System.out.println("current token = " + currentToken.getValue());
                 instrstar(nodeInstrstar);
             }
             else error = true;
@@ -158,15 +159,16 @@ public class Grammar {
             if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou ident" + " != " + currentToken.getValue() + " = current token");
         }
     }
-
-    void identstar(Node node) {
+ 
+    void identstar_virgule(Node node) {
         if(!error){
-            if(currentToken.getValue().equals(",")){return; }
-            else if (currentToken.getType() == TokenType.IDENTIFIER){
+            if(currentToken.getValue().equals(":")){return; }
+            else if (currentToken.getValue().equals(",")){
                 Node nodeIdentstar = new Node("nodeIdentstar");
                 node.addChild(nodeIdentstar);
+                terminalAnalyse(",", nodeIdentstar);
                 ident(nodeIdentstar);
-                identstar(nodeIdentstar);
+                identstar_virgule(nodeIdentstar);
             }
             else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : , ou ident" + " != " + currentToken.getValue() + " = current token");
@@ -212,12 +214,11 @@ public class Grammar {
                 terminalAnalyse("end", nodeDecl);
                 identinterro(nodeDecl);
                 terminalAnalyse(";", nodeDecl);
-            } else if (currentToken.getValue().equals("idf")) {
+            } else if (currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodeDecl = new Node("nodeDecl");
                 node.addChild(nodeDecl);
                 ident(nodeDecl);
-                identstar(nodeDecl);
-                terminalAnalyse(",", nodeDecl);
+                identstar_virgule(nodeDecl);
                 terminalAnalyse(":", nodeDecl);
                 type(nodeDecl);
                 exprinterro(nodeDecl);
@@ -257,7 +258,11 @@ public class Grammar {
                 Node nodeDecl3 = new Node("nodeDecl3");
                 node.addChild(nodeDecl3);
                 terminalAnalyse("record", nodeDecl3);
-                decl3(nodeDecl3);
+                champs(nodeDecl3);
+                champstar(nodeDecl3);
+                terminalAnalyse("end", nodeDecl3);
+                terminalAnalyse("record", nodeDecl3);
+                terminalAnalyse(";", nodeDecl3);
             } 
             else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : access ou record" + " != " + currentToken.getValue() + " = current token");
@@ -270,8 +275,7 @@ public class Grammar {
                 Node nodeChamps = new Node("nodeChamps");
                 node.addChild(nodeChamps);
                 ident(nodeChamps);
-                identstar(nodeChamps);
-                terminalAnalyse(",", nodeChamps);
+                identstar_virgule(nodeChamps);
                 terminalAnalyse(":", nodeChamps);
                 type(nodeChamps);
                 terminalAnalyse(";", nodeChamps);
@@ -284,15 +288,14 @@ public class Grammar {
     void exprinterro(Node node) {
         if(!error){
             if(currentToken.getValue().equals(";")) return;
-            else if (currentToken.getValue().equals(":")) {
+            else if (currentToken.getValue().equals(":=")) {
                 Node nodeExprinterro = new Node("nodeExprinterro");
                 node.addChild(nodeExprinterro);
-                terminalAnalyse(":", nodeExprinterro);
-                terminalAnalyse("=", nodeExprinterro);
+                terminalAnalyse(":=", nodeExprinterro);
                 expr(nodeExprinterro);
             }
             else error = true;
-            if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou :" + " != " + currentToken.getValue() + " = current token");
+            if (error) System.out.println("Erreur syntaxique : terminal attendu := ; ou :" + " != " + currentToken.getValue() + " = current token");
         }
     }
 
@@ -349,8 +352,7 @@ public class Grammar {
                 node.addChild(nodeParams);
                 terminalAnalyse("(", nodeParams);
                 param(nodeParams);
-                paramstar(nodeParams);
-                terminalAnalyse(";", nodeParams);
+                paramstar_virgule(nodeParams);
                 terminalAnalyse(")", nodeParams);
                 terminalAnalyse(";", nodeParams);
             }
@@ -359,12 +361,14 @@ public class Grammar {
         }
     }
 
-    void paramstar(Node node) {
+
+    void paramstar_virgule(Node node) {
         if(!error){
-            if(currentToken.getValue().equals(";"))return;
-            else if (currentToken.getType() == TokenType.IDENTIFIER) {
+            if(currentToken.getValue().equals(")"))return;
+            else if (currentToken.getValue().equals(";")) {
                 Node nodeParamstar = new Node("nodeParamstar");
                 node.addChild(nodeParamstar);
+                terminalAnalyse(";", nodeParamstar);
                 param(nodeParamstar);
                 params(nodeParamstar);
             }
@@ -379,8 +383,7 @@ public class Grammar {
                 Node nodeParam = new Node("nodeParam");
                 node.addChild(nodeParam);
                 ident(nodeParam);
-                identstar(nodeParam);
-                terminalAnalyse(",", nodeParam);
+                identstar_virgule(nodeParam);
                 terminalAnalyse(":", nodeParam);
                 modeinterro(nodeParam);
                 type(nodeParam);
@@ -967,9 +970,86 @@ public class Grammar {
         }
     }
 
+    //On met de coté le cas où on a un ident suivi d'un point pour l'instant 
     void instr(Node node) {
         if(!error) {
-            //conflit
+            if (currentToken.getValue().equals("begin")){
+                Node nodeIntr1 = new Node("nodeIntr1");
+                node.addChild(nodeIntr1);
+                terminalAnalyse("begin", nodeIntr1);
+                instr(nodeIntr1);
+                instrstar(nodeIntr1);
+                terminalAnalyse("end", nodeIntr1);
+                terminalAnalyse(";", nodeIntr1);
+            }
+            else if (currentToken.getValue().equals("return")){
+                Node nodeIntr1 = new Node("nodeIntr1");
+                node.addChild(nodeIntr1);
+                terminalAnalyse("return", nodeIntr1);
+                exprinterro(nodeIntr1);
+                terminalAnalyse(";", nodeIntr1);
+            }
+            else if (currentToken.getValue().equals("(")
+                    || currentToken.getValue().equals("-")
+                    || currentToken.getType() == TokenType.NUMBER
+                    || currentToken.getType() == TokenType.CHARACTER
+                    || currentToken.getValue().equals("true")
+                    || currentToken.getValue().equals("false")
+                    || currentToken.getValue().equals("null")
+                    || currentToken.getValue().equals("new")
+                    || currentToken.getValue().equals("character")){
+                Node nodeIntr1 = new Node("nodeIntr1");
+                node.addChild(nodeIntr1);
+                acces(nodeIntr1);
+                instr2_prime(nodeIntr1);
+            }
+            else if (currentToken.getValue().equals("if")){
+                Node nodeIntr1 = new Node("nodeIntr1");
+                node.addChild(nodeIntr1);
+                terminalAnalyse("if", nodeIntr1);
+                expr(nodeIntr1);
+                terminalAnalyse("then", nodeIntr1);
+                instr(nodeIntr1);
+                instrstar(nodeIntr1);
+                elsifstar(nodeIntr1);
+                terminalAnalyse("end", nodeIntr1);
+                terminalAnalyse("if", nodeIntr1);
+                terminalAnalyse(";", nodeIntr1);
+            }
+            else if (currentToken.getValue().equals("while")){
+                Node nodeIntr1 = new Node("nodeIntr1");
+                node.addChild(nodeIntr1);
+                terminalAnalyse("while", nodeIntr1);
+                expr(nodeIntr1);
+                terminalAnalyse("loop", nodeIntr1);
+                instr(nodeIntr1);
+                instrstar(nodeIntr1);
+                terminalAnalyse("end", nodeIntr1);
+                terminalAnalyse("loop", nodeIntr1);
+                terminalAnalyse(";", nodeIntr1);
+            }
+            else if (currentToken.getValue().equals("for")){
+                Node nodeIntr1 = new Node("nodeIntr1");
+                node.addChild(nodeIntr1);
+                terminalAnalyse("for", nodeIntr1);
+                ident(nodeIntr1);
+                terminalAnalyse("in", nodeIntr1);
+                expr(nodeIntr1);
+                terminalAnalyse("loop", nodeIntr1);
+                instr(nodeIntr1);
+                instrstar(nodeIntr1);
+                terminalAnalyse("end", nodeIntr1);
+                terminalAnalyse("loop", nodeIntr1);
+                terminalAnalyse(";", nodeIntr1);
+            }
+            else if (currentToken.getType() == TokenType.IDENTIFIER){
+                Node nodeIntr1 = new Node("nodeIntr1");
+                node.addChild(nodeIntr1);
+                ident(nodeIntr1);
+                instr2(nodeIntr1);
+            }
+            else error = true;
+            if (error) System.out.println("Erreur syntaxique : terminal attendu : begin ou return ou ( ou - ou number ou character ou true ou false ou null ou new ou character ou if ou while ou for" + " != " + currentToken.getValue() + " = current token");
         }
     }
 

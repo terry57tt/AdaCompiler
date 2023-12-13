@@ -86,11 +86,8 @@ public class App {
         
         ArrayList<Token> tokens = lexeur.tokenize();
 
-        System.out.println(tokens);
-
         Grammar grammar = new Grammar(tokens);
         SyntaxTree tree = grammar.getSyntaxTree();
-        System.out.println(tree);
 
     }
 
