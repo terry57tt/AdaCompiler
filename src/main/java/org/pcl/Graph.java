@@ -329,9 +329,11 @@ public class Graph {
         init_state.addAdjacent(state121);
         state121.addAdjacent(state122);
 
-        // .
+        // . et ..
         AutomatonState state123 = new AutomatonState('.', true);
+        AutomatonState state125 = new AutomatonState('.', true);
         init_state.addAdjacent(state123);
+        state123.addAdjacent(state125);
 
         // '
         AutomatonState state124 = new AutomatonState('\'', true);

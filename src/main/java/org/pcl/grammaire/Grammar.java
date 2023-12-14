@@ -312,9 +312,6 @@ public class Grammar {
                     || currentToken.getValue().equals("null")
                     || currentToken.getValue().equals("new")
                     || currentToken.getValue().equals("character")
-                    || currentToken.getValue().equals("if")
-                    || currentToken.getValue().equals("for")
-                    || currentToken.getValue().equals("while")
                     || currentToken.getType() == TokenType.IDENTIFIER){
                 expr(node);
             }
@@ -1128,6 +1125,9 @@ public class Grammar {
                 terminalAnalyse("for", nodeIntr1);
                 ident(nodeIntr1);
                 terminalAnalyse("in", nodeIntr1);
+                reverseinterro(nodeIntr1);
+                expr(nodeIntr1);
+                terminalAnalyse("..", nodeIntr1);
                 expr(nodeIntr1);
                 terminalAnalyse("loop", nodeIntr1);
                 instr(nodeIntr1);
