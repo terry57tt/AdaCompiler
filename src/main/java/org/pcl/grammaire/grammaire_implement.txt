@@ -95,14 +95,16 @@ FACTEUR -> true .
 FACTEUR -> false .
 FACTEUR -> null .  
 FACTEUR -> new IDENT .
-FACTEUR-> IDENT parenthese_ouvrante EXPR EXPRSTAR_VIRGULE parenthese_fermante .
+FACTEUR-> IDENT FACTEUR2 .
+FACTEUR2 -> parenthese_ouvrante EXPR EXPRSTAR_VIRGULE parenthese_fermante .
+FACTEUR2 -> .
 FACTEUR -> character apostrophe val parenthese_ouvrante EXPR parenthese_fermante .
 
-ACCES -> EXPR point IDENT.
+ACCES -> EXPR.
 
 INSTR -> ACCES INSTR2_PRIME .
 INSTR -> IDENT INSTR2 .
-INSTR -> return EXPRINTERRO point_virgule .
+INSTR -> return EXPRINTERRO2 point_virgule .
 INSTR -> begin INSTR INSTRSTAR end point_virgule .
 INSTR -> if EXPR then INSTR INSTRSTAR ELSIFSTAR end if point_virgule .
 INSTR -> for IDENT in REVERSEINTERRO EXPR point_point EXPR loop INSTR INSTRSTAR end loop point_virgule .
@@ -113,6 +115,9 @@ INSTR2 -> point_virgule .
 INSTR2 -> parenthese_ouvrante EXPR EXPRSTAR_VIRGULE parenthese_fermante point_virgule .
 
 INSTR2_PRIME -> deux_points_egal EXPR point_virgule .
+
+EXPRINTERRO2 -> EXPR.
+EXPRINTERRO2 -> .
 
 REVERSEINTERRO -> reverse .
 REVERSEINTERRO -> .
@@ -125,3 +130,5 @@ EXPRSTAR_VIRGULE -> virgule EXPR EXPRSTAR_VIRGULE .
 EXPRSTAR_VIRGULE -> .
 
 IDENT -> idf .
+
+#Résolution des conflits : 

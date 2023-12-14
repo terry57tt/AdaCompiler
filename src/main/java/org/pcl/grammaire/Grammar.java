@@ -13,6 +13,7 @@ public class Grammar {
     public Boolean error = false;
     public Token currentToken = null;
     public SyntaxTree syntaxTree = null;
+    private Boolean indicateur_acces = false;
     public int tokensIndex = 0;
     ArrayList<Token> tokens;
 
@@ -90,7 +91,7 @@ public class Grammar {
                     System.out.println("Erreur syntaxique : terminal attendu : null" + " != " + this.tokens.get(this.tokensIndex + 1).getValue() + " = next token");
             }
             else error = true;
-            if (error) System.out.println("Erreur syntaxique : terminal attendu : with" + " != " + currentToken.getValue() + " = current token");
+            if (error) System.out.println("Erreur syntaxique : terminal attendu : with" + " != " + currentToken.getValue() + " = current token" + " ligne " + currentToken.getLineNumber());
         }
     }
 
@@ -139,7 +140,6 @@ public class Grammar {
                 Node nodeInstrstar = new Node("nodeInstrstar");
                 node.addChild(nodeInstrstar);
                 instr(nodeInstrstar);
-                System.out.println("current token = " + currentToken.getValue());
                 instrstar(nodeInstrstar);
             }
             else error = true;
@@ -298,6 +298,30 @@ public class Grammar {
             if (error) System.out.println("Erreur syntaxique : terminal attendu := ; ou :" + " != " + currentToken.getValue() + " = current token");
         }
     }
+
+    void exprinterro2(Node node){
+        if(!error){
+            if (currentToken.getValue().equals(";")) return;
+            else if(currentToken.getValue().equals("(")
+                    || currentToken.getValue().equals("moins")
+                    || currentToken.getType() == TokenType.NUMBER
+                    || currentToken.getType() == TokenType.CHARACTER
+                    || currentToken.getValue().equals("true")
+                    || currentToken.getValue().equals("false")
+                    || currentToken.getValue().equals("null")
+                    || currentToken.getValue().equals("new")
+                    || currentToken.getValue().equals("character")
+                    || currentToken.getValue().equals("if")
+                    || currentToken.getValue().equals("for")
+                    || currentToken.getValue().equals("while")
+                    || currentToken.getType() == TokenType.IDENTIFIER){
+                expr(node);
+            }
+            else error = true;
+        }
+    }
+
+
 
     void champstar(Node node) {
         if(!error){
@@ -880,7 +904,44 @@ public class Grammar {
 
     void priorite_point(Node node) {
         if(!error){
-            //conflit!!
+            if (currentToken.getValue().equals(";")
+                    || currentToken.getValue().equals(",")
+                    || currentToken.getValue().equals("=")
+                    || currentToken.getValue().equals(")")
+                    || currentToken.getValue().equals("or")
+                    || currentToken.getValue().equals("and")
+                    || currentToken.getValue().equals("then")
+                    || currentToken.getValue().equals("not")
+                    || currentToken.getValue().equals("/=")
+                    || currentToken.getValue().equals("<")
+                    || currentToken.getValue().equals("<=")
+                    || currentToken.getValue().equals(">")
+                    || currentToken.getValue().equals(">=")
+                    || currentToken.getValue().equals("+")
+                    || currentToken.getValue().equals("-")
+                    || currentToken.getValue().equals("*")
+                    || currentToken.getValue().equals("/")
+                    || currentToken.getValue().equals("rem")
+                    || currentToken.getValue().equals("..")
+                    || currentToken.getValue().equals("loop")) return;
+            else if (currentToken.getValue().equals(".")) {
+                Node nodePrioritePoint = new Node("nodePrioritePoint");
+                node.addChild(nodePrioritePoint);
+                terminalAnalyse(".", nodePrioritePoint);
+                ident(nodePrioritePoint);
+                priorite_point(nodePrioritePoint);
+            }
+            else {
+                if (this.indicateur_acces == true){
+                    this.indicateur_acces = false;
+                    Node nodePrioritePoint = new Node("nodePrioritePoint");
+                    node.addChild(nodePrioritePoint);
+                    terminalAnalyse(".", nodePrioritePoint);
+                    ident(nodePrioritePoint);
+                }
+                else error = true;
+                if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
+            }    
         }
     }
 
@@ -938,15 +999,50 @@ public class Grammar {
                 Node nodeFacteur = new Node("nodeFacteur");
                 node.addChild(nodeFacteur);
                 ident(nodeFacteur);
-                terminalAnalyse("(", nodeFacteur);
-                expr(nodeFacteur);
-                exprstar_virgule(nodeFacteur);
-                terminalAnalyse(")", nodeFacteur);
+                facteur2(nodeFacteur);
             }
             else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : ( ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
         }
     }
+
+    void facteur2(Node node){
+        if(!error){
+            if (currentToken.getValue().equals("(")) {
+                terminalAnalyse("(", node);
+                expr(node);
+                exprstar_virgule(node);
+                terminalAnalyse(")", node);
+                if (currentToken.getValue().equals(";")) {
+                    terminalAnalyse(";", node);
+                    this.indicateur_acces = false;
+                }
+            }
+            else if (currentToken.getValue().equals(";")
+                    || currentToken.getValue().equals(",")
+                    || currentToken.getValue().equals("=")
+                    || currentToken.getValue().equals(")")
+                    || currentToken.getValue().equals("or")
+                    || currentToken.getValue().equals("and")
+                    || currentToken.getValue().equals("then")
+                    || currentToken.getValue().equals("not")
+                    || currentToken.getValue().equals("/=")
+                    || currentToken.getValue().equals("<")
+                    || currentToken.getValue().equals("<=")
+                    || currentToken.getValue().equals(">")
+                    || currentToken.getValue().equals(">=")
+                    || currentToken.getValue().equals("+")
+                    || currentToken.getValue().equals("-")
+                    || currentToken.getValue().equals("*")
+                    || currentToken.getValue().equals("/")
+                    || currentToken.getValue().equals("rem")
+                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals(":=")
+                    || currentToken.getValue().equals("..")
+                    || currentToken.getValue().equals("loop")) return;
+        }
+        else error = true;
+        if (error) System.out.println("Erreur syntaxique : terminal attendu : ( ou ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou . ou := ou .. ou loop" + " != " + currentToken.getValue() + " = current token");    }
 
     void acces(Node node) {
         if(!error){
@@ -960,11 +1056,7 @@ public class Grammar {
                     || currentToken.getValue().equals("new")
                     || currentToken.getValue().equals("character")
                     || currentToken.getType() == TokenType.IDENTIFIER){
-                Node nodeAcces = new Node("nodeAcces");
-                node.addChild(nodeAcces);
-                expr(nodeAcces);
-                terminalAnalyse(".", nodeAcces);
-                ident(nodeAcces);
+                expr(node);
             } else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
         }
@@ -986,7 +1078,7 @@ public class Grammar {
                 Node nodeIntr1 = new Node("nodeIntr1");
                 node.addChild(nodeIntr1);
                 terminalAnalyse("return", nodeIntr1);
-                exprinterro(nodeIntr1);
+                exprinterro2(nodeIntr1);
                 terminalAnalyse(";", nodeIntr1);
             }
             else if (currentToken.getValue().equals("(")
@@ -1000,6 +1092,7 @@ public class Grammar {
                     || currentToken.getValue().equals("character")){
                 Node nodeIntr1 = new Node("nodeIntr1");
                 node.addChild(nodeIntr1);
+                this.indicateur_acces = true;
                 acces(nodeIntr1);
                 instr2_prime(nodeIntr1);
             }
@@ -1045,8 +1138,16 @@ public class Grammar {
             else if (currentToken.getType() == TokenType.IDENTIFIER){
                 Node nodeIntr1 = new Node("nodeIntr1");
                 node.addChild(nodeIntr1);
-                ident(nodeIntr1);
-                instr2(nodeIntr1);
+                //Si on voit := ou un ; après le ident, on appelle instr2
+                if (this.tokens.get(this.tokensIndex + 1).getValue().equals(":=") || this.tokens.get(this.tokensIndex + 1).getValue().equals(";")){
+                    ident(nodeIntr1);
+                    instr2(nodeIntr1);
+                }
+                else {
+                    this.indicateur_acces = true;
+                    acces(nodeIntr1);
+                    instr2_prime(nodeIntr1);
+                }
             }
             else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : begin ou return ou ( ou - ou number ou character ou true ou false ou null ou new ou character ou if ou while ou for" + " != " + currentToken.getValue() + " = current token");

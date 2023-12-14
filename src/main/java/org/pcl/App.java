@@ -88,7 +88,6 @@ public class App {
 
         Grammar grammar = new Grammar(tokens);
         SyntaxTree tree = grammar.getSyntaxTree();
-
     }
 
 }
