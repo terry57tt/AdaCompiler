@@ -85,9 +85,10 @@ public class Grammar {
                 terminalAnalyse("end", nodeFichier);
                 identinterro(nodeFichier);
                 terminalAnalyse(";", nodeFichier);
-                if (this.tokens.get(this.tokensIndex + 1) != null) 
+                if (this.tokens.get(this.tokensIndex + 1) != null) {
                     error = true;
                     System.out.println("Erreur syntaxique : terminal attendu : null" + " != " + this.tokens.get(this.tokensIndex + 1).getValue() + " = next token");
+                }
             }
             else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : with" + " != " + currentToken.getValue() + " = current token");
@@ -400,7 +401,7 @@ public class Grammar {
                 Node nodeMode = new Node("nodeMode");
                 node.addChild(nodeMode);
                 if (tokensIndex != tokens.size() - 1){
-                    if (this.tokens.get(this.tokensIndex + 1).equals("out")) {
+                    if (this.tokens.get(this.tokensIndex + 1).getValue().equals("out")) {
                         terminalAnalyse("in", nodeMode);
                         terminalAnalyse("out", nodeMode);
                         terminalAnalyse(";", nodeMode);
