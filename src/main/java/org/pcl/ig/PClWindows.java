@@ -1,10 +1,10 @@
 package org.pcl.ig;
 
 
-import com.google.common.base.Functions;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.shortestpath.MinimumSpanningForest2;
-import edu.uci.ics.jung.graph.*;
+import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.visualization.DefaultVisualizationModel;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationModel;
@@ -75,9 +75,12 @@ public class PClWindows {
 
 
         VisualizationViewer<Node,Number> vv = new VisualizationViewer<>(vm1, preferredSizeRect);
+
+
         vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.line(graph));
         vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
         vv.getRenderContext().setVertexFillPaintTransformer(new VertexColor());
+        vv.getRenderContext().setVertexShapeTransformer(new ShapeLabelTransform());
         vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
         vv.setForeground(Color.BLACK);
         vv.setVertexToolTipTransformer(new ToStringLabeller());
