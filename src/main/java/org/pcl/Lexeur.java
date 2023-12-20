@@ -48,7 +48,7 @@ public class Lexeur {
 
 
     public boolean specificSeparator(char c) {
-        String separator = "-/=<>:\"'";
+        String separator = ".-/=<>:\"'";
         return separator.contains(String.valueOf(c));
     }
 
@@ -227,6 +227,10 @@ public class Lexeur {
                 yield i;
             }
             case "/=", "<=", ">=", ":=" -> {
+                tokens.add(new Token(TokenType.SEPARATOR, separator, this.lineNumber));
+                yield i + 1;
+            }
+            case ".." -> {
                 tokens.add(new Token(TokenType.SEPARATOR, separator, this.lineNumber));
                 yield i + 1;
             }
