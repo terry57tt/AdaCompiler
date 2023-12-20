@@ -1,0 +1,89 @@
+\documentclass[12pt,titlepage]{report}
+
+\usepackage{float}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel} 
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[top=1.5cm, bottom=1.5cm, left=1.5cm, right=1.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage{lipsum}
+\usepackage{ragged2e}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{eurosym}
+\usepackage{indentfirst}
+\usepackage{minted}
+\usepackage{titlesec}
+\usepackage{pifont}
+\usepackage{url}
+\usepackage{epsf}
+\graphicspath{ {images/} }
+
+\begin{document}
+
+\begin{titlepage}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\center
+\includegraphics[scale=0.4]{ul_logo.jpeg} \\[0.6cm]
+\includegraphics[scale=1.2]{telecom_nancy.png} \\[0.2cm]
+\HRule
+{ \huge \bfseries PCL1 - Projet de Compilation \\
+        \Large Réalisation d'un compilateur pour le langage Ada\\[0.15cm] }
+\HRule \\[1cm]
+{\LARGE \textbf{Responsables du module :}}
+\vskip 0.1cm
+{\Large 
+Baptiste BUCHI\\
+Suzanne COLLIN\\
+Oliver FESTOR\\
+} 
+
+
+\vspace{1cm}
+{\LARGE \textbf{Équipe projet}} \\ 
+\vspace{0.1cm}
+\Large Lucas ARIES\\
+Mathias AURAND\\
+Terry TEMPESTINI\\
+Julie ZHEN\\
+\vspace{3cm}
+    
+2023/2024 \\ [1cm]
+\end{titlepage}
+
+\tableofcontents
+% ---------------------------------- TABLE DES MATIERES -------------------------
+\clearpage
+% ---------------------------------- Début document ----------------------------------
+\chapter{Introduction}
+
+Ce rapport présente notre projet de développement d'un compilateur pour le langage Ada dans le cadre du module PCL1.
+
+\chapter{Gestion de projet}
+\section{Réunion et Planification}
+\section{Répartition et rythme de travail}
+
+\newpage
+\chapter{Rapport}
+\section{Analyseur Lexical}
+\subsection{Choix d'un graphe}
+\subsection{Choix des structures de données}
+
+\section{Analyseur Syntaxique}
+\subsection{Grammaire}
+\subsection{Table des symboles}
+\subsection{Visualisation}
+
+\section{Tests et gestion des erreurs}
+
+% ---------------------------------- Annexes ---------------------------------
+\chapter{Annexes}
+
+\section{Compte rendu de réunion}
+\section{Diagramme de Gantt}
+
+\end{document}
