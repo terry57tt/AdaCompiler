@@ -1,8 +1,10 @@
 package org.pcl;
 
 
+import org.pcl.grammaire.Grammar;
 import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Graph;
+import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
@@ -47,7 +49,9 @@ public class App {
             }
 
 
-            new PClWindows(tokens, new SyntaxTree()).start();
+            Grammar grammar = new Grammar(tokens);
+            new PClWindows(tokens, grammar.getSyntaxTree()).start();
+
             //TODO
         }
     }

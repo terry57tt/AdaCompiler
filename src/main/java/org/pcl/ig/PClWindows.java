@@ -1,8 +1,19 @@
 package org.pcl.ig;
 
 
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import com.google.common.base.Functions;
+import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.shortestpath.MinimumSpanningForest2;
+import edu.uci.ics.jung.graph.*;
+import edu.uci.ics.jung.visualization.DefaultVisualizationModel;
+import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationModel;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ScalingControl;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import org.pcl.Token;
 import org.pcl.structure.tree.Node;
@@ -15,8 +26,13 @@ import java.util.ArrayList;
 public class PClWindows {
 
 
-    private ArrayList<Token> tokens;
-    private SyntaxTree syntaxTree;
+    private final ArrayList<Token> tokens;
+    private final SyntaxTree syntaxTree;
+
+    private DirectedGraph<Node,Number> graph;
+    private Forest<Node,Number> tree;
+
+    private Dimension preferredSizeRect = new Dimension(800,800);
 
     public PClWindows(ArrayList<Token> tokens, SyntaxTree syntaxTree) {
         this.tokens = tokens;
@@ -25,7 +41,7 @@ public class PClWindows {
 
     public void start() {
         JFrame frame = new JFrame("PCL windows");
-        // Set the size of the windows        JPanel mainPanel = new JPanel(new BorderLayout());
+        // Set the size of the windows
         frame.setSize(1200, 800);
         // Set the default close operation
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,6 +52,7 @@ public class PClWindows {
 
         setupTokens(frame, tokens);
         setupTree(frame);
+        frame.setBackground(Color.WHITE);
 
         frame.setResizable(false);
         // Set the JFrame to be visible
@@ -46,29 +63,45 @@ public class PClWindows {
         Container mainPanel = frame.getContentPane();
         JPanel centerPanel = new JPanel();
 
-        BasicVisualizationServer<Node, Integer> graphComponent = new BasicVisualizationServer<>(
-                new TreeLayout<>(TreeVisualizer.createDisplayTree(syntaxTree)),
-                new Dimension(800, 800)
-        );
 
-        graphComponent.getRenderContext().setEdgeLabelTransformer(new NodeLabeller());
-        graphComponent.getRenderContext().setVertexLabelTransformer(new NodeLabeller());
-        graphComponent.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
-
-        graphComponent.getRenderContext().setVertexFillPaintTransformer(new ColorApplier());
+        graph = syntaxTree.toGraph();
 
 
-        //JScrollPane scrollPane = new JScrollPane(graphComponent);
-        graphComponent.setAlignmentX(Component.CENTER_ALIGNMENT);
-        //scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        //scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        tree = new DelegateForest<Node, Number>(graph);
+
+        Layout<Node,Number> layout1 = new OrderedTreeLayout<>(tree);
+        VisualizationModel<Node,Number> vm1 =
+                new DefaultVisualizationModel<>(layout1, preferredSizeRect);
+
+
+        VisualizationViewer<Node,Number> vv = new VisualizationViewer<>(vm1, preferredSizeRect);
+        vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.line(graph));
+        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+        vv.getRenderContext().setVertexFillPaintTransformer(new VertexColor());
+        vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+        vv.setForeground(Color.BLACK);
+        vv.setVertexToolTipTransformer(new ToStringLabeller());
+        vv.setAlignmentX(Component.CENTER_ALIGNMENT);
+
 
         centerPanel.setPreferredSize(new Dimension(800, 800));
         centerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        graphComponent.setPreferredSize(new Dimension(800, 800));
-        //scrollPane.setPreferredSize(new Dimension(800, 800));
-        centerPanel.add(graphComponent);
-        //centerPanel.add(scrollPane);
+        vv.setPreferredSize(new Dimension(800, 800));
+
+        DefaultModalGraphMouse<String, Number> gm1 = new DefaultModalGraphMouse<>();
+        vv.setGraphMouse(gm1);
+        final ScalingControl scaler = new CrossoverScalingControl();
+        vv.scaleToLayout(scaler);
+
+
+        vv.setBackground(Color.WHITE);
+        GraphZoomScrollPane graphZoomScrollPane = new GraphZoomScrollPane(vv);
+        graphZoomScrollPane.setBackground(Color.WHITE);
+        mainPanel.setBackground(Color.WHITE);
+        centerPanel.setBackground(Color.WHITE);
+
+        centerPanel.add(graphZoomScrollPane);
+        //centerPanel.add(new NodeLabelAsShapeDemo());
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         frame.setContentPane(mainPanel);
     }
