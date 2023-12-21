@@ -1,7 +1,11 @@
 package org.pcl;
 
 
+import org.pcl.grammaire.Grammar;
+import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Graph;
+import org.pcl.structure.tree.Node;
+import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +21,7 @@ public class App {
         if (args.length == 0) {
             System.out.println(ANSI_RED + "No files to compile.\n" +
                     "Please enter the path of the files you want to compile with the command line argument -Pfiles=\"file1\""
-            + ANSI_RESET);
+                    + ANSI_RESET);
             System.exit(0);
         }
 
@@ -30,8 +34,8 @@ public class App {
                 continue;
             }
             if (!FileHandler.isExtensionValid(file)) {
-                    System.out.println(ANSI_RED + "- Invalid extension: " + file + ANSI_RESET + "\n");
-                    continue;
+                System.out.println(ANSI_RED + "- Invalid extension: " + file + ANSI_RESET + "\n");
+                continue;
             }
 
             System.out.println("- Compiling file: " + file + "\n");
@@ -44,12 +48,13 @@ public class App {
                         ANSI_RESET);
             }
 
-            System.out.println();
-            for (Token token: tokens) {
-                System.out.println(token);
-            }
+
+            Grammar grammar = new Grammar(tokens);
+            new PClWindows(tokens, grammar.getSyntaxTree()).start();
+
             //TODO
         }
     }
+
 
 }
