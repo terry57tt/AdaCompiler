@@ -1,5 +1,11 @@
 package org.pcl.structure.tree;
 
+import edu.uci.ics.jung.graph.*;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 /** Create the syntax tree */
 public class SyntaxTree {
 
@@ -31,6 +37,42 @@ public class SyntaxTree {
             }
         }
     }
+
+    public DirectedGraph<Node, Number> toGraph() {
+        DirectedGraph<Node, Number> g =
+                new DirectedOrderedSparseMultigraph<>();
+        int i = 0;
+
+        assert this.rootNode != null;
+        ArrayList<Node> nodes = new ArrayList<>();
+
+        //g.addVertex(rootNode.getValue());
+        nodes.add(rootNode);
+        for (Node node: rootNode.getChildren()) {
+            if (!nodes.contains(node)) {
+                nodes.add(node);
+                //g.addVertex(node.getValue());
+            }
+        }
+        for (Node node : this.rootNode.getChildren()) {
+            g.addEdge(++i, rootNode, node);
+            addToGraph(nodes, node, g, rootNode.getChildren().size());
+        }
+
+        return g;
+    }
+
+    private void addToGraph(ArrayList<Node> nodes, Node node, Graph<Node, Number> g, int number) {
+        for (Node child : node.getChildren()) {
+            if (!nodes.contains(child)) {
+                nodes.add(child);
+                //g.addVertex(child.getValue());
+            }
+            g.addEdge(++number, node, child);
+            addToGraph(nodes, child, g, number + node.getChildren().size());
+        }
+    }
+
 
     /** Return the syntax tree as a string. */
     @Override

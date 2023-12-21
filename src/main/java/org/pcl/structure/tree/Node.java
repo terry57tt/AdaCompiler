@@ -1,8 +1,11 @@
 package org.pcl.structure.tree;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.pcl.Token;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
 
 /** Represent a node in the syntax tree. */
 public class Node {
@@ -84,11 +87,7 @@ public class Node {
     /** Return the node as a string. */
     @Override
     public String toString() {
-        return "Node{" +
-                "type=" + type +
-                ", children=" + children +
-                ", isFinal=" + isFinal +
-                ", token=" + token +
-                '}';
-    } 
+        return value;
+    }
+
 }

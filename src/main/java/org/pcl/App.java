@@ -1,41 +1,13 @@
 package org.pcl;
 
 
-import org.pcl.grammaire.Grammar;
-import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
-import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 import static org.pcl.ColorAnsiCode.ANSI_RED;
 import static org.pcl.ColorAnsiCode.ANSI_RESET;
-
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.pcl.FileHandler;
-import org.pcl.Lexeur;
-import org.pcl.Token;
-
-import org.pcl.grammaire.Grammar;
-import org.pcl.structure.automaton.Automaton;
-import org.pcl.structure.automaton.Graph;
-
-
-import org.pcl.structure.automaton.TokenType;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.pcl.structure.tree.Node;
-import org.pcl.structure.tree.SyntaxTree;
 
 /** Entry point of the application. */
 public class App {
@@ -78,17 +50,6 @@ public class App {
             }
             //TODO
         }
-        String file = "demo/SyntaxError/syntaxError2.ada";
-        Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters(file);
-
-        Lexeur lexeur = new Lexeur(automaton, stream, file);
-        
-        ArrayList<Token> tokens = lexeur.tokenize();
-
-        Grammar grammar = new Grammar(tokens);
-        SyntaxTree tree = grammar.getSyntaxTree();
-        System.out.println(tokens);
     }
 
 }
