@@ -3,12 +3,14 @@ package org.pcl;
 
 import org.pcl.grammaire.Grammar;
 import org.pcl.ig.PClWindows;
+import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import static org.pcl.ColorAnsiCode.ANSI_RED;
 import static org.pcl.ColorAnsiCode.ANSI_RESET;
@@ -51,9 +53,18 @@ public class App {
 
             Grammar grammar = new Grammar(tokens);
             new PClWindows(tokens, grammar.getSyntaxTree()).start();
-
-            //TODO
         }
+        String file2 = "demo/SyntaxError/syntaxError.ada";
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters(file2);
+
+        Lexeur lexeur2 = new Lexeur(automaton, stream, file2);
+        
+        ArrayList<Token> tokens2 = lexeur2.tokenize();
+
+        Grammar grammar2 = new Grammar(tokens2);
+        SyntaxTree tree2 = grammar2.getSyntaxTree();
+        System.err.println(tokens2);
     }
 
 

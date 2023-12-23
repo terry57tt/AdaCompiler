@@ -44,11 +44,14 @@ begin
 
     -- Test pour la structure conditionnelle 'if'
     if Variable1 = 5 then -- Test pour 'EXPR'
-        -- Quelques instructions
+        -- Quelques Instructions
+        Variable2 := Variable2 + 1;
     elsif Variable1 = 10 then -- Test pour 'ELSIFSTAR'
         -- Quelques instructions
+        Variable2 := Variable2 + 1;
     else -- Test pour 'ELSEINTERRO'
         -- Quelques instructions
+        Variable2 := Variable2 + 1;
     end if;
 
 end Main; -- Test pour 'IDENTINTERRO'

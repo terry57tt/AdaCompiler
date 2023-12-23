@@ -28,12 +28,7 @@ public class Grammar {
             System.out.println("Une erreur syntaxique a été détectée : error = true");
         }
         else {
-            if(currentToken == this.tokens.get(this.tokens.size()-1)){
-                System.out.println("current token = " + currentToken.getValue());
-            }
-            else {
-                System.out.println("Une erreur syntaxique a été détectée : current token = " + currentToken.getValue() + " != " + this.tokens.get(this.tokens.size()-1).getValue() + " = last token");
-            }
+            System.out.println("Analyse syntaxique terminée avec succès : error = false\n");
         }
         return this.syntaxTree;
     }
@@ -53,7 +48,7 @@ public class Grammar {
             }
             else{
                 error = true;
-                System.out.println("Erreur syntaxique : terminal attendu : " + terminal + " != " + currentToken.getValue() + " = current token");
+                System.out.println("Erreur syntaxique dans l'analyse de terminal : terminal attendu : " + terminal + " != " + currentToken.getValue() + " = current token" + " ligne " + currentToken.getLineNumber());
             }
         }
     }
@@ -86,9 +81,9 @@ public class Grammar {
                 terminalAnalyse("end", nodeFichier);
                 identinterro(nodeFichier);
                 terminalAnalyse(";", nodeFichier);
-                if (this.tokens.get(this.tokensIndex + 1) != null) {
+                if (this.tokensIndex != this.tokens.size() - 1) {
                     error = true;
-                    System.out.println("Erreur syntaxique : terminal attendu : null" + " != " + this.tokens.get(this.tokensIndex + 1).getValue() + " = next token");
+                    System.out.println("Erreur syntaxique : terminal attendu : null");
                 }
             }
             else error = true;
@@ -479,7 +474,7 @@ public class Grammar {
                     || currentToken.getValue().equals(",")
                     || currentToken.getValue().equals(")")
                     || currentToken.getValue().equals("then")
-                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals("..")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals("or")) {
                 Node nodePrioriteOr = new Node("nodePrioriteOr");
@@ -549,7 +544,7 @@ public class Grammar {
                     || currentToken.getValue().equals(")")
                     || currentToken.getValue().equals("or")
                     || currentToken.getValue().equals("then")
-                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals("..")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals("and")) {
                 Node nodePrioriteAnd = new Node("nodePrioriteAnd");
@@ -619,7 +614,7 @@ public class Grammar {
                     || currentToken.getValue().equals("or")
                     || currentToken.getValue().equals("and")
                     || currentToken.getValue().equals("then")
-                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals("..")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals("not")) {
                 Node nodePrioriteNot = new Node("nodePrioriteNot");
@@ -664,7 +659,7 @@ public class Grammar {
                     || currentToken.getValue().equals("and")
                     || currentToken.getValue().equals("then")
                     || currentToken.getValue().equals("not")
-                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals("..")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals("=")) {
                 Node nodePrioriteEgal = new Node("nodePrioriteEgal");
@@ -718,7 +713,7 @@ public class Grammar {
                     || currentToken.getValue().equals("then")
                     || currentToken.getValue().equals("not")
                     || currentToken.getValue().equals("/=")
-                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals("..")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals("<")) {
                 Node nodePrioriteInferieur = new Node("nodePrioriteInferieur");
@@ -790,7 +785,7 @@ public class Grammar {
                     || currentToken.getValue().equals("<=")
                     || currentToken.getValue().equals(">")
                     || currentToken.getValue().equals(">=")
-                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals("..")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals("+")) {
                 Node nodePrioriteAddition = new Node("nodePrioriteAddition");
@@ -850,7 +845,7 @@ public class Grammar {
                     || currentToken.getValue().equals(">=")
                     || currentToken.getValue().equals("+")
                     || currentToken.getValue().equals("-")
-                    || currentToken.getValue().equals(".")
+                    || currentToken.getValue().equals("..")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals("*")) {
                 Node nodePrioriteMultiplication = new Node("nodePrioriteMultiplication");
@@ -1218,14 +1213,13 @@ public class Grammar {
 
     void elsifstar(Node node) {
         if(!error){
-            if (currentToken.getValue().equals("and")) return;
+            if (currentToken.getValue().equals("end")) return;
             else if (currentToken.getValue().equals("else")) {
                 Node nodeElsifstar = new Node("nodeElsifstar");
                 node.addChild(nodeElsifstar);
                 terminalAnalyse("else", nodeElsifstar);
                 instr(nodeElsifstar);
                 instrstar(node);
-                terminalAnalyse(")", nodeElsifstar);
             }
             else if (currentToken.getValue().equals("elsif")) {
                 Node nodeElsifstar = new Node("nodeElsifstar");
