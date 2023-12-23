@@ -3,7 +3,6 @@ package org.pcl.structure.tree;
 import org.pcl.Token;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 

@@ -5,6 +5,7 @@ import edu.uci.ics.jung.graph.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Create the syntax tree */
 public class SyntaxTree {
@@ -41,7 +42,7 @@ public class SyntaxTree {
     public DirectedGraph<Node, Number> toGraph() {
         DirectedGraph<Node, Number> g =
                 new DirectedOrderedSparseMultigraph<>();
-        int i = 0;
+        AtomicInteger i = new AtomicInteger(1);
 
         assert this.rootNode != null;
         ArrayList<Node> nodes = new ArrayList<>();
@@ -55,21 +56,25 @@ public class SyntaxTree {
             }
         }
         for (Node node : this.rootNode.getChildren()) {
-            g.addEdge(++i, rootNode, node);
-            addToGraph(nodes, node, g, rootNode.getChildren().size());
+            i.set(i.get() + 1);
+            System.out.println(node.getValue() + " number " + i.get());
+            g.addEdge(i.get(), rootNode, node);
+            addToGraph(nodes, node, g, i);
         }
 
         return g;
     }
 
-    private void addToGraph(ArrayList<Node> nodes, Node node, Graph<Node, Number> g, int number) {
+    private void addToGraph(ArrayList<Node> nodes, Node node, Graph<Node, Number> g, AtomicInteger number) {
         for (Node child : node.getChildren()) {
             if (!nodes.contains(child)) {
                 nodes.add(child);
                 //g.addVertex(child.getValue());
             }
-            g.addEdge(++number, node, child);
-            addToGraph(nodes, child, g, number + node.getChildren().size());
+
+            number.set(number.get() + 1);
+            g.addEdge(number.get(), node, child);
+            addToGraph(nodes, child, g, number);
         }
     }
 
