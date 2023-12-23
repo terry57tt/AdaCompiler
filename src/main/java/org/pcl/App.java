@@ -50,11 +50,13 @@ public class App {
                         ANSI_RESET);
             }
 
-
             Grammar grammar = new Grammar(tokens);
-            new PClWindows(tokens, grammar.getSyntaxTree()).start();
+            SyntaxTree tree = grammar.getSyntaxTree();
+            System.err.println(tree + "\n");
+            new PClWindows(tokens, tree).start();
         }
-        String file2 = "demo/SyntaxError/syntaxError.ada";
+        String file2 = "demo/SyntaxError/syntaxError2.ada";
+        //String file2 = "demo/example_subject.ada";
         Automaton automaton = Graph.create();
         Stream<Character> stream = FileHandler.getCharacters(file2);
 
@@ -64,7 +66,6 @@ public class App {
 
         Grammar grammar2 = new Grammar(tokens2);
         SyntaxTree tree2 = grammar2.getSyntaxTree();
-        System.err.println(tokens2);
     }
 
 

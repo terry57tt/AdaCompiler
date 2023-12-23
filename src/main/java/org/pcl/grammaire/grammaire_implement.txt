@@ -24,7 +24,7 @@ PARAMSINTERRO -> PARAMS .
 PARAMSINTERRO -> .
 TYPE -> IDENT .
 TYPE -> access IDENT point_virgule .
-PARAMS -> parenthese_ouvrante PARAM PARAMSTAR_POINT_VIRGULE parenthese_fermante point_virgule .
+PARAMS -> parenthese_ouvrante PARAM PARAMSTAR_POINT_VIRGULE parenthese_fermante.
 PARAMSTAR_POINT_VIRGULE -> point_virgule PARAM PARAMSTAR_POINT_VIRGULE .
 PARAMSTAR_POINT_VIRGULE -> .
 PARAM -> IDENT IDENTSTAR_VIRGULE deux_points MODEINTERRO TYPE point_virgule .

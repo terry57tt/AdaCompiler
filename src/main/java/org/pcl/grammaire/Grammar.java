@@ -152,7 +152,7 @@ public class Grammar {
                 ident(nodeIdentinterro);
             }
             else error = true;
-            if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou ident" + " != " + currentToken.getValue() + " = current token");
+            if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou ident" + " != " + currentToken.getValue() + " = current token" + " Type : " + currentToken.getType());
         }
     }
  
@@ -167,7 +167,7 @@ public class Grammar {
                 identstar_virgule(nodeIdentstar);
             }
             else error = true;
-            if (error) System.out.println("Erreur syntaxique : terminal attendu : , ou ident" + " != " + currentToken.getValue() + " = current token");
+            if (error) System.out.println("Erreur syntaxique : terminal attendu : , ou ident" + " != " + currentToken.getValue() + " = current token" );
         }
     }
 
@@ -371,7 +371,6 @@ public class Grammar {
                 param(nodeParams);
                 paramstar_virgule(nodeParams);
                 terminalAnalyse(")", nodeParams);
-                terminalAnalyse(";", nodeParams);
             }
             else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : (" + " != " + currentToken.getValue() + " = current token");
@@ -387,10 +386,10 @@ public class Grammar {
                 node.addChild(nodeParamstar);
                 terminalAnalyse(";", nodeParamstar);
                 param(nodeParamstar);
-                params(nodeParamstar);
+                paramstar_virgule(nodeParamstar);
             }
             else error = true;
-            if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou ident" + " != " + currentToken.getValue() + " = current token");
+            if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou )" + " != " + currentToken.getValue() + " = current token" + " Type : " + currentToken.getType());
         }
     }
 
@@ -404,7 +403,6 @@ public class Grammar {
                 terminalAnalyse(":", nodeParam);
                 modeinterro(nodeParam);
                 type(nodeParam);
-                terminalAnalyse(";", nodeParam);
             }
             else error = true;
             if (error) System.out.println("Erreur syntaxique : terminal attendu : ident" + " != " + currentToken.getValue() + " = current token");
@@ -916,6 +914,7 @@ public class Grammar {
                     || currentToken.getValue().equals("/")
                     || currentToken.getValue().equals("rem")
                     || currentToken.getValue().equals("..")
+                    || currentToken.getValue().equals(":=")
                     || currentToken.getValue().equals("loop")) return;
             else if (currentToken.getValue().equals(".")) {
                 Node nodePrioritePoint = new Node("nodePrioritePoint");
@@ -933,7 +932,7 @@ public class Grammar {
                     ident(nodePrioritePoint);
                 }
                 else error = true;
-                if (error) System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
+                if (error) System.out.println("ici Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
             }    
         }
     }
@@ -1007,7 +1006,7 @@ public class Grammar {
                 exprstar_virgule(node);
                 terminalAnalyse(")", node);
                 if (currentToken.getValue().equals(";")) {
-                    terminalAnalyse(";", node);
+                    // terminalAnalyse(";", node);
                     this.indicateur_acces = false;
                 }
             }
@@ -1134,8 +1133,8 @@ public class Grammar {
             else if (currentToken.getType() == TokenType.IDENTIFIER){
                 Node nodeIntr1 = new Node("nodeIntr1");
                 node.addChild(nodeIntr1);
-                //Si on voit := ou un ; après le ident, on appelle instr2
-                if (this.tokens.get(this.tokensIndex + 1).getValue().equals(":=") || this.tokens.get(this.tokensIndex + 1).getValue().equals(";")){
+                //Si on voit := ou un ; ou une ( après le ident, on appelle instr2
+                if (this.tokens.get(this.tokensIndex + 1).getValue().equals(":=") || this.tokens.get(this.tokensIndex + 1).getValue().equals(";") || this.tokens.get(this.tokensIndex + 1).getValue().equals("(")){
                     ident(nodeIntr1);
                     instr2(nodeIntr1);
                 }
@@ -1261,5 +1260,4 @@ public class Grammar {
             if (error) System.out.println("Erreur syntaxique : terminal attendu : ident" + " != " + currentToken.getValue() + " = current token");
         }
     }
-
 }
