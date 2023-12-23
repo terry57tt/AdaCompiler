@@ -57,7 +57,6 @@ public class SyntaxTree {
         }
         for (Node node : this.rootNode.getChildren()) {
             i.set(i.get() + 1);
-            System.out.println(node.getValue() + " number " + i.get());
             g.addEdge(i.get(), rootNode, node);
             addToGraph(nodes, node, g, i);
         }
