@@ -29,14 +29,17 @@ public class PClWindows {
     private final ArrayList<Token> tokens;
     private final SyntaxTree syntaxTree;
 
+    private boolean showTree;
+
     private DirectedGraph<Node,Number> graph;
     private Forest<Node,Number> tree;
 
     private Dimension preferredSizeRect = new Dimension(800,800);
 
-    public PClWindows(ArrayList<Token> tokens, SyntaxTree syntaxTree) {
+    public PClWindows(ArrayList<Token> tokens, SyntaxTree syntaxTree, boolean showTree) {
         this.tokens = tokens;
         this.syntaxTree = syntaxTree;
+        this.showTree = showTree;
     }
 
     public void start() {
@@ -51,7 +54,8 @@ public class PClWindows {
         frame.setContentPane(mainPanel);
 
         setupTokens(frame, tokens);
-        setupTree(frame);
+        if (showTree)
+            setupTree(frame);
         frame.setBackground(Color.WHITE);
 
         frame.setResizable(false);

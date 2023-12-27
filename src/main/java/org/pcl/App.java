@@ -50,9 +50,8 @@ public class App {
 
 
             System.out.println();
-            if (!grammar.error)
-                new PClWindows(tokens, tree).start();
-            else {
+            new PClWindows(tokens, tree, !grammar.error).start();
+            if (grammar.error) {
                 System.out.println(ANSI_RED + "Analysis Syntax failed, no tree to display" + ANSI_RESET);
             }
             if (lexeur.getNumber_errors() != 0) {
