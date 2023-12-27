@@ -89,7 +89,7 @@ public class PClWindows {
 
         centerPanel.setPreferredSize(new Dimension(800, 800));
         centerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        vv.setPreferredSize(new Dimension(800, 800));
+        vv.setPreferredSize(new Dimension(1200, 800));
 
         DefaultModalGraphMouse<String, Number> gm1 = new DefaultModalGraphMouse<>();
         vv.setGraphMouse(gm1);
@@ -104,7 +104,6 @@ public class PClWindows {
         centerPanel.setBackground(Color.WHITE);
 
         centerPanel.add(graphZoomScrollPane);
-        //centerPanel.add(new NodeLabelAsShapeDemo());
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         frame.setContentPane(mainPanel);
     }
