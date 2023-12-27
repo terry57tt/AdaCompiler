@@ -12,6 +12,9 @@ import java.util.List;
 public class Grammar {
 
     public Boolean error = false;
+
+    private int numberErrors = 0;
+
     public Token currentToken = null;
     public SyntaxTree syntaxTree = null;
     private Boolean indicateur_acces = false;
@@ -24,20 +27,29 @@ public class Grammar {
 
     private void printError(String expectedMessage, Token currentToken){
         boolean multiples = expectedMessage.contains(" ");
+        numberErrors++;
         System.out.println("line " + currentToken.getLineNumber() + ":" + ColorAnsiCode.ANSI_RED + " error:" + ColorAnsiCode.ANSI_RESET +
                 " expected " + (multiples ? " one of them": "") + " \"" + expectedMessage + "\" got [value=" + currentToken.getValue() + " type=" + currentToken.getType() + "]");
+        System.out.println(getLineToken(currentToken.getLineNumber()) + "\n");
     }
 
+    private String getLineToken(long line) {
+        StringBuilder lineToken = new StringBuilder();
+        for (Token token: tokens) {
+            if (token.getLineNumber() == line) {
+                lineToken.append(token.getValue()).append(" ");
+            }
+        }
+        return lineToken.toString();
+    }
+
+    public int getNumberErrors() {
+        return numberErrors;
+    }
 
     public SyntaxTree getSyntaxTree() {
         this.currentToken = tokens.get(tokensIndex);
         fichier();
-        if(error){
-            System.out.println("Une erreur syntaxique a été détectée : error = true");
-        }
-        else {
-            System.out.println("Analyse syntaxique terminée avec succès : error = false\n");
-        }
         return this.syntaxTree;
     }
 

@@ -44,28 +44,29 @@ public class App {
 
             Lexeur lexeur = new Lexeur(Graph.create(), FileHandler.getCharacters(file), file);
             ArrayList<Token> tokens = lexeur.getTokens();
+
+            Grammar grammar = new Grammar(tokens);
+            SyntaxTree tree = grammar.getSyntaxTree();
+
+
+            System.out.println();
+            if (!grammar.error)
+                new PClWindows(tokens, tree).start();
+            else {
+                System.out.println(ANSI_RED + "Analysis Syntax failed, no tree to display" + ANSI_RESET);
+            }
             if (lexeur.getNumber_errors() != 0) {
                 System.out.println( ANSI_RED + lexeur.getNumber_errors() + " lexical error" +
                         ((lexeur.getNumber_errors() > 1) ? "s": "") + " generated" +
                         ANSI_RESET);
             }
+            if (grammar.error) {
+                System.out.println(ANSI_RED + grammar.getNumberErrors() + " syntax error" +
+                        ((grammar.getNumberErrors() > 1) ? "s": "") + " generated" +
+                        ANSI_RESET);
+            }
 
-            Grammar grammar = new Grammar(tokens);
-            SyntaxTree tree = grammar.getSyntaxTree();
-            System.err.println(tree + "\n");
-            new PClWindows(tokens, tree).start();
         }
-        String file2 = "demo/SyntaxError/syntaxError2.ada";
-        //String file2 = "demo/example_subject.ada";
-        Automaton automaton = Graph.create();
-        Stream<Character> stream = FileHandler.getCharacters(file2);
-
-        Lexeur lexeur2 = new Lexeur(automaton, stream, file2);
-        
-        ArrayList<Token> tokens2 = lexeur2.tokenize();
-
-        Grammar grammar2 = new Grammar(tokens2);
-        SyntaxTree tree2 = grammar2.getSyntaxTree();
     }
 
 
