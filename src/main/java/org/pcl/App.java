@@ -2,6 +2,7 @@ package org.pcl;
 
 
 import org.pcl.grammaire.Grammar;
+import org.pcl.grammaire.Grammar_ast;
 import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
@@ -45,7 +46,7 @@ public class App {
             Lexeur lexeur = new Lexeur(Graph.create(), FileHandler.getCharacters(file), file);
             ArrayList<Token> tokens = lexeur.getTokens();
 
-            Grammar grammar = new Grammar(tokens);
+            Grammar_ast grammar = new Grammar_ast(tokens);
             SyntaxTree tree = grammar.getSyntaxTree();
 
 
