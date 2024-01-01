@@ -9,9 +9,7 @@ import edu.uci.ics.jung.visualization.DefaultVisualizationModel;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationModel;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ScalingControl;
+import edu.uci.ics.jung.visualization.control.*;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
@@ -96,6 +94,7 @@ public class PClWindows {
         vv.setPreferredSize(new Dimension(1200, 800));
 
         DefaultModalGraphMouse<String, Number> gm1 = new DefaultModalGraphMouse<>();
+        //AbstractModalGraphMouse gm1 = new ModalLensGraphMouse();
         vv.setGraphMouse(gm1);
         final ScalingControl scaler = new CrossoverScalingControl();
         vv.scaleToLayout(scaler);

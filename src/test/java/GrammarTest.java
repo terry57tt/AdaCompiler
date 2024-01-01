@@ -25,7 +25,7 @@ import org.pcl.structure.tree.SyntaxTree;
 public class GrammarTest {
     @Test
     public void createGrammar() throws IOException {
-        String file = "demo/syntaxError.ada";
+        String file = "demo/SyntaxError/syntaxError.ada";
         Automaton automaton = Graph.create();
         Stream<Character> stream = FileHandler.getCharacters(file);
 
