@@ -166,7 +166,7 @@ public class GrammarTest {
 
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
-        //assertEquals(lexeur, grammar);
+
         assertFalse(grammar.error,"Syntax error should not be detected");
         assertTrue(grammar.getNumberErrors() == 0,"Number of errors should be 0");
     }
@@ -239,6 +239,18 @@ public class GrammarTest {
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
+        assertFalse(grammar.error,"Syntax error should not be detected");
+        assertTrue(grammar.getNumberErrors() == 0,"Number of errors should be 0");
+    }
+
+    @Test
+    public void testSpecific8() throws IOException {
+      
+        Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_8.ada");
+
+        Grammar grammar = new Grammar(lexeur.tokenize());
+        grammar.getSyntaxTree();
+        
         assertFalse(grammar.error,"Syntax error should not be detected");
         assertTrue(grammar.getNumberErrors() == 0,"Number of errors should be 0");
     }
