@@ -1,6 +1,7 @@
 package org.pcl.structure.tree;
 
 import edu.uci.ics.jung.graph.*;
+import org.pcl.structure.automaton.TokenType;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -85,4 +86,26 @@ public class SyntaxTree {
                 "rootNode=" + rootNode +
                 '}';
     }
+
+    public Boolean nonTerminalInTree() {
+        ArrayList<Node> nodesToVisit = new ArrayList<>();
+        Node currentNode = this.rootNode; //current Node of parse Tree
+        nodesToVisit.add(currentNode);
+
+        while (!nodesToVisit.isEmpty()) {
+            currentNode = nodesToVisit.get(0);
+            nodesToVisit.remove(0);
+            int i = 0;
+            for (Node child : currentNode.getChildren()) {
+                nodesToVisit.add(i, child);
+                i++;
+            }
+            if (!currentNode.isFinal()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

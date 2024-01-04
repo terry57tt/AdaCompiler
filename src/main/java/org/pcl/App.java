@@ -21,6 +21,7 @@ public class App {
 
     public static void main(String[] args) throws IOException {
 
+
         if (args.length == 0) {
             System.out.println(ANSI_RED + "No files to compile.\n" +
                     "Please enter the path of the files you want to compile with the command line argument -Pfiles=\"file1\""
@@ -50,8 +51,13 @@ public class App {
             SyntaxTree tree = grammar.getSyntaxTree();
 
 
-            System.out.println();
-            new PClWindows(tokens, tree, !grammar.error).start();
+            new PClWindows(tokens, tree,!grammar.error).start();
+            grammar.createAST();
+            tree = grammar.ast;
+
+            new PClWindows(tokens, tree,!grammar.error).start();
+
+
             if (grammar.error) {
                 System.out.println(ANSI_RED + "Analysis Syntax failed, no tree to display" + ANSI_RESET);
             }
