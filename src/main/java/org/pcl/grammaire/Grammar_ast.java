@@ -210,10 +210,27 @@ public class Grammar_ast {
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
                 }
                 // on arrange les boucles if
+                //on arrange les if, elsif, else
+
                 if (currentNode.getToken().getValue().equalsIgnoreCase("then")){
                     lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
                     currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
                     currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                }
+                if (currentNode.getValue().equalsIgnoreCase("if") && currentNode.getChildren().size() != 0){
+                    Node nodeIF = new Node("IF Block");
+                    int indexIf = currentNode.getParent().getChildren().indexOf(currentNode);
+                    System.out.println(currentNode);
+                    System.out.println(currentNode.getParent().getChildren());
+                    currentNode.getParent().getChildren().set(indexIf, nodeIF);
+                    currentNode.setParent(nodeIF);
+                    nodeIF.addChild(currentNode);
+                }
+                if (currentNode.getValue().equalsIgnoreCase("elsif")
+                        || currentNode.getToken().getValue().equalsIgnoreCase("else")){
+                    currentNode.getParent().getChildren().remove(currentNode);
+                    lastNode.getParent().getParent().addChild(currentNode);
+                    currentNode.setParent(lastNode.getParent().getParent());
                 }
 
                 //on arrange les boucles while
@@ -237,6 +254,7 @@ public class Grammar_ast {
                         currentNode.getParent().getChildren().remove(currentNode);
                     }
                 }
+
 
 
             lastNode = currentNode;

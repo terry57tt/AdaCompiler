@@ -8,4 +8,8 @@ begin
     else
        x := 3;
     end if;
+
+    while Variable < 10 loop
+           Variable := Variable * 2;
+        end loop;
 end unDebut ;
