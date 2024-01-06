@@ -152,4 +152,8 @@ public class Node {
     public void setParent(Node parent){
         this.parent = parent;
     }
+
+    public void setValue(String value){
+        this.value = value;
+    }
 }

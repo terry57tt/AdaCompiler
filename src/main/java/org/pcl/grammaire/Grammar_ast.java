@@ -65,8 +65,7 @@ public class Grammar_ast {
                     && !child.getToken().getValue().equals("(")
                     && !child.getToken().getValue().equals(")")
                     && !child.getToken().getValue().equals(";")
-                    && !child.getToken().getValue().equals(":")
-                    && child.getToken().getLineNumber() != 1) {
+                    && !child.getToken().getValue().equals(":")) {
                 /*si child est terminal (n'est pas un nombre, (, ), :, ;,
                 ou n'est pas un identificateur sauf un identificateur de fonction)
                 alors on le note comment dernier non terminal et on l'ajoute comme fils du nouveau noeud
@@ -129,11 +128,15 @@ public class Grammar_ast {
         Node currentNode = new Node();
         currentNode = ast.getRootNode();
 
+
+
         //cas du noeud racine : en fin de boucle, le noeud racine n'a plus d'enfants non terminaux
         while (currentNode.nonTerminalInDirectChildren()) {
             currentNode = reduceNodesChildren(currentNode);
             this.ast = new SyntaxTree(currentNode);
         }
+
+
         //on ajoute les enfants du nouveau noeud racine à la liste de noeud à visiter
         nodes_to_visit.addAll(currentNode.getChildren());
 
@@ -169,11 +172,26 @@ public class Grammar_ast {
         Node currentNode;
         nodes_to_visit.add(ast.getRootNode());
 
-        //cas des autres noeuds
+
         while (!nodes_to_visit.isEmpty()){
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
             nodes_to_visit.remove(0);
             if(currentNode.getToken() != null){
+                // on enlève les noeuds qui ne servent pas parmi les enfants du root node
+                if (currentNode.getToken().getValue().equalsIgnoreCase("begin") && currentNode.getToken().getType().equals(TokenType.KEYWORD) && currentNode.getParent().equals(ast.getRootNode())){
+                    currentNode.setValue("BODY");
+                    int indexBegin = currentNode.getParent().getChildren().indexOf(currentNode);
+                    for (int i = 0; i < indexBegin; i++) {
+                        if (!ast.getRootNode().getChildren().get(0).getValue().equals("procedure")){
+                            ast.getRootNode().getChildren().remove(0);
+                        }
+                    }
+                }
+                if (currentNode.getToken().getValue().equalsIgnoreCase("is") && currentNode.getToken().getType().equals(TokenType.KEYWORD) && currentNode.getParent().equals(ast.getRootNode())){
+                    ast.getRootNode().getChildren().remove(currentNode);
+                }
+
+                //on arrange les opérations, affectations
                 if (currentNode.getToken().getValue().equals(":=")
                         || currentNode.getToken().getValue().equals("/=")
                         || currentNode.getToken().getValue().equals(">")
@@ -191,11 +209,13 @@ public class Grammar_ast {
                     lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
                 }
+                // on arrange les boucles if
                 if (currentNode.getToken().getValue().equals("then")){
                     lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
                     currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
                     currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
                 }
+
             lastNode = currentNode;
             }
             nodes_to_visit.addAll(currentNode.getChildren());
