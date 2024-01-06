@@ -19,7 +19,6 @@ public class Lexeur {
     private final String fileName;
 
     private int number_errors;
-    private Token lastToken;
 
     public Lexeur(Automaton automaton, Stream<Character> stream, String path) {
         this.automaton = automaton;
@@ -178,6 +177,15 @@ public class Lexeur {
                 return i + 1;
             }
         }
+
+        /* case single character : everything between ' is considered as a character */
+        if(String.valueOf(c).equals("'")) {
+            if((i + 1 < characterList.size()) && (characterList.get(i + 1) != '\n' && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n'))
+             && (characterList.get(i + 2) == '\'') && (characterList.get(i) == '\'')){
+                separator = characterList.get(i + 1) + "";
+                tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                return i + 2;
+        }} else 
 
         // case of characters or strings with ' --> the same as ", with count
         if (String.valueOf(c).equals("'")){
