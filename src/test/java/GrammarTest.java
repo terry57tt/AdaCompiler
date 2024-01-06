@@ -5,8 +5,8 @@ import org.pcl.FileHandler;
 import org.pcl.Lexeur;
 import org.pcl.Token;
 
+import org.pcl.grammaire.Grammar_former;
 import org.pcl.grammaire.Grammar;
-import org.pcl.grammaire.Grammar_ast;
 import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
@@ -15,12 +15,6 @@ import org.junit.jupiter.api.Test;
 
 import org.pcl.structure.automaton.TokenType;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
@@ -36,7 +30,7 @@ public class GrammarTest {
 
         ArrayList<Token> tokens = lexeur.tokenize();
 
-        Grammar grammar = new Grammar(tokens);
+        Grammar_former grammar = new Grammar_former(tokens);
         SyntaxTree tree = grammar.getSyntaxTree();
         System.out.println("Printrds");
         System.out.println(tree);
@@ -58,7 +52,7 @@ public class GrammarTest {
         node2.addChild(leaf);
         leaf.setParent(node2);
 
-        Grammar_ast grammar = new Grammar_ast(tokens);
+        Grammar grammar = new Grammar(tokens);
         grammar.syntaxTree = new SyntaxTree(grammar.reduceNodesChildren(root));
 
         assert grammar.syntaxTree.getRootNode().getValue().equals(root.getValue());
@@ -100,7 +94,7 @@ public class GrammarTest {
         tokens.add(tokenX);
         tokens.add(token3);
 
-        Grammar_ast grammar = new Grammar_ast(tokens);
+        Grammar grammar = new Grammar(tokens);
         grammar.syntaxTree = new SyntaxTree(root);
         grammar.createAST();
         new PClWindows(tokens, grammar.ast,!grammar.error).start();

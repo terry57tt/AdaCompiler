@@ -2,16 +2,12 @@ package org.pcl;
 
 
 import org.pcl.grammaire.Grammar;
-import org.pcl.grammaire.Grammar_ast;
 import org.pcl.ig.PClWindows;
-import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
-import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 import static org.pcl.ColorAnsiCode.ANSI_RED;
 import static org.pcl.ColorAnsiCode.ANSI_RESET;
@@ -47,11 +43,9 @@ public class App {
             Lexeur lexeur = new Lexeur(Graph.create(), FileHandler.getCharacters(file), file);
             ArrayList<Token> tokens = lexeur.getTokens();
 
-            Grammar_ast grammar = new Grammar_ast(tokens);
+            Grammar grammar = new Grammar(tokens);
             SyntaxTree tree = grammar.getSyntaxTree();
 
-
-            new PClWindows(tokens, tree,!grammar.error).start();
             grammar.createAST();
             tree = grammar.ast;
 

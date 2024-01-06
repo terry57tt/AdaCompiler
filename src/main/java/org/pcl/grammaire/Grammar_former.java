@@ -2,273 +2,25 @@ package org.pcl.grammaire;
 
 import org.pcl.ColorAnsiCode;
 import org.pcl.Token;
-import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
-import javax.swing.plaf.IconUIResource;
 import java.util.ArrayList;
-import java.util.Collections;
 
-public class Grammar_ast {
+public class Grammar_former {
+
     public Boolean error = false;
 
     private int numberErrors = 0;
 
     public Token currentToken = null;
     public SyntaxTree syntaxTree = null;
-    public SyntaxTree syntaxTree2 = null;
-    public SyntaxTree ast = null;
     private Boolean indicateur_acces = false;
     public int tokensIndex = 0;
     ArrayList<Token> tokens;
 
-
-
-/*    public Node reduceNodesChildren(Node node){
-        Node lastTerminalNode = node; //last terminal Node without numbers and identifiers
-        Node newNode = new Node(node.getValue());
-        for (Node child : node.getChildren()){
-            if (child.isFinal() && child.getToken().getType() != TokenType.NUMBER
-                    && !child.getToken().getValue().equals("(")
-                    && !child.getToken().getValue().equals(")")
-                    && !child.getToken().getValue().equals(";")
-                    && !child.getToken().getValue().equals(":")
-                    && (child.getToken().getType() != TokenType.IDENTIFIER
-                        || !tokens.get(tokens.indexOf(child.getToken()) + 1).getValue().equals("("))) {
-                lastTerminalNode = child;
-                newNode.addChild(child);
-            }
-            else if(!child.isFinal()) {
-                Node newChild = new Node();
-                newChild = lastTerminalNode;
-                newChild.addChild(child);
-                newNode.getChildren().remove(lastTerminalNode);
-                newNode.getChildren().add(newChild);
-
-            }
-        }
-        return newNode;
-    }*/
-    public Node reduceNodesChildren(Node node) {
-        Node lastTerminalNode = node; //last terminal Node without numbers and identifiers
-        Node newNode = new Node(node); //création d'un nouveau noeud égal à node sans ses enfants
-
-        ArrayList<Node> nodeChildren = node.getChildren(); //enfants de node
-
-        for (Node child : nodeChildren) {
-            //pour tout child, enfant de node
-
-            if (child.isFinal() && child.getToken().getType() != TokenType.NUMBER
-                    && child.getToken().getType() != TokenType.IDENTIFIER
-                    && !child.getToken().getValue().equals("(")
-                    && !child.getToken().getValue().equals(")")
-                    && !child.getToken().getValue().equals(";")
-                    && !child.getToken().getValue().equals(":")) {
-                /*si child est terminal (n'est pas un nombre, (, ), :, ;,
-                ou n'est pas un identificateur sauf un identificateur de fonction)
-                alors on le note comment dernier non terminal et on l'ajoute comme fils du nouveau noeud
-                 */
-                lastTerminalNode = child;
-                newNode.addChild(child);
-                child.setParent(lastTerminalNode);
-                child.setParent(newNode);
-
-            }else if (child.isFinal() && child.getToken().getType() == TokenType.IDENTIFIER){
-                if (tokens.get(tokens.indexOf(child.getToken()) + 1).getValue().equals("(")) {
-                    lastTerminalNode = child;
-                    newNode.addChild(child);
-//                    child.setParent(lastTerminalNode);
-                    child.setParent(newNode);
-                }
-                else {
-                    if (child.getToken().getLineNumber() != 1){
-                    newNode.addChild(child);
-//                    child.setParent(lastTerminalNode);
-                    child.setParent(newNode);}
-                }
-            }
-            else if (!child.isFinal()) {
-                //si child est non terminal
-                for (Node childChild : child.getChildren()) {
-                    /* pour tout childChild, enfant de child*/
-                    if (lastTerminalNode == node) {
-                        //s'il n'a pas eu d'enfants terminal avant child
-                        //on ajoute les enfants de l'enfant aux enfants du nouveau noeud
-                        //le noeud non terminal est donc supprimé
-                        childChild.setParent(newNode);
-                        newNode.addChild(childChild);
-
-                    } else {
-                        //sinon on ajoute les enfants de l'enfant non terminal au dernier terminal rencontré (en dehors des cas particuliers)
-                        lastTerminalNode.addChild(childChild);
-                        childChild.setParent(lastTerminalNode);
-                        newNode.addChild(lastTerminalNode);
-                        lastTerminalNode.setParent(newNode);
-                    }
-                    newNode.getChildren().remove(lastTerminalNode);
-                }
-                //on réinitialise le lastTerminalNode entre chaque branche
-                lastTerminalNode = node;
-
-            }
-        }
-        return newNode;
-    }
-
-
-    public void createAST(){
-        if(this.syntaxTree == null){
-            System.out.println("Il n'y a pas encore de parse tree.");
-            return;
-        }
-        this.ast = this.syntaxTree;
-        ArrayList<Node> nodes_to_visit = new ArrayList<>();
-        Node currentNode = new Node();
-        currentNode = ast.getRootNode();
-
-
-
-        //cas du noeud racine : en fin de boucle, le noeud racine n'a plus d'enfants non terminaux
-        while (currentNode.nonTerminalInDirectChildren()) {
-            currentNode = reduceNodesChildren(currentNode);
-            this.ast = new SyntaxTree(currentNode);
-        }
-
-
-        //on ajoute les enfants du nouveau noeud racine à la liste de noeud à visiter
-        nodes_to_visit.addAll(currentNode.getChildren());
-
-        //cas des autres noeuds
-        while (!nodes_to_visit.isEmpty()){
-        //on étudie le prochain noeud à visiter (parcours en profondeur), on l'enlève des noeuds à visiter
-            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
-            nodes_to_visit.remove(0);
-            while (currentNode.nonTerminalInDirectChildren()) {
-                //tant que le noeud courant a encore des enfants non terminaux
-                //on réduit le noeud et on remplace le noeud dans l'arbre précédent
-                Node nodeToBeAdded = reduceNodesChildren(currentNode);
-                currentNode.getParent().replaceChild(currentNode, nodeToBeAdded);
-                currentNode = nodeToBeAdded;
-            }
-
-            //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
-            int i = 0;
-            for (Node child : currentNode.getChildren()){
-                nodes_to_visit.add(i, child);
-                i ++;
-            }
-        }
-
-        //l'ast est presque fini, il reste à arranger les opérations : on fait un parcours en largeur
-        arangeAST();
-
-    }
-
-    public void arangeAST(){
-        ArrayList<Node> nodes_to_visit = new ArrayList<>();
-        Node lastNode = ast.getRootNode();
-        Node currentNode = ast.getRootNode();
-        nodes_to_visit.add(ast.getRootNode());
-
-
-        while (!nodes_to_visit.isEmpty()){
-            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
-            nodes_to_visit.remove(0);
-            if(currentNode.getToken() != null){
-                // on enlève les noeuds qui ne servent pas parmi les enfants du root node
-                if (currentNode.getToken().getValue().equalsIgnoreCase("begin") && currentNode.getToken().getType().equals(TokenType.KEYWORD) && currentNode.getParent().equals(ast.getRootNode())){
-                    currentNode.setValue("BODY");
-                    int indexBegin = currentNode.getParent().getChildren().indexOf(currentNode);
-                    for (int i = 0; i < indexBegin; i++) {
-                        if (!ast.getRootNode().getChildren().get(0).getValue().equals("procedure")){
-                            ast.getRootNode().getChildren().remove(0);
-                        }
-                    }
-                }
-                if (currentNode.getToken().getValue().equalsIgnoreCase("is") && currentNode.getToken().getType().equals(TokenType.KEYWORD) && currentNode.getParent().equals(ast.getRootNode())){
-                    ast.getRootNode().getChildren().remove(currentNode);
-                }
-
-                //on arrange les opérations, affectations
-                if (currentNode.getToken().getValue().equals(":=")
-                        || currentNode.getToken().getValue().equals("/=")
-                        || currentNode.getToken().getValue().equals(">")
-                        || currentNode.getToken().getValue().equals(">=")
-                        || currentNode.getToken().getValue().equals("<")
-                        || currentNode.getToken().getValue().equals("<=")
-                        || currentNode.getToken().getValue().equals("+")
-                        || currentNode.getToken().getValue().equals("-")
-                        || currentNode.getToken().getValue().equals("*")
-                        || currentNode.getToken().getValue().equals("/")
-                        || currentNode.getToken().getValue().equals("=")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("rem")
-                        || currentNode.getToken().getValue().equals(".")){
-                    currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
-                    lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
-                    lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
-                }
-                // on arrange les boucles if
-                //on arrange les if, elsif, else
-
-                if (currentNode.getToken().getValue().equalsIgnoreCase("then")){
-                    lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
-                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
-                    currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
-                }
-                if (currentNode.getValue().equalsIgnoreCase("if") && currentNode.getChildren().size() != 0){
-                    Node nodeIF = new Node("IF Block");
-                    int indexIf = currentNode.getParent().getChildren().indexOf(currentNode);
-                    System.out.println(currentNode);
-                    System.out.println(currentNode.getParent().getChildren());
-                    currentNode.getParent().getChildren().set(indexIf, nodeIF);
-                    currentNode.setParent(nodeIF);
-                    nodeIF.addChild(currentNode);
-                }
-                if (currentNode.getValue().equalsIgnoreCase("elsif")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("else")){
-                    currentNode.getParent().getChildren().remove(currentNode);
-                    lastNode.getParent().getParent().addChild(currentNode);
-                    currentNode.setParent(lastNode.getParent().getParent());
-                }
-
-                //on arrange les boucles while
-                if (!lastNode.equals(ast.getRootNode())){
-                    if (lastNode.getToken().getValue().equalsIgnoreCase("while")){
-                        lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
-                        currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
-                        currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
-                    }
-                }
-
-                //on enlève les end
-                if (currentNode.getValue().equalsIgnoreCase("end")){
-                    if(currentNode.getChildren().size() == 0) {
-                        currentNode.getParent().getChildren().remove(currentNode);
-                    }
-                }
-                if (currentNode.getValue().equalsIgnoreCase("if")
-                        || currentNode.getValue().equalsIgnoreCase("loop")){
-                    if(currentNode.getChildren().size() == 0){
-                        currentNode.getParent().getChildren().remove(currentNode);
-                    }
-                }
-
-
-
-            lastNode = currentNode;
-            }
-            nodes_to_visit.addAll(currentNode.getChildren());
-        }
-    }
-
-
-
-
-
-
-    public Grammar_ast(ArrayList<Token> tokens){
+    public Grammar_former(ArrayList<Token> tokens){
         this.tokens = tokens;
     }
 
@@ -301,9 +53,6 @@ public class Grammar_ast {
     }
 
 
-
-
-
     // terminals procedures
 
     public void terminalAnalyse(String terminal, Node node){
@@ -311,7 +60,7 @@ public class Grammar_ast {
             if(currentToken.getValue().equalsIgnoreCase(terminal)){
                 Node terminalNode = new Node(currentToken);
                 node.addChild(terminalNode);
-                if (tokensIndex != tokens.size() - 1) {
+                if (tokensIndex != tokens.size() - 1){
                     this.tokensIndex++;
                     currentToken = this.tokens.get(this.tokensIndex);
                 }
@@ -330,7 +79,7 @@ public class Grammar_ast {
     void fichier(){
         if(!error){
             if(currentToken.getValue().equals("with")) {
-                Node nodeFichier = new Node("Fichier");
+                Node nodeFichier = new Node("nodeFichier");
                 this.syntaxTree = new SyntaxTree(nodeFichier);
                 terminalAnalyse("with", nodeFichier);
                 terminalAnalyse("Ada", nodeFichier);
@@ -393,9 +142,9 @@ public class Grammar_ast {
     void instrstar(Node node) {
         if(!error){
             if(currentToken.getValue().equals(")")
-                    || currentToken.getValue().equals("else")
-                    || currentToken.getValue().equals("end")
-                    || currentToken.getValue().equals("elsif")){ return; }
+                || currentToken.getValue().equals("else")
+                || currentToken.getValue().equals("end")
+                || currentToken.getValue().equals("elsif")){ return; }
             else if(currentToken.getValue().equals("begin")
                     || currentToken.getValue().equals("return")
                     || currentToken.getValue().equals("(")
@@ -439,7 +188,7 @@ public class Grammar_ast {
             }
         }
     }
-
+ 
     void identstar_virgule(Node node) {
         if(!error){
             if(currentToken.getValue().equals(":")){return; }
@@ -526,7 +275,7 @@ public class Grammar_ast {
                 node.addChild(nodeDecl2);
                 terminalAnalyse("is", nodeDecl2);
                 decl3(nodeDecl2);
-            }
+            } 
             else error = true;
             if (error) {
                 printError("; is", currentToken);
@@ -552,7 +301,7 @@ public class Grammar_ast {
                 terminalAnalyse("end", nodeDecl3);
                 terminalAnalyse("record", nodeDecl3);
                 terminalAnalyse(";", nodeDecl3);
-            }
+            } 
             else error = true;
             if (error) {
                 printError("access record", currentToken);
@@ -747,7 +496,7 @@ public class Grammar_ast {
                 else {
                     terminalAnalyse("in", nodeMode);
                 }
-            }
+            } 
             else error = true;
             if (error) {
                 printError("in", currentToken);
@@ -820,15 +569,15 @@ public class Grammar_ast {
     void priorite_or_2(Node node) {
         if(!error){
             if (currentToken.getValue().equals("(")
-                    || currentToken.getValue().equals("-")
-                    || currentToken.getType() == TokenType.NUMBER
-                    || currentToken.getType() == TokenType.CHARACTER
-                    || currentToken.getValue().equals("true")
-                    || currentToken.getValue().equals("false")
-                    || currentToken.getValue().equals("null")
-                    || currentToken.getValue().equals("new")
-                    || currentToken.getValue().equals("character")
-                    || currentToken.getType() == TokenType.IDENTIFIER) {
+                || currentToken.getValue().equals("-")
+                || currentToken.getType() == TokenType.NUMBER
+                || currentToken.getType() == TokenType.CHARACTER
+                || currentToken.getValue().equals("true")
+                || currentToken.getValue().equals("false")
+                || currentToken.getValue().equals("null")
+                || currentToken.getValue().equals("new")
+                || currentToken.getValue().equals("character")
+                || currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodePrioriteOr2 = new Node("nodePrioriteOr2");
                 node.addChild(nodePrioriteOr2);
                 terme_1(nodePrioriteOr2);
@@ -1313,7 +1062,7 @@ public class Grammar_ast {
                     printError("; , = ) or and then not /= < <= > >= + - * / rem .. := loop", currentToken);
                     //System.out.println("ici Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
                 }
-            }
+            }    
         }
     }
 
@@ -1419,7 +1168,7 @@ public class Grammar_ast {
         else error = true;
         if (error) {
             printError("( ; , = ) or and then not /= < <= > >= + - * / rem . := .. loop", currentToken);
-            // System.out.println("Erreur syntaxique : terminal attendu : ( ou ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou . ou := ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
+           // System.out.println("Erreur syntaxique : terminal attendu : ( ou ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou . ou := ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
         }
     }
 
@@ -1444,7 +1193,7 @@ public class Grammar_ast {
         }
     }
 
-    //On met de coté le cas où on a un ident suivi d'un point pour l'instant
+    //On met de coté le cas où on a un ident suivi d'un point pour l'instant 
     void instr(Node node) {
         if(!error) {
             if (currentToken.getValue().equals("begin")){
