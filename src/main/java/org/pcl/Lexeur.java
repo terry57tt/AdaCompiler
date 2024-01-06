@@ -19,6 +19,7 @@ public class Lexeur {
     private final String fileName;
 
     private int number_errors;
+    private Token lastToken;
 
     public Lexeur(Automaton automaton, Stream<Character> stream, String path) {
         this.automaton = automaton;
@@ -66,6 +67,14 @@ public class Lexeur {
             char c = characterList.get(i);
             lineStack.add(c);
             if (isSeparator(c)) {
+
+                /* case ' is a separator */
+                boolean isVal = false;
+                if(this.currentToken.equalsIgnoreCase("character")) {
+                    isVal = true;
+                }
+
+                /* add current token to the list */
                 if (!this.currentToken.isEmpty()) {
                     addToken(tokens, this.currentToken, this.lineNumber);
                 }
@@ -76,7 +85,12 @@ public class Lexeur {
                 }
 
                 if(tokenSeparator(c)) {
-                    if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList, lineStack);
+                    if (isVal) {
+                        /* special case for character ' val */
+                        tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
+                        isVal = false;
+                    }
+                    else if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList, lineStack);
                     else tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
                 }
 
