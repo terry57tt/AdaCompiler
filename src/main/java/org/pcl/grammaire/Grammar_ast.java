@@ -225,6 +225,20 @@ public class Grammar_ast {
                     }
                 }
 
+                //on enlève les end
+                if (currentNode.getValue().equalsIgnoreCase("end")){
+                    if(currentNode.getChildren().size() == 0) {
+                        currentNode.getParent().getChildren().remove(currentNode);
+                    }
+                }
+                if (currentNode.getValue().equalsIgnoreCase("if")
+                        || currentNode.getValue().equalsIgnoreCase("loop")){
+                    if(currentNode.getChildren().size() == 0){
+                        currentNode.getParent().getChildren().remove(currentNode);
+                    }
+                }
+
+
             lastNode = currentNode;
             }
             nodes_to_visit.addAll(currentNode.getChildren());
