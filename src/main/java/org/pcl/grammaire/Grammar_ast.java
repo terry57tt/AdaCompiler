@@ -168,8 +168,8 @@ public class Grammar_ast {
 
     public void arangeAST(){
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
-        Node lastNode = null;
-        Node currentNode;
+        Node lastNode = ast.getRootNode();
+        Node currentNode = ast.getRootNode();
         nodes_to_visit.add(ast.getRootNode());
 
 
@@ -203,17 +203,26 @@ public class Grammar_ast {
                         || currentNode.getToken().getValue().equals("*")
                         || currentNode.getToken().getValue().equals("/")
                         || currentNode.getToken().getValue().equals("=")
-                        || currentNode.getToken().getValue().equals("rem")
+                        || currentNode.getToken().getValue().equalsIgnoreCase("rem")
                         || currentNode.getToken().getValue().equals(".")){
                     currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
                     lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
                 }
                 // on arrange les boucles if
-                if (currentNode.getToken().getValue().equals("then")){
+                if (currentNode.getToken().getValue().equalsIgnoreCase("then")){
                     lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
                     currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
                     currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                }
+
+                //on arrange les boucles while
+                if (!lastNode.equals(ast.getRootNode())){
+                    if (lastNode.getToken().getValue().equalsIgnoreCase("while")){
+                        lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                        currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                        currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                    }
                 }
 
             lastNode = currentNode;
