@@ -191,6 +191,11 @@ public class Grammar_ast {
                     lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
                 }
+                if (currentNode.getToken().getValue().equals("then")){
+                    lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                    currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                }
             lastNode = currentNode;
             }
             nodes_to_visit.addAll(currentNode.getChildren());
