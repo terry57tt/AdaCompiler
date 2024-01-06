@@ -63,7 +63,3 @@ begin
       print_row(i);
    end loop;
 end Pascal;
-
---  Local Variables:
---  compile-command: "gnatmake pascal.adb && ./pascal"
---  End:
