@@ -21,23 +21,31 @@ public class Grammar {
     public int tokensIndex = 0;
     ArrayList<Token> tokens;
 
+    ArrayList<Token> wrongTokens = new ArrayList<>();
+
     public Grammar(ArrayList<Token> tokens){
         this.tokens = tokens;
     }
 
     private void printError(String expectedMessage, Token currentToken){
+        if (wrongTokens.contains(currentToken)) return;
+        wrongTokens.add(currentToken);
         boolean multiples = expectedMessage.contains(" ");
         numberErrors++;
         System.out.println("line " + currentToken.getLineNumber() + ":" + ColorAnsiCode.ANSI_RED + " error:" + ColorAnsiCode.ANSI_RESET +
-                " expected " + (multiples ? " one of them": "") + " \"" + expectedMessage + "\" got [value=" + currentToken.getValue() + " type=" + currentToken.getType() + "]");
-        System.out.println(getLineToken(currentToken.getLineNumber()) + "\n");
+                " expected " + (multiples ? "one of them": "") + " " + ColorAnsiCode.ANSI_RED + expectedMessage + ColorAnsiCode.ANSI_RESET + " got \"" + currentToken.getValue() + "\" type=" + currentToken.getType());
+        System.out.println(getLineToken(currentToken.getLineNumber(), currentToken) + "\n");
     }
 
-    private String getLineToken(long line) {
+    private String getLineToken(long line, Token currentToken) {
         StringBuilder lineToken = new StringBuilder();
         for (Token token: tokens) {
             if (token.getLineNumber() == line) {
-                lineToken.append(token.getValue()).append(" ");
+                if (token == currentToken) {
+                    lineToken.append(ColorAnsiCode.ANSI_RED).append(token.getValue()).append(ColorAnsiCode.ANSI_RESET).append(" ");
+                } else {
+                    lineToken.append(token.getValue()).append(" ");
+                }
             }
         }
         return lineToken.toString();
