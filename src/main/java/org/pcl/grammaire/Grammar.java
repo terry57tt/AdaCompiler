@@ -552,6 +552,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase(")")
                     || currentToken.getValue().equalsIgnoreCase("then")
                     || currentToken.getValue().equalsIgnoreCase("..")
+                    || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("or")) {
                 Node nodePrioriteOr = new Node("nodePrioriteOr");
@@ -561,7 +562,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) then . loop or", currentToken);
+                printError("; , ) then . loop or :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -631,6 +632,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("or")
                     || currentToken.getValue().equalsIgnoreCase("then")
                     || currentToken.getValue().equalsIgnoreCase("..")
+                    || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("and")) {
                 Node nodePrioriteAnd = new Node("nodePrioriteAnd");
@@ -640,7 +642,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) or then . loop", currentToken);
+                printError("; , ) or then . loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -710,6 +712,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("and")
                     || currentToken.getValue().equalsIgnoreCase("then")
                     || currentToken.getValue().equalsIgnoreCase("..")
+                    || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("not")) {
                 Node nodePrioriteNot = new Node("nodePrioriteNot");
@@ -720,7 +723,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) or and then . loop", currentToken);
+                printError("; , ) or and then . loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou and ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -761,6 +764,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("then")
                     || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("..")
+                    || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("=")) {
                 Node nodePrioriteEgal = new Node("nodePrioriteEgal");
@@ -778,7 +782,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) or and then not . loop", currentToken);
+                printError("; , ) or and then not . loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou and ou then ou not ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -821,6 +825,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("/=")
                     || currentToken.getValue().equalsIgnoreCase("..")
+                    || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("<")) {
                 Node nodePrioriteInferieur = new Node("nodePrioriteInferieur");
@@ -852,7 +857,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= . loop", currentToken);
+                printError("; , = ) or and then not /= . loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -898,6 +903,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("<=")
                     || currentToken.getValue().equalsIgnoreCase(">")
                     || currentToken.getValue().equalsIgnoreCase(">=")
+                    || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("..")
                     || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("+")) {
@@ -916,7 +922,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= < <= > >= .. loop", currentToken);
+                printError("; , = ) or and then not /= < <= > >= .. loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -962,6 +968,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("<=")
                     || currentToken.getValue().equalsIgnoreCase(">")
                     || currentToken.getValue().equalsIgnoreCase(">=")
+                    || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("+")
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getValue().equalsIgnoreCase("..")
@@ -989,7 +996,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= < <= > >= + - .. loop", currentToken);
+                printError("; , = ) or and then not /= < <= > >= + - := .. loop", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -998,7 +1005,6 @@ public class Grammar {
     void terme_7(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase("(")
-                    || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
                     || currentToken.getValue().equalsIgnoreCase("true")
@@ -1009,6 +1015,13 @@ public class Grammar {
                     || currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodeTerme7 = new Node("nodeTerme7");
                 node.addChild(nodeTerme7);
+                facteur(nodeTerme7);
+                priorite_point(nodeTerme7);
+            }
+            else if (currentToken.getValue().equalsIgnoreCase("-")) {
+                Node nodeTerme7 = new Node("nodeTerme7");
+                node.addChild(nodeTerme7);
+                terminalAnalyse("-", nodeTerme7);
                 facteur(nodeTerme7);
                 priorite_point(nodeTerme7);
             }
