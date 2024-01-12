@@ -2,7 +2,7 @@ with Ada.Text_IO ; use Ada.Text_IO ;
 procedure ifProgram is
 begin
     if Variable > 0 then
-        x := 1;
+         x := 1;
     elsif Variable < 0 then
         x := 2;
     else
@@ -10,6 +10,6 @@ begin
     end if;
 
     while Variable < 10 loop
-           Variable := Variable * 2;
+           Variable4 := Variable1 * 2;
         end loop;
 end unDebut ;
