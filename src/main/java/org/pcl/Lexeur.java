@@ -60,6 +60,7 @@ public class Lexeur {
     public ArrayList<Token> tokenize() throws InvalidStateException {
         ArrayList<Token> tokens = new ArrayList<>();
 
+
         List<Character> characterList = stream.collect(Collectors.toList());
         List<Character> lineStack = new ArrayList<>();
         for (int i = 0; i < characterList.size(); i++) {

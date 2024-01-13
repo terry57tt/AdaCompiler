@@ -12,7 +12,7 @@ public class GrammarError {
     @Test
     public void utilityClass() {
         String values = "number ident character ehfhua ahudhuad";
-        List<Token> tokens = GrammarErrorUtility.fromString(values);
+        List<Token> tokens = GrammarErrorUtility.fromString(values, -1);
         assert tokens.size() == 5;
         assert tokens.get(0).getType().equals(TokenType.NUMBER);
         assert tokens.get(1).getType().equals(TokenType.IDENTIFIER);
@@ -23,7 +23,7 @@ public class GrammarError {
 
     @Test
     public void createGrammarError() {
-        ArrayList<Token> tokens = (ArrayList<Token>) GrammarErrorUtility.fromString("number ident character ehfhua ahudhuad");
+        ArrayList<Token> tokens = (ArrayList<Token>) GrammarErrorUtility.fromString("number ident character ehfhua ahudhuad", -1);
         assert tokens.size() == 5;
         int decal = 2;
         Grammar g = new Grammar(tokens);

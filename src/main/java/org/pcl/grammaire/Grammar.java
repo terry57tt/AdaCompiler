@@ -94,6 +94,9 @@ public class Grammar {
     }
 
     public SyntaxTree getSyntaxTree() {
+        if (this.tokens.size() == 0) {
+            return null;
+        }
         this.currentToken = tokens.get(tokensIndex);
         /*if (callback != null) {
             try {
@@ -205,14 +208,15 @@ public class Grammar {
                 || currentToken.getValue().equalsIgnoreCase("elsif")){ return null; }
             else if(currentToken.getValue().equalsIgnoreCase("begin")
                     || currentToken.getValue().equalsIgnoreCase("return")
-                    || currentToken.getValue().equalsIgnoreCase("(")
-                    || currentToken.getValue().equalsIgnoreCase("moins")
+                    || (currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
+                    || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
                     || currentToken.getValue().equalsIgnoreCase("true")
                     || currentToken.getValue().equalsIgnoreCase("false")
                     || currentToken.getValue().equalsIgnoreCase("null")
                     || currentToken.getValue().equalsIgnoreCase("new")
+                    || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("character")
                     || currentToken.getValue().equalsIgnoreCase("if")
                     || currentToken.getValue().equalsIgnoreCase("for")
@@ -225,7 +229,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("begin return ( - number character true false null new character if for while ident ) else elsif", currentToken, () -> instrstar(node));
+                printError("begin return ( - number character not true false null new character if for while ident ) else elsif", currentToken,  () -> instrstar(node));
                 //System.out.println("Erreur syntaxique : terminal attendu : begin ou return ou ( ou moins ou number ou character ou true ou false ou null ou new ou character ou if ou for ou while ou ident ou ) ou else ou elsif" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -307,7 +311,7 @@ public class Grammar {
                 terminalAnalyse("end", nodeDecl);
                 identinterro(nodeDecl);
                 terminalAnalyse(";", nodeDecl);
-            } else if (currentToken.getType() == TokenType.IDENTIFIER) {
+            } else if ((currentToken.getType() == TokenType.IDENTIFIER)) {
                 Node nodeDecl = new Node("nodeDecl");
                 node.addChild(nodeDecl);
                 ident(nodeDecl);
@@ -416,7 +420,10 @@ public class Grammar {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")) return null;
             else if(currentToken.getValue().equalsIgnoreCase("(")
-                    || currentToken.getValue().equalsIgnoreCase("moins")
+                    || currentToken.getValue().equalsIgnoreCase("moins"))
+            if (currentToken.getValue().equalsIgnoreCase(";")) return null;
+            else if((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
+                    || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
                     || currentToken.getValue().equalsIgnoreCase("true")
@@ -453,35 +460,42 @@ public class Grammar {
     }
 
     Void paramsinterro(Node node) {
-        if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("is") || currentToken.getValue().equalsIgnoreCase("return"))return null;
+        if (!error) {
+            if (currentToken.getValue().equalsIgnoreCase("is") || currentToken.getValue().equalsIgnoreCase("return"))
+                return null;
             else if (currentToken.getValue().equalsIgnoreCase("(")) {
-                Node nodeParamsinterro = new Node("nodeParamsinterro");
-                node.addChild(nodeParamsinterro);
-                params(nodeParamsinterro);
+                if (currentToken.getValue().equalsIgnoreCase("is") || currentToken.getValue().equalsIgnoreCase("return"))
+                    return null;
+                else if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
+                    Node nodeParamsinterro = new Node("nodeParamsinterro");
+                    node.addChild(nodeParamsinterro);
+                    params(nodeParamsinterro);
+                } else error = true;
+                if (error) {
+                    printError("is return (", currentToken, () -> paramsinterro(node));
+                    //System.out.println("Erreur syntaxique : terminal attendu : is ou return ou (" + " != " + currentToken.getValue() + " = current token");
+                }
             }
-            else error = true;
-            if (error) {
-                printError("is return (", currentToken, () -> paramsinterro(node));
-                //System.out.println("Erreur syntaxique : terminal attendu : is ou return ou (" + " != " + currentToken.getValue() + " = current token");
-            }
+            return null;
         }
         return null;
     }
-
     Void type(Node node) {
         if(!error){
-            if (currentToken.getType() == TokenType.IDENTIFIER ){
+            if ((currentToken.getType() == TokenType.IDENTIFIER) || currentToken.getValue().equalsIgnoreCase("character")) {
                 Node nodeType = new Node("nodeType");
                 node.addChild(nodeType);
-                ident(nodeType);
+                if (currentToken.getValue().equalsIgnoreCase("character")) {
+                    terminalAnalyse("character", nodeType);
+                } else {
+                    ident(nodeType);
+                }
             }
             else if (currentToken.getValue().equalsIgnoreCase("access")){
                 Node nodeType = new Node("nodeType");
                 node.addChild(nodeType);
                 terminalAnalyse("access", nodeType);
                 ident(nodeType);
-                terminalAnalyse(";", nodeType);
             }
             else error = true;
             if (error) {
@@ -494,7 +508,7 @@ public class Grammar {
 
     Void params(Node node) {
         if(!error){
-            if(currentToken.getValue().equalsIgnoreCase("(")){
+            if((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)){
                 Node nodeParams = new Node("nodeParams");
                 node.addChild(nodeParams);
                 terminalAnalyse("(", nodeParams);
@@ -533,7 +547,7 @@ public class Grammar {
 
     Void param(Node node) {
         if(!error){
-            if (currentToken.getType() == TokenType.IDENTIFIER) {
+            if (currentToken.getType() == TokenType.IDENTIFIER || currentToken.getValue().equalsIgnoreCase("character")) {
                 Node nodeParam = new Node("nodeParam");
                 node.addChild(nodeParam);
                 ident(nodeParam);
@@ -560,7 +574,6 @@ public class Grammar {
                     if (this.tokens.get(this.tokensIndex + 1).getValue().equalsIgnoreCase("out")) {
                         terminalAnalyse("in", nodeMode);
                         terminalAnalyse("out", nodeMode);
-                        terminalAnalyse(";", nodeMode);
                     }
                     else {
                         terminalAnalyse("in", nodeMode);
@@ -585,7 +598,7 @@ public class Grammar {
                 Node nodeModeinterro = new Node("nodeModeinterro");
                 node.addChild(nodeModeinterro);
                 mode(nodeModeinterro);
-            } else if (currentToken.getType() == TokenType.IDENTIFIER || currentToken.getValue().equalsIgnoreCase("access")) return null;
+            } else if (currentToken.getType() == TokenType.IDENTIFIER || currentToken.getValue().equalsIgnoreCase("access") || currentToken.getValue().equalsIgnoreCase("character")) return null;
             else error = true;
             if (error) {
                 printError("in ident access", currentToken, () -> modeinterro(node));
@@ -597,7 +610,7 @@ public class Grammar {
 
     Void expr(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -605,6 +618,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("false")
                     || currentToken.getValue().equalsIgnoreCase("null")
                     || currentToken.getValue().equalsIgnoreCase("new")
+                    || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("character")
                     || currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodeExpr = new Node("nodeExpr");
@@ -646,7 +660,7 @@ public class Grammar {
 
     Void priorite_or_2(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                 || currentToken.getValue().equalsIgnoreCase("-")
                 || currentToken.getType() == TokenType.NUMBER
                 || currentToken.getType() == TokenType.CHARACTER
@@ -654,6 +668,7 @@ public class Grammar {
                 || currentToken.getValue().equalsIgnoreCase("false")
                 || currentToken.getValue().equalsIgnoreCase("null")
                 || currentToken.getValue().equalsIgnoreCase("new")
+                    || currentToken.getValue().equalsIgnoreCase("not")
                 || currentToken.getValue().equalsIgnoreCase("character")
                 || currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodePrioriteOr2 = new Node("nodePrioriteOr2");
@@ -678,7 +693,7 @@ public class Grammar {
 
     Void terme_1(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -686,6 +701,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("false")
                     || currentToken.getValue().equalsIgnoreCase("null")
                     || currentToken.getValue().equalsIgnoreCase("new")
+                    || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("character")
                     || currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodeTerme1 = new Node("nodeTerme1");
@@ -729,7 +745,7 @@ public class Grammar {
 
     Void priorite_and_2(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -737,6 +753,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("false")
                     || currentToken.getValue().equalsIgnoreCase("null")
                     || currentToken.getValue().equalsIgnoreCase("new")
+                    || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("character")
                     || currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodePrioriteAnd2 = new Node("nodePrioriteAnd2");
@@ -760,7 +777,7 @@ public class Grammar {
 
     Void terme_2(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -773,11 +790,14 @@ public class Grammar {
                 Node nodeTerme2 = new Node("nodeTerme2");
                 node.addChild(nodeTerme2);
                 terme_3(nodeTerme2);
-                priorite_not(nodeTerme2);
-            }
-            else error = true;
+            } else if (currentToken.getValue().equalsIgnoreCase("not")) {
+                Node nodeTerme2 = new Node("nodeTerme2");
+                node.addChild(nodeTerme2);
+                terminalAnalyse("not", nodeTerme2);
+                terme_3(nodeTerme2);
+            } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> terme_2(node));
+                printError("( - number character true false not null new character ident", currentToken, () -> terme_2(node));
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -813,7 +833,7 @@ public class Grammar {
 
     Void terme_3(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -874,7 +894,7 @@ public class Grammar {
 
     Void terme_4(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -951,7 +971,7 @@ public class Grammar {
 
     Void terme_5(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -1018,7 +1038,7 @@ public class Grammar {
 
     Void terme_6(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -1094,7 +1114,7 @@ public class Grammar {
 
     Void terme_7(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
                     || currentToken.getValue().equalsIgnoreCase("true")
@@ -1174,7 +1194,7 @@ public class Grammar {
 
     Void facteur(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")) {
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
                 Node nodeFacteur = new Node("nodeFacteur");
                 node.addChild(nodeFacteur);
                 terminalAnalyse("(", nodeFacteur);
@@ -1239,7 +1259,7 @@ public class Grammar {
 
     Void facteur2(Node node){
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")) {
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
                 terminalAnalyse("(", node);
                 expr(node);
                 exprstar_virgule(node);
@@ -1282,7 +1302,7 @@ public class Grammar {
 
     Void acces(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -1321,7 +1341,7 @@ public class Grammar {
                 exprinterro2(nodeIntr1);
                 terminalAnalyse(";", nodeIntr1);
             }
-            else if (currentToken.getValue().equalsIgnoreCase("(")
+            else if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
@@ -1408,7 +1428,7 @@ public class Grammar {
                 node.addChild(nodeIntr2);
                 terminalAnalyse(";", nodeIntr2);
             }
-            else if (currentToken.getValue().equalsIgnoreCase("(")) {
+            else if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
                 Node nodeIntr2 = new Node("nodeIntr2");
                 node.addChild(nodeIntr2);
                 terminalAnalyse("(", nodeIntr2);
@@ -1451,7 +1471,7 @@ public class Grammar {
 
     Void reverseinterro(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("(")
+            if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
                     || currentToken.getType() == TokenType.CHARACTER
