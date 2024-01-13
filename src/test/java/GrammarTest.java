@@ -256,11 +256,6 @@ public class GrammarTest {
     }
 
     @Test
-    public void testBst() throws IOException {
-        testAdaFile("bst.ada");
-    }
-
-    @Test
     public void testHello() throws IOException {
         testAdaFile("hello.ada");
     }
@@ -363,11 +358,6 @@ public class GrammarTest {
     @Test
     public void testMandelbrot() throws IOException {
         testAdaFile("mandelbrot.ada");
-    }
-
-    @Test
-    public void testQuine() throws IOException {
-        testAdaFile("quine.ada");
     }
 
     @Test
@@ -500,5 +490,14 @@ public class GrammarTest {
         assertTrue(grammar.getNumberErrors() == 0, "Number of errors should be 0");
     }
 
+    @Test
+    public void testQuine() throws IOException {
+        testAdaFile("quine.ada");
+    }
+
+    @Test
+    public void testBst() throws IOException {
+        testAdaFile("bst.ada");
+    }
 
 }
