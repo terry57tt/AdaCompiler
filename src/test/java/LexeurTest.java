@@ -9,6 +9,7 @@ import org.pcl.structure.automaton.TokenType;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,7 +74,7 @@ public class LexeurTest {
         Lexeur lexeur = new Lexeur(automaton, stream, file);
         
         ArrayList<Token> tokens = lexeur.tokenize();
-        assert tokens.size() == 23 : "expected 23 tokens got " + tokens.size();
+        assert tokens.size() == 21 : "expected 21 tokens got " + tokens.size();
         
         assert tokens.get(0).getType() == TokenType.KEYWORD: "expected TokenType.KEYWORD got " + tokens.get(0).getType() + " instead for " + tokens.get(0).getValue();
         assert tokens.get(0).getValue().equals("with"): "expected 'with' got " + tokens.get(0).getValue();
@@ -109,6 +110,34 @@ public class LexeurTest {
             assert !token.getValue().equals("!"): "expected not '!' got " + token.getValue();
         }
     }
+
+    @Test
+    public void testString() throws FileNotFoundException {
+        String file = "data/strings.ada";
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
+
+        ArrayList<Token> tokens = lexeur.tokenize();
+
+        System.out.println(Arrays.toString(tokens.toArray()));
+        assert tokens.size() == 4: "expected 4 tokens got " + tokens.size();
+        assert tokens.get(0).getValue().equals("\"aaa\""): "expected \"aaa\" got " + tokens.get(0).getValue();
+        assert tokens.get(1).getValue().equals("a"): "expected a got " + tokens.get(1).getValue();
+        assert tokens.get(2).getValue().equals("\'"): "expected \' got " + tokens.get(5).getValue();
+        assert tokens.get(3).getValue().equals("\""): "expected \" got " + tokens.get(6).getValue();
+    }
+
+    @Test
+    public void testCharacter() throws FileNotFoundException {
+        String file = "data/characters.ada";
+        Automaton automaton = Graph.create();
+        Stream<Character> stream = FileHandler.getCharacters(file);
+        Lexeur lexeur = new Lexeur(automaton, stream, file);
+        ArrayList<Token> tokens = lexeur.tokenize();
+        assert tokens.get(0).getType() == TokenType.KEYWORD: "expected TokenType.KEYWORD got " + tokens.get(0).getType() + " instead for " + tokens.get(0).getValue();
+    }
+
 
     @Test
     public void testSpecificCharacters() throws Exception {

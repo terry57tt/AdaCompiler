@@ -51,7 +51,7 @@ public class Lexeur {
 
 
     public boolean specificSeparator(char c) {
-        String separator = "-/=<>:'";
+        String separator = ".-/=<>:\"'";
         return separator.contains(String.valueOf(c));
     }
 
@@ -62,6 +62,7 @@ public class Lexeur {
 
     public ArrayList<Token> tokenize() throws InvalidStateException {
         ArrayList<Token> tokens = new ArrayList<>();
+
         List<Character> characterList = stream.collect(Collectors.toList());
         List<Character> lineStack = new ArrayList<>();
         for (int i = 0; i < characterList.size(); i++) {
@@ -72,6 +73,14 @@ public class Lexeur {
             }
             lineStack.add(c);
             if (isSeparator(c)) {
+
+                /* case ' is a separator */
+                boolean isVal = false;
+                if(this.currentToken.equalsIgnoreCase("character")) {
+                    isVal = true;
+                }
+
+                /* add current token to the list */
                 if (!this.currentToken.isEmpty()) {
                     addToken(tokens, this.currentToken, this.lineNumber);
                 }
@@ -82,7 +91,12 @@ public class Lexeur {
                 }
 
                 if(tokenSeparator(c)) {
-                    if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList, lineStack);
+                    if (isVal) {
+                        /* special case for character ' val */
+                        tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
+                        isVal = false;
+                    }
+                    else if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList, lineStack);
                     else tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
                 }
 
@@ -111,6 +125,9 @@ public class Lexeur {
 
     public void addToken(ArrayList<Token> tokens, String currentToken, int lineNumber) {
         TokenType tokenType = automaton.getCurrentState().getTokenType();
+        if (currentToken.equalsIgnoreCase("CHARACTER")) {
+            tokenType = TokenType.KEYWORD;
+        }
         tokens.add(new Token(tokenType, currentToken, lineNumber));
     }
 
@@ -127,6 +144,96 @@ public class Lexeur {
         String separator;
         separator = "" + c;
 
+        /* case of Strings */
+        if (String.valueOf(c).equals("\"")) {
+
+            while (((i + 1) < characterList.size()) && (characterList.get(i + 1) != '\n') && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n')
+                    && ((characterList.get(i + 1) != '\"') || (characterList.get(i + 2) == '\"') || (characterList.get(i) == '\"'))) {
+                separator += characterList.get(i + 1);
+                i++;
+            } // when leaving the loop, separator do not contain the second '"',  characterList.get(i + 1) = '"'
+            separator += characterList.get(i + 1); //add to separator the closing quote
+
+            // case : end of line or file before the string close
+            if ((characterList.get(i + 1) == '\n') || ((i + 1) > characterList.size())) { //error string unfinished
+                separator = removeEscapeCharacter(separator);
+                tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                System.out.println("unfinished string");
+                return i;
+            }
+            // case : characterList.get(i+1) is the last character of the line
+            else if (((i + 2) > characterList.size()) && (characterList.get(i + 2) == '\n')) {
+                i++; // characterList.get(i) = '\"'
+                separator += characterList.get(i);
+                separator = removeEscapeCharacter(separator);
+                tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                return i + 1;
+            } else {
+                separator = removeEscapeCharacter(separator);
+                tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                return i + 1;
+            }
+        }
+
+        /* case single character : everything between ' is considered as a character */
+        if(String.valueOf(c).equals("'")) {
+            if((i + 1 < characterList.size()) && (characterList.get(i + 1) != '\n' && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n'))
+             && (characterList.get(i + 2) == '\'') && (characterList.get(i) == '\'')){
+                separator = characterList.get(i + 1) + "";
+                tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                return i + 2;
+        }} else 
+
+        // case of characters or strings with ' --> the same as ", with count
+        if (String.valueOf(c).equals("'")){
+
+            while ((i + 1 < characterList.size()) && (characterList.get(i + 1) != '\n' && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n'))
+                    && ((characterList.get(i + 1) != '\'') || (characterList.get(i + 2) == '\'') || (characterList.get(i) == '\''))) {
+                separator += characterList.get(i + 1);
+                i++;
+            } // when leaving the loop, separator do not contain the second '"',  characterList.get(i + 1) = '"'
+            separator += characterList.get(i + 1); //add to separator the closing quote
+
+            // case : end of line or file before the string close
+            if (characterList.get(i + 1) == '\n' || i + 1 > characterList.size()) { //error string unfinished
+                if (separator.length() <= 3) {
+                    separator = removeEscapeCharacter(separator);
+                    tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                }
+                else {
+                    separator = removeEscapeCharacter(separator);
+                    tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                }
+                System.out.println("unfinished string");
+                return i;
+            }
+            // case : characterList.get(i+1) is the last character of the line
+            else if (i + 2 > characterList.size() && characterList.get(i + 2) == '\n') {
+                i++; // characterList.get(i) = '\"'
+                separator += characterList.get(i);
+                if (separator.length() <= 3) {
+                    separator = removeEscapeCharacter(separator);
+                    tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                }
+                else {
+                    separator = removeEscapeCharacter(separator);
+                    tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                }
+                return i + 1;
+
+            } else {
+                if (separator.length() <= 3) {
+                    separator = removeEscapeCharacter(separator);
+                    tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                }
+                else {
+                    separator = removeEscapeCharacter(separator);
+                    tokens.add(new Token(TokenType.STRING, separator, this.lineNumber));
+                }
+                return i + 1;
+            }
+        }
+
         /* case end of file */
         if (i + 1 < characterList.size()) separator += String.valueOf(characterList.get(i + 1));
         else return i;
@@ -139,6 +246,10 @@ public class Lexeur {
                 yield i;
             }
             case "/=", "<=", ">=", ":=" -> {
+                tokens.add(new Token(TokenType.SEPARATOR, separator, this.lineNumber));
+                yield i + 1;
+            }
+            case ".." -> {
                 tokens.add(new Token(TokenType.SEPARATOR, separator, this.lineNumber));
                 yield i + 1;
             }
