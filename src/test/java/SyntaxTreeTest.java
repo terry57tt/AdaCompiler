@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.util.ArrayList;
-
 import org.junit.jupiter.api.Test;
 import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.Node;

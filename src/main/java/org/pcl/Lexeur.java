@@ -60,12 +60,21 @@ public class Lexeur {
     public ArrayList<Token> tokenize() throws InvalidStateException {
         ArrayList<Token> tokens = new ArrayList<>();
 
+
         List<Character> characterList = stream.collect(Collectors.toList());
         List<Character> lineStack = new ArrayList<>();
         for (int i = 0; i < characterList.size(); i++) {
             char c = characterList.get(i);
             lineStack.add(c);
             if (isSeparator(c)) {
+
+                /* case ' is a separator */
+                boolean isVal = false;
+                if(this.currentToken.equalsIgnoreCase("character")) {
+                    isVal = true;
+                }
+
+                /* add current token to the list */
                 if (!this.currentToken.isEmpty()) {
                     addToken(tokens, this.currentToken, this.lineNumber);
                 }
@@ -76,7 +85,12 @@ public class Lexeur {
                 }
 
                 if(tokenSeparator(c)) {
-                    if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList, lineStack);
+                    if (isVal) {
+                        /* special case for character ' val */
+                        tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
+                        isVal = false;
+                    }
+                    else if(specificSeparator(c)) i = treatCompoundSeparator(tokens, c, i, characterList, lineStack);
                     else tokens.add(new Token(TokenType.SEPARATOR, String.valueOf(c), this.lineNumber));
                 }
 
@@ -164,6 +178,15 @@ public class Lexeur {
                 return i + 1;
             }
         }
+
+        /* case single character : everything between ' is considered as a character */
+        if(String.valueOf(c).equals("'")) {
+            if((i + 1 < characterList.size()) && (characterList.get(i + 1) != '\n' && ((i + 2) < characterList.size()) && (characterList.get(i + 2) != '\n'))
+             && (characterList.get(i + 2) == '\'') && (characterList.get(i) == '\'')){
+                separator = characterList.get(i + 1) + "";
+                tokens.add(new Token(TokenType.CHARACTER, separator, this.lineNumber));
+                return i + 2;
+        }} else 
 
         // case of characters or strings with ' --> the same as ", with count
         if (String.valueOf(c).equals("'")){

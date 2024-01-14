@@ -1,0 +1,185 @@
+FICHIER -> with ADA.TEXT_IO; USE ADA.TEXT_IO; 
+           procedure IDENT is DECLSTAR
+           begin INSTRPLUS end IDENTINTERRO ; eof
+
+DECLSTAR -> DECL DECLSTAR | epsilon
+
+INSTRPLUS -> INSTR INSTRPLUS | INSTR
+
+IDENTINTERRO -> IDENT | epsilon
+
+DECL -> type IDENT ;
+         | type IDENT is access IDENT ;
+         | type IDENT is record CHAMPSPLUS end record ;
+         | IDENTPLUS, : TYPE EXPRINTERRO ;
+         | procedure IDENT PARAMSINTERRO is DECLSTAR 
+           begin INSTRPLUS end IDENTINTERRO ;
+         | function IDENT PARAMSINTERRO return TYPE is DECLSTAR 
+           begin INSTRPLUS end IDENTINTERRO ;
+
+CHAMPS -> IDENTPLUS, : TYPE ;
+
+EXPRINTERRO -> := EXPR | epsilon
+
+CHAMPSPLUS -> CHAMPS CHAMPSPLUS | CHAMPS
+
+PARAMSINTERRO -> PARAMS | epsilon
+
+TYPE -> IDENT | access IDENT ;
+
+PARAMS -> ( PARAMPLUS; ) ;
+
+PARAMPLUS -> PARAM PARAMPLUS | PARAM 
+
+PARAM -> IDENTPLUS, : MODEINTERRO TYPE ;
+
+MODE -> in | in out ;
+
+MODEINTERRO -> MODE | epsilon
+
+EXPR -> entier 
+         | caractere 
+         | true 
+         | false 
+         | null 
+         | ( EXPR ) 
+         | EXPR OPERATEUR EXPR
+         | not EXPR 
+         | - EXPR
+         | new ident 
+         | IDENT ( EXPRPLUS, ) 
+         | character ' val ( EXPR ) 
+         | ACCES 
+
+<INSTR> -> ACCES := EXPR ; 
+            | IDENT ; 
+            | IDENT ( EXPRPLUS, ) ; 
+            | return EXPRINTERRO ; 
+            | begin INSTRPLUS end ; 
+            | if EXPR then INSTRPLUS ELSIFSTAR (else INSTRPLUS)? end if ; 
+            | for IDENT in REVERSEINTERRO EXPR .. EXPR loop INSTRPLUS end loop ; 
+            | while EXPR loop INSTRPLUS end loop ; 
+
+REVERSEINTERRO -> reverse | epsilon
+
+ELSIFSTAR -> (elsif EXPR then INSTRPLUS) ELSIFSTAR | epsilon
+
+ELSEINTERRO -> else INSTRPLUS | epsilon
+
+EXPRPLUS -> EXPR EXPRPLUS | EXPR
+
+ACCES -> IDENT | EXPR . IDENT
+
+OPERATEUR -> = | /= | < | <= | > | >= 
+              | + | - | * | / | rem 
+              | and | andthen | or | or else ;
+
+IDENT -> idf
+
+
+#Voici comment il faut l'écrire si on veut qu'elle rentre sur grammophone 
+
+
+
+FICHIER -> with ADA_TEXT_IO point_virgule USE ADA_TEXT_IO point_virgule
+           procedure IDENT is DECLSTAR
+           begin INSTRPLUS end IDENTINTERRO point_virgule eof.
+
+DECLSTAR -> DECL DECLSTAR .
+DECLSTAR -> .
+
+INSTRPLUS -> INSTR INSTRPLUS. 
+INSTRPLUS ->  INSTR.
+
+IDENTINTERRO -> IDENT.
+IDENTINTERRO -> .
+
+DECL -> type IDENT point_virgule.
+DECL -> type IDENT is access IDENT point_virgule.
+DECL -> type IDENT is record CHAMPSPLUS end record point_virgule.
+DECL -> IDENTPLUS virgule deux_points TYPE EXPRINTERRO point_virgule.
+DECL -> procedure IDENT PARAMSINTERRO is DECLSTAR begin INSTRPLUS end IDENTINTERRO point_virgule.
+DECL -> function IDENT PARAMSINTERRO return TYPE is DECLSTAR begin INSTRPLUS end IDENTINTERRO point_virgule.
+
+CHAMPS -> IDENTPLUS virgule deux_points TYPE point_virgule.
+
+EXPRINTERRO -> deux_points egal EXPR.
+EXPRINTERRO -> .
+
+CHAMPSPLUS -> CHAMPS CHAMPSPLUS.
+CHAMPSPLUS -> CHAMPS.
+
+PARAMSINTERRO -> PARAMS. 
+PARAMSINTERRO -> .
+
+TYPE -> IDENT.
+TYPE -> access IDENT point_virgule.
+
+PARAMS ->  parenthese_ouvrante  PARAMPLUS point_virgule  parenthese_fermante  point_virgule.
+
+PARAMPLUS -> PARAM PARAMPLUS. 
+PARAMPLUS -> PARAM. 
+
+PARAM -> IDENTPLUS virgule deux_points MODEINTERRO TYPE point_virgule.
+
+MODE -> in.
+MODE -> in out point_virgule.
+
+MODEINTERRO -> MODE.
+MODEINTERRO -> .
+
+EXPR -> entier.  
+EXPR -> caractere. 
+EXPR -> true. 
+EXPR -> false. 
+EXPR -> null. 
+EXPR -> parenthese_ouvrante  EXPR  parenthese_fermante.  
+EXPR -> EXPR OPERATEUR EXPR.
+EXPR -> not EXPR. 
+EXPR -> moins EXPR.
+EXPR -> new IDENT. 
+EXPR -> IDENT  parenthese_ouvrante  EXPRPLUS virgule  parenthese_fermante.  
+EXPR -> character apostrophe val  parenthese_ouvrante  EXPR  parenthese_fermante.  
+EXPR -> ACCES.
+
+INSTR -> ACCES deux_points_egal EXPR point_virgule.
+INSTR -> IDENT point_virgule.
+INSTR -> IDENT  parenthese_ouvrante  EXPRPLUS virgule  parenthese_fermante  point_virgule .
+INSTR -> return EXPRINTERRO point_virgule.
+INSTR -> begin INSTRPLUS end point_virgule. 
+INSTR -> if EXPR then INSTRPLUS ELSIFSTAR ELSEINTERRO end if point_virgule.
+INSTR -> for IDENT in REVERSEINTERRO EXPR point_point EXPR loop INSTRPLUS end loop point_virgule.
+INSTR -> while EXPR loop INSTRPLUS end loop point_virgule.
+
+REVERSEINTERRO -> reverse. 
+REVERSEINTERRO -> .
+
+ELSIFSTAR ->  parenthese_ouvrante elsif EXPR then INSTRPLUS parenthese_fermante  ELSIFSTAR.
+ELSIFSTAR -> .
+
+ELSEINTERRO -> parenthese_ouvrante else INSTRPLUS parenthese_fermante.
+ELSEINTERRO -> .
+
+EXPRPLUS -> EXPR EXPRPLUS.
+EXPRPLUS -> EXPR.
+
+ACCES -> IDENT.
+ACCES -> EXPR point IDENT.
+
+OPERATEUR ->  egal.
+OPERATEUR -> slash_egal.
+OPERATEUR -> inferieur .
+OPERATEUR -> inferieur_egal.
+OPERATEUR -> superieur. 
+OPERATEUR -> superieur_egal .
+OPERATEUR -> plus.
+OPERATEUR -> moins.
+OPERATEUR -> fois.
+OPERATEUR -> divise.
+OPERATEUR -> rem. 
+OPERATEUR -> and.
+OPERATEUR -> andthen.
+OPERATEUR -> or.
+OPERATEUR -> or else point_virgule.
+
+IDENT -> idf.
