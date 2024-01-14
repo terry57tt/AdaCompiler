@@ -31,6 +31,7 @@ procedure Quine is
 		put(n);put(':');put('u');put(':');put('=');
 		while w /= null loop
 			put('o');put('(');print_int(w.value);put(',');
+			put(')');
 			k := k+1;
 			w := w.tail;
 		end loop;

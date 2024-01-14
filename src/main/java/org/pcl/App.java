@@ -48,8 +48,6 @@ public class App {
             Grammar grammar = new Grammar(tokens);
             SyntaxTree tree = grammar.getSyntaxTree();
 
-
-            System.out.println();
             new PClWindows(tokens, tree, !grammar.error).start();
             if (grammar.error) {
                 System.out.println(ANSI_RED + "Analysis Syntax failed, no tree to display" + ANSI_RESET);
