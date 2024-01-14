@@ -47,43 +47,41 @@ public class GrammarErrorUtility {
     }
 
     /** Generate all the alternate Grammars to be tried to find other errors */
-    public static List<Grammar> generateGrammars(String value, Grammar g, Callable<Void> callback, long currentline) {
+    public static List<Grammar> generateGrammars(String value, Grammar g, long currentline) {
         List<Token> tokens = fromString(value, currentline);
         List<Grammar> grammars = new ArrayList<>();
         for (Token token : tokens) {
-            grammars.add(Grammar.createGrammarError(g, 0, token, callback));
+            grammars.add(Grammar.createGrammarError(g, 0, token));
              }
         return grammars;
     }
 
-    public static void ProceedAnalysis(String value, Grammar g, Callable<Void> callback, long currentLine) {
-        System.out.println("proceed analysis");
-        List<Grammar> grammars = generateGrammars(value, g, callback, currentLine);
+    public static void ProceedAnalysis(String value, Grammar g, long currentLine) {
+        List<Grammar> grammars = generateGrammars(value, g, currentLine);
         PrintStream originalOut = System.out;
-        int initialError = g.getIndexFirstError();
+        int initialError = g.getTokensIndex();
         String output = "";
+
         try {
             for (Grammar grammar : grammars) {
-                System.out.println(grammar.getTokens().get(grammar.getIndexFirstError()));
-                //Redirect output to save them
+               //Redirect output to save them
 
-                //ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                //PrintStream printStream = new PrintStream(outputStream);
-                //System.setOut(printStream);
-                //grammar.getCallback().call();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                PrintStream printStream = new PrintStream(outputStream);
+                System.setOut(printStream);
                 grammar.getSyntaxTree();
-                //System.out.println("finish callback");
-                if (grammar.getIndexFirstError() > initialError) {
-                    //output = outputStream.toString();
+                if (grammar.getTokensIndex() > g.getTokensIndex() && initialError < grammar.getTokensIndex()) {
+                    output = outputStream.toString();
+                    initialError = grammar.getTokensIndex();
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            //System.setOut(originalOut);
+            System.setOut(originalOut);
         }
-
         System.out.println(output);
+
 
     }
 

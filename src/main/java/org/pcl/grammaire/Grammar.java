@@ -14,11 +14,12 @@ public class Grammar {
 
     public Boolean error = false;
 
+    private int numberErrors = 0;
+
     public Boolean firstTime = true;
 
-    private int indexFirstError = -1;
+    private int indexLastError = -1;
 
-    private int numberErrors = 0;
 
     public Token currentToken = null;
     public SyntaxTree syntaxTree = null;
@@ -26,48 +27,40 @@ public class Grammar {
     public int tokensIndex = 0;
     ArrayList<Token> tokens;
 
-    ArrayList<Token> wrongTokens = new ArrayList<>();
-
-    private Callable<Void> callback;
-
     public Grammar(ArrayList<Token> tokens){
         this.tokens = tokens;
     }
 
-    public static  Grammar createGrammarError(Grammar grammar, int decal, Token newToken, Callable<Void> callback) {
-        Grammar grammarError = new Grammar(GrammarErrorUtility.deepClone(grammar.tokens));
+    private void printError(String expectedMessage, Token currentToken){
+        if (!firstTime) return;
 
-        grammarError.callback = callback;
-        grammarError.indexFirstError = grammar.tokensIndex;
-        grammarError.tokens.add(grammar.tokensIndex + decal, newToken);
-
-        return grammarError;
+        firstTime = false;
+        boolean multiples = expectedMessage.contains(" ");
+        numberErrors++;
+        System.out.println("line " + currentToken.getLineNumber() + ":" + ColorAnsiCode.ANSI_RED + " error:" + ColorAnsiCode.ANSI_RESET +
+                " expected " + (multiples ? " one of them": "") + " \"" + expectedMessage + "\" got [value=" + currentToken.getValue() + " type=" + currentToken.getType() + "]");
+        System.out.println(getLineToken(currentToken.getLineNumber(), currentToken) + "\n");
+        if (tokensIndex > indexLastError + 1 || indexLastError == -1) {
+            GrammarErrorUtility.ProceedAnalysis(expectedMessage, this, currentToken.getLineNumber());
+        }
+        error = true;
     }
 
     public ArrayList<Token> getTokens() {
         return tokens;
     }
 
-    private void printError(String expectedMessage, Token currentToken, Callable<Void> callback){
-        if (!firstTime) return;
-
-        firstTime = false;
-        wrongTokens.add(currentToken);
-        boolean multiples = expectedMessage.contains(" ");
-        numberErrors++;
-
-        //System.out.println(tokens);
-        System.out.println("line " + currentToken.getLineNumber() + ":" + ColorAnsiCode.ANSI_RED + " error:" + ColorAnsiCode.ANSI_RESET +
-                " expected " + (multiples ? "one of them": "") + " " + ColorAnsiCode.ANSI_RED + expectedMessage + ColorAnsiCode.ANSI_RESET + " got \"" + currentToken.getValue() + "\" type=" + currentToken.getType());
-        System.out.println(getLineToken(currentToken.getLineNumber(), currentToken) + "\n");
-        if (tokensIndex > indexFirstError + 1 || indexFirstError == -1) {
-            GrammarErrorUtility.ProceedAnalysis(expectedMessage, this, callback, currentToken.getLineNumber());
-        }
-        error = true;
+    public int getIndexLastError() {
+        return indexLastError;
     }
 
-    public int getIndexFirstError() {
-        return indexFirstError;
+    public static  Grammar createGrammarError(Grammar grammar, int decal, Token newToken) {
+        Grammar grammarError = new Grammar(GrammarErrorUtility.deepClone(grammar.tokens));
+
+        grammarError.indexLastError = grammar.tokensIndex;
+        grammarError.tokens.add(grammar.tokensIndex + decal, newToken);
+
+        return grammarError;
     }
 
     private String getLineToken(long line, Token currentToken) {
@@ -88,32 +81,22 @@ public class Grammar {
         return numberErrors;
     }
 
-    public Callable<Void> getCallback() {
-
-        return callback;
-    }
-
     public SyntaxTree getSyntaxTree() {
         if (this.tokens.size() == 0) {
             return null;
         }
         this.currentToken = tokens.get(tokensIndex);
-        /*if (callback != null) {
-            try {
-                callback.call();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {*/
-            fichier();
-       // }
+        fichier();
         return this.syntaxTree;
     }
 
+    public int getTokensIndex() {
+        return tokensIndex;
+    }
 
     // terminals procedures
 
-    public Void terminalAnalyse(String terminal, Node node){
+    public void terminalAnalyse(String terminal, Node node){
         if(!this.error){
             if(currentToken.getValue().equalsIgnoreCase(terminal)){
                 Node terminalNode = new Node(currentToken);
@@ -125,17 +108,16 @@ public class Grammar {
             }
             else{
                 error = true;
-                printError(terminal, currentToken, this::fichier);
+                printError(terminal, currentToken);
                 //System.out.println("Erreur syntaxique dans l'analyse de terminal : terminal attendu : " + terminal + " != " + currentToken.getValue() + " = current token" + " ligne " + currentToken.getLineNumber());
             }
         }
-        return null;
     }
 
     // non-terminals procedures
 
     //axiom
-    Void fichier(){
+    void fichier(){
         if(!error){
             if(currentToken.getValue().equalsIgnoreCase("with")) {
                 Node nodeFichier = new Node("nodeFichier");
@@ -162,24 +144,23 @@ public class Grammar {
                 terminalAnalyse(";", nodeFichier);
                 if (this.tokensIndex != this.tokens.size() - 1) {
                     error = true;
-                    printError("null", currentToken, this::fichier);
+                    printError("null", currentToken);
                     //System.out.println("Erreur syntaxique : terminal attendu : null");
                 }
             }
             else error = true;
             if (error) {
-                printError("with", currentToken, this::fichier);
+                printError("with", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : with" + " != " + currentToken.getValue() + " = current token" + " ligne " + currentToken.getLineNumber());
             }
         }
-        return null;
     }
 
 
-    Void declstar(Node node) {
+    void declstar(Node node) {
         if (!error) {
             if (currentToken.getValue().equalsIgnoreCase("begin")) {
-                return null;
+                return;
             }
             else if (currentToken.getValue().equalsIgnoreCase("procedure")
                     || currentToken.getValue().equalsIgnoreCase("type")
@@ -192,20 +173,19 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("begin procedure type function ident", currentToken, () -> declstar(node));
+                printError("begin procedure type function", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : begin ou procedure ou type ou function" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
 
-    Void instrstar(Node node) {
+    void instrstar(Node node) {
         if(!error){
             if(currentToken.getValue().equalsIgnoreCase(")")
-                || currentToken.getValue().equalsIgnoreCase("else")
-                || currentToken.getValue().equalsIgnoreCase("end")
-                || currentToken.getValue().equalsIgnoreCase("elsif")){ return null; }
+                    || currentToken.getValue().equalsIgnoreCase("else")
+                    || currentToken.getValue().equalsIgnoreCase("end")
+                    || currentToken.getValue().equalsIgnoreCase("elsif")){ return; }
             else if(currentToken.getValue().equalsIgnoreCase("begin")
                     || currentToken.getValue().equalsIgnoreCase("return")
                     || (currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
@@ -229,16 +209,15 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("begin return ( - number character not true false null new character if for while ident ) else elsif", currentToken,  () -> instrstar(node));
+                printError("begin return ( - number character not true false null new character if for while ident ) else elsif", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : begin ou return ou ( ou moins ou number ou character ou true ou false ou null ou new ou character ou if ou for ou while ou ident ou ) ou else ou elsif" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void identinterro(Node node) {
+    void identinterro(Node node) {
         if(!error){
-            if(currentToken.getValue().equalsIgnoreCase(";")){return null; }
+            if(currentToken.getValue().equalsIgnoreCase(";")){return; }
             else if(currentToken.getType() == TokenType.IDENTIFIER){
                 Node nodeIdentinterro = new Node("nodeIdentinterro");
                 node.addChild(nodeIdentinterro);
@@ -246,16 +225,15 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; ident", currentToken, () -> identinterro(node));
+                printError("; ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou ident" + " != " + currentToken.getValue() + " = current token" + " Type : " + currentToken.getType());
             }
         }
-        return null;
     }
 
-    Void identstar_virgule(Node node) {
+    void identstar_virgule(Node node) {
         if(!error){
-            if(currentToken.getValue().equalsIgnoreCase(":")){return null; }
+            if(currentToken.getValue().equalsIgnoreCase(":")){return; }
             else if (currentToken.getValue().equalsIgnoreCase(",")){
                 Node nodeIdentstar = new Node("nodeIdentstar");
                 node.addChild(nodeIdentstar);
@@ -265,14 +243,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError(", ident", currentToken, () -> identstar_virgule(node));
+                printError(", ident begin", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : , ou ident" + " != " + currentToken.getValue() + " = current token" );
             }
         }
-        return null;
     }
 
-    Void decl(Node node) {
+    void decl(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase("type")){
                 Node nodeDecl = new Node("nodeDecl");
@@ -323,14 +300,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("type procedure function ident", currentToken, () -> decl(node));
+                printError("type procedure function ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : type ou procedure ou function ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void decl2(Node node) {
+    void decl2(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")){
                 Node nodeDecl2 = new Node("nodeDecl2");
@@ -344,14 +320,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; is", currentToken, () -> decl2(node));
+                printError("; is", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou is" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void decl3(Node node) {
+    void decl3(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase("access")){
                 Node nodeDecl3 = new Node("nodeDecl3");
@@ -371,14 +346,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("access record", currentToken, () -> decl3(node));
+                printError("access record", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : access ou record" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void champs(Node node) {
+    void champs(Node node) {
         if(!error){
             if(currentToken.getType() == TokenType.IDENTIFIER){
                 Node nodeChamps = new Node("nodeChamps");
@@ -391,16 +365,15 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("ident", currentToken, () -> champs(node));
+                printError("ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void exprinterro(Node node) {
+    void exprinterro(Node node) {
         if(!error){
-            if(currentToken.getValue().equalsIgnoreCase(";")) return null;
+            if(currentToken.getValue().equalsIgnoreCase(";")) return;
             else if (currentToken.getValue().equalsIgnoreCase(":=")) {
                 Node nodeExprinterro = new Node("nodeExprinterro");
                 node.addChild(nodeExprinterro);
@@ -409,19 +382,15 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; := :", currentToken, () -> exprinterro(node));
+                printError("; := :", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu := ; ou :" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void exprinterro2(Node node){
+    void exprinterro2(Node node){
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase(";")) return null;
-            else if(currentToken.getValue().equalsIgnoreCase("(")
-                    || currentToken.getValue().equalsIgnoreCase("moins"))
-            if (currentToken.getValue().equalsIgnoreCase(";")) return null;
+            if (currentToken.getValue().equalsIgnoreCase(";")) return;
             else if((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getType() == TokenType.NUMBER
@@ -436,14 +405,13 @@ public class Grammar {
             }
             else error = true;
         }
-        return null;
     }
 
 
 
-    Void champstar(Node node) {
+    void champstar(Node node) {
         if(!error){
-            if(currentToken.getValue().equalsIgnoreCase("end"))return null;
+            if(currentToken.getValue().equalsIgnoreCase("end"))return;
             else if(currentToken.getType() == TokenType.IDENTIFIER){
                 Node nodeChampstar = new Node("nodeChampstar");
                 node.addChild(nodeChampstar);
@@ -452,35 +420,29 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("end ident", currentToken, () -> champstar(node));
+                printError("end ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : end ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void paramsinterro(Node node) {
-        if (!error) {
-            if (currentToken.getValue().equalsIgnoreCase("is") || currentToken.getValue().equalsIgnoreCase("return"))
-                return null;
-            else if (currentToken.getValue().equalsIgnoreCase("(")) {
-                if (currentToken.getValue().equalsIgnoreCase("is") || currentToken.getValue().equalsIgnoreCase("return"))
-                    return null;
-                else if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
-                    Node nodeParamsinterro = new Node("nodeParamsinterro");
-                    node.addChild(nodeParamsinterro);
-                    params(nodeParamsinterro);
-                } else error = true;
-                if (error) {
-                    printError("is return (", currentToken, () -> paramsinterro(node));
-                    //System.out.println("Erreur syntaxique : terminal attendu : is ou return ou (" + " != " + currentToken.getValue() + " = current token");
-                }
+    void paramsinterro(Node node) {
+        if(!error){
+            if (currentToken.getValue().equalsIgnoreCase("is") || currentToken.getValue().equalsIgnoreCase("return"))return;
+            else if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
+                Node nodeParamsinterro = new Node("nodeParamsinterro");
+                node.addChild(nodeParamsinterro);
+                params(nodeParamsinterro);
             }
-            return null;
+            else error = true;
+            if (error) {
+                printError("is return (", currentToken);
+                //System.out.println("Erreur syntaxique : terminal attendu : is ou return ou (" + " != " + currentToken.getValue() + " = current token");
+            }
         }
-        return null;
     }
-    Void type(Node node) {
+
+    void type(Node node) {
         if(!error){
             if ((currentToken.getType() == TokenType.IDENTIFIER) || currentToken.getValue().equalsIgnoreCase("character")) {
                 Node nodeType = new Node("nodeType");
@@ -499,14 +461,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("ident access", currentToken, () -> type(node));
+                printError("ident access", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ident ou access" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void params(Node node) {
+    void params(Node node) {
         if(!error){
             if((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)){
                 Node nodeParams = new Node("nodeParams");
@@ -518,17 +479,16 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("(", currentToken, () -> params(node));
+                printError("(", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : (" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
 
-    Void paramstar_virgule(Node node) {
+    void paramstar_virgule(Node node) {
         if(!error){
-            if(currentToken.getValue().equalsIgnoreCase(")"))return null;
+            if(currentToken.getValue().equalsIgnoreCase(")"))return;
             else if (currentToken.getValue().equalsIgnoreCase(";")) {
                 Node nodeParamstar = new Node("nodeParamstar");
                 node.addChild(nodeParamstar);
@@ -538,14 +498,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError(") ;", currentToken, () -> paramstar_virgule(node));
+                printError(") ;", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou )" + " != " + currentToken.getValue() + " = current token" + " Type : " + currentToken.getType());
             }
         }
-        return null;
     }
 
-    Void param(Node node) {
+    void param(Node node) {
         if(!error){
             if (currentToken.getType() == TokenType.IDENTIFIER || currentToken.getValue().equalsIgnoreCase("character")) {
                 Node nodeParam = new Node("nodeParam");
@@ -558,14 +517,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("ident", currentToken, () -> param(node));
+                printError("ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void mode(Node node) {
+    void mode(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase("in")){
                 Node nodeMode = new Node("nodeMode");
@@ -585,30 +543,28 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("in", currentToken, () -> mode(node));
+                printError("in", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : in" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void modeinterro(Node node) {
+    void modeinterro(Node node) {
         if(!error){
             if(currentToken.getValue().equalsIgnoreCase("in")) {
                 Node nodeModeinterro = new Node("nodeModeinterro");
                 node.addChild(nodeModeinterro);
                 mode(nodeModeinterro);
-            } else if (currentToken.getType() == TokenType.IDENTIFIER || currentToken.getValue().equalsIgnoreCase("access") || currentToken.getValue().equalsIgnoreCase("character")) return null;
+            } else if (currentToken.getType() == TokenType.IDENTIFIER || currentToken.getValue().equalsIgnoreCase("access") || currentToken.getValue().equalsIgnoreCase("character")) return;
             else error = true;
             if (error) {
-                printError("in ident access", currentToken, () -> modeinterro(node));
+                printError("in ident access", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : in ou ident ou access" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void expr(Node node) {
+    void expr(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -627,14 +583,13 @@ public class Grammar {
                 priorite_or(nodeExpr);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> expr(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_or(Node node) {
+    void priorite_or(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")
                     || currentToken.getValue().equalsIgnoreCase(",")
@@ -642,7 +597,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("then")
                     || currentToken.getValue().equalsIgnoreCase("..")
                     || currentToken.getValue().equalsIgnoreCase(":=")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("or")) {
                 Node nodePrioriteOr = new Node("nodePrioriteOr");
                 node.addChild(nodePrioriteOr);
@@ -651,26 +606,25 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) then . loop or :=", currentToken, () -> priorite_or(node));
+                printError("; , ) then . loop or :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_or_2(Node node) {
+    void priorite_or_2(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
-                || currentToken.getValue().equalsIgnoreCase("-")
-                || currentToken.getType() == TokenType.NUMBER
-                || currentToken.getType() == TokenType.CHARACTER
-                || currentToken.getValue().equalsIgnoreCase("true")
-                || currentToken.getValue().equalsIgnoreCase("false")
-                || currentToken.getValue().equalsIgnoreCase("null")
-                || currentToken.getValue().equalsIgnoreCase("new")
+                    || currentToken.getValue().equalsIgnoreCase("-")
+                    || currentToken.getType() == TokenType.NUMBER
+                    || currentToken.getType() == TokenType.CHARACTER
+                    || currentToken.getValue().equalsIgnoreCase("true")
+                    || currentToken.getValue().equalsIgnoreCase("false")
+                    || currentToken.getValue().equalsIgnoreCase("null")
+                    || currentToken.getValue().equalsIgnoreCase("new")
                     || currentToken.getValue().equalsIgnoreCase("not")
-                || currentToken.getValue().equalsIgnoreCase("character")
-                || currentToken.getType() == TokenType.IDENTIFIER) {
+                    || currentToken.getValue().equalsIgnoreCase("character")
+                    || currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodePrioriteOr2 = new Node("nodePrioriteOr2");
                 node.addChild(nodePrioriteOr2);
                 terme_1(nodePrioriteOr2);
@@ -684,14 +638,13 @@ public class Grammar {
                 priorite_or(nodePrioriteOr2);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident else", currentToken, () -> priorite_or_2(node));
+                printError("( - number character true false null new character ident else", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident ou else" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void terme_1(Node node) {
+    void terme_1(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -711,14 +664,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> terme_1(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_and(Node node) {
+    void priorite_and(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")
                     || currentToken.getValue().equalsIgnoreCase(",")
@@ -727,7 +679,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("then")
                     || currentToken.getValue().equalsIgnoreCase("..")
                     || currentToken.getValue().equalsIgnoreCase(":=")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("and")) {
                 Node nodePrioriteAnd = new Node("nodePrioriteAnd");
                 node.addChild(nodePrioriteAnd);
@@ -736,14 +688,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) or then . loop :=", currentToken, () -> priorite_and(node));
+                printError("; , ) or then . loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_and_2(Node node) {
+    void priorite_and_2(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -768,14 +719,13 @@ public class Grammar {
                 priorite_and(nodePrioriteAnd2);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident then", currentToken, () -> priorite_and_2(node));
+                printError("( - number character true false null new character ident then", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident ou then" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void terme_2(Node node) {
+    void terme_2(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -797,41 +747,13 @@ public class Grammar {
                 terme_3(nodeTerme2);
             } else error = true;
             if (error) {
-                printError("( - number character true false not null new character ident", currentToken, () -> terme_2(node));
+                printError("( - number character true false not null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_not(Node node) {
-        if(!error){
-            if (currentToken.getValue().equalsIgnoreCase(";")
-                    || currentToken.getValue().equalsIgnoreCase(",")
-                    || currentToken.getValue().equalsIgnoreCase(")")
-                    || currentToken.getValue().equalsIgnoreCase("or")
-                    || currentToken.getValue().equalsIgnoreCase("and")
-                    || currentToken.getValue().equalsIgnoreCase("then")
-                    || currentToken.getValue().equalsIgnoreCase("..")
-                    || currentToken.getValue().equalsIgnoreCase(":=")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
-            else if (currentToken.getValue().equalsIgnoreCase("not")) {
-                Node nodePrioriteNot = new Node("nodePrioriteNot");
-                node.addChild(nodePrioriteNot);
-                terminalAnalyse("not", nodePrioriteNot);
-                terme_3(nodePrioriteNot);
-                priorite_not(nodePrioriteNot);
-            }
-            else error = true;
-            if (error) {
-                printError("; , ) or and then . loop :=", currentToken, () -> priorite_not(node));
-                //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou and ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
-            }
-        }
-        return null;
-    }
-
-    Void terme_3(Node node) {
+    void terme_3(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -850,14 +772,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> terme_3(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_egal(Node node) {
+    void priorite_egal(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")
                     || currentToken.getValue().equalsIgnoreCase(",")
@@ -868,7 +789,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("..")
                     || currentToken.getValue().equalsIgnoreCase(":=")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("=")) {
                 Node nodePrioriteEgal = new Node("nodePrioriteEgal");
                 node.addChild(nodePrioriteEgal);
@@ -885,14 +806,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) or and then not . loop :=", currentToken, () -> priorite_egal(node));
+                printError("; , ) or and then not . loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou and ou then ou not ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void terme_4(Node node) {
+    void terme_4(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -911,14 +831,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> terme_4(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_inferieur(Node node) {
+    void priorite_inferieur(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")
                     || currentToken.getValue().equalsIgnoreCase(",")
@@ -931,7 +850,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("/=")
                     || currentToken.getValue().equalsIgnoreCase("..")
                     || currentToken.getValue().equalsIgnoreCase(":=")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("<")) {
                 Node nodePrioriteInferieur = new Node("nodePrioriteInferieur");
                 node.addChild(nodePrioriteInferieur);
@@ -962,14 +881,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= . loop :=", currentToken, () -> priorite_inferieur(node));
+                printError("; , = ) or and then not /= . loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void terme_5(Node node) {
+    void terme_5(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -988,14 +906,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> terme_5(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_addition(Node node) {
+    void priorite_addition(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")
                     || currentToken.getValue().equalsIgnoreCase(",")
@@ -1012,7 +929,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase(">=")
                     || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("..")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("+")) {
                 Node nodePrioriteAddition = new Node("nodePrioriteAddition");
                 node.addChild(nodePrioriteAddition);
@@ -1029,14 +946,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= < <= > >= .. loop :=", currentToken, () -> priorite_addition(node));
+                printError("; , = ) or and then not /= < <= > >= .. loop :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void terme_6(Node node) {
+    void terme_6(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -1055,14 +971,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> terme_6(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_multiplication(Node node) {
+    void priorite_multiplication(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")
                     || currentToken.getValue().equalsIgnoreCase(",")
@@ -1081,7 +996,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("+")
                     || currentToken.getValue().equalsIgnoreCase("-")
                     || currentToken.getValue().equalsIgnoreCase("..")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase("*")) {
                 Node nodePrioriteMultiplication = new Node("nodePrioriteMultiplication");
                 node.addChild(nodePrioriteMultiplication);
@@ -1105,14 +1020,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= < <= > >= + - := .. loop", currentToken, () -> priorite_multiplication(node));
+                printError("; , = ) or and then not /= < <= > >= + - := .. loop", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void terme_7(Node node) {
+    void terme_7(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getType() == TokenType.NUMBER
@@ -1137,14 +1051,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> terme_7(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void priorite_point(Node node) {
+    void priorite_point(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")
                     || currentToken.getValue().equalsIgnoreCase(",")
@@ -1166,7 +1079,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("rem")
                     || currentToken.getValue().equalsIgnoreCase("..")
                     || currentToken.getValue().equalsIgnoreCase(":=")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
             else if (currentToken.getValue().equalsIgnoreCase(".")) {
                 Node nodePrioritePoint = new Node("nodePrioritePoint");
                 node.addChild(nodePrioritePoint);
@@ -1179,20 +1092,20 @@ public class Grammar {
                     this.indicateur_acces = false;
                     Node nodePrioritePoint = new Node("nodePrioritePoint");
                     node.addChild(nodePrioritePoint);
+                    terminalAnalyse(":=", nodePrioritePoint);
                     terminalAnalyse(".", nodePrioritePoint);
                     ident(nodePrioritePoint);
                 }
                 else error = true;
                 if (error) {
-                    printError("; , = ) or and then not /= < <= > >= + - * / rem .. := loop", currentToken, () -> priorite_point(node));
+                    printError("; , = ) or and then not /= < <= > >= + - * / rem .. := loop", currentToken);
                     //System.out.println("ici Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
                 }
             }
         }
-        return null;
     }
 
-    Void facteur(Node node) {
+    void facteur(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
                 Node nodeFacteur = new Node("nodeFacteur");
@@ -1250,14 +1163,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( number character true false null new character ident", currentToken, () -> facteur(node));
+                printError("( number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void facteur2(Node node){
+    void facteur2(Node node){
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)) {
                 terminalAnalyse("(", node);
@@ -1290,17 +1202,16 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase(".")
                     || currentToken.getValue().equalsIgnoreCase(":=")
                     || currentToken.getValue().equalsIgnoreCase("..")
-                    || currentToken.getValue().equalsIgnoreCase("loop")) return null;
+                    || currentToken.getValue().equalsIgnoreCase("loop")) return;
         }
         else error = true;
         if (error) {
-            printError("( ; , = ) or and then not /= < <= > >= + - * / rem . := .. loop", currentToken, () -> facteur2(node));
-           // System.out.println("Erreur syntaxique : terminal attendu : ( ou ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou . ou := ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
+            printError("( ; , = ) or and then not /= < <= > >= + - * / rem . := .. loop", currentToken);
+            // System.out.println("Erreur syntaxique : terminal attendu : ( ou ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou . ou := ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
         }
-        return null;
     }
 
-    Void acces(Node node) {
+    void acces(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -1315,15 +1226,14 @@ public class Grammar {
                 expr(node);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken, () -> acces(node));
+                printError("( - number character true false null new character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
     //On met de coté le cas où on a un ident suivi d'un point pour l'instant
-    Void instr(Node node) {
+    void instr(Node node) {
         if(!error) {
             if (currentToken.getValue().equalsIgnoreCase("begin")){
                 Node nodeIntr1 = new Node("nodeIntr1");
@@ -1414,14 +1324,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("begin return ( - number character true false null new character if while for", currentToken, () -> instr(node));
+                printError("begin return ( - number character true false null new character if while for", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : begin ou return ou ( ou - ou number ou character ou true ou false ou null ou new ou character ou if ou while ou for" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void instr2(Node node) {
+    void instr2(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(";")) {
                 Node nodeIntr2 = new Node("nodeIntr2");
@@ -1444,14 +1353,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; ( :=", currentToken, () -> instr2(node));
+                printError("; ( :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou ( ou :=" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void instr2_prime(Node node) {
+    void instr2_prime(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(":=")) {
                 Node nodeIntr2prime = new Node("nodeIntr2prime");
@@ -1462,14 +1370,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError(":=", currentToken, () -> instr2_prime(node));
+                printError(":=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : :=" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void reverseinterro(Node node) {
+    void reverseinterro(Node node) {
         if(!error){
             if ((currentToken.getValue().equalsIgnoreCase("(") && currentToken.getType() == TokenType.SEPARATOR)
                     || currentToken.getValue().equalsIgnoreCase("-")
@@ -1480,23 +1387,22 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("null")
                     || currentToken.getValue().equalsIgnoreCase("new")
                     || currentToken.getValue().equalsIgnoreCase("character")
-                    || currentToken.getType() == TokenType.IDENTIFIER) return null;
+                    || currentToken.getType() == TokenType.IDENTIFIER) return;
             else if (currentToken.getValue().equalsIgnoreCase("reverse")) {
                 Node nodeReverseinterro = new Node("nodeReverseinterro");
                 node.addChild(nodeReverseinterro);
                 terminalAnalyse("reverse", nodeReverseinterro);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident reverse", currentToken, () -> reverseinterro(node));
+                printError("( - number character true false null new character ident reverse", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident ou reverse" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void elsifstar(Node node) {
+    void elsifstar(Node node) {
         if(!error){
-            if (currentToken.getValue().equalsIgnoreCase("end")) return null;
+            if (currentToken.getValue().equalsIgnoreCase("end")) return;
             else if (currentToken.getValue().equalsIgnoreCase("else")) {
                 Node nodeElsifstar = new Node("nodeElsifstar");
                 node.addChild(nodeElsifstar);
@@ -1516,14 +1422,13 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("end else elsif", currentToken, () -> elsifstar(node));
+                printError("end else elsif", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : and ou else ou elsif" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void exprstar_virgule(Node node) {
+    void exprstar_virgule(Node node) {
         if(!error){
             if (currentToken.getValue().equalsIgnoreCase(",")) {
                 Node nodeExprstarVirgule = new Node("nodeExprstarVirgule");
@@ -1532,17 +1437,16 @@ public class Grammar {
                 expr(nodeExprstarVirgule);
                 exprstar_virgule(nodeExprstarVirgule);
             }
-            else if (currentToken.getValue().equalsIgnoreCase(")"))return null;
+            else if (currentToken.getValue().equalsIgnoreCase(")"))return;
             else error = true;
             if (error) {
-                printError(", )", currentToken, () -> exprstar_virgule(node));
+                printError(", )", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : , ou )" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 
-    Void ident(Node node) {
+    void ident(Node node) {
         if(!error) {
             if (currentToken.getType() == TokenType.IDENTIFIER) {
                 Node nodeIdent = new Node("nodeIdent");
@@ -1550,10 +1454,9 @@ public class Grammar {
                 terminalAnalyse(currentToken.getValue(), nodeIdent);
             } else error = true;
             if (error) {
-                printError("ident", currentToken, () -> ident(node));
+                printError("ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
-        return null;
     }
 }

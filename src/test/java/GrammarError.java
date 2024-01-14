@@ -27,7 +27,7 @@ public class GrammarError {
         assert tokens.size() == 5;
         int decal = 2;
         Grammar g = new Grammar(tokens);
-        Grammar g2 = Grammar.createGrammarError(g, decal, new Token("."), () -> null);
+        Grammar g2 = Grammar.createGrammarError(g, decal, new Token("."));
 
 
         assert !g.getTokens().get(decal).equals(g2.getTokens().get(decal));
