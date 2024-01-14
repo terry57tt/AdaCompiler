@@ -39,7 +39,10 @@ public class Grammar {
         numberErrors++;
         System.out.println("line " + currentToken.getLineNumber() + ":" + ColorAnsiCode.ANSI_RED + " error:" + ColorAnsiCode.ANSI_RESET +
                 " expected " + (multiples ? " one of them": "") + " \"" + expectedMessage + "\" got [value=" + currentToken.getValue() + " type=" + currentToken.getType() + "]");
-        System.out.println(getLineToken(currentToken.getLineNumber(), currentToken) + "\n");
+        if (expectedMessage.equals(";"))
+            System.out.println(getLineToken(tokens.get(tokensIndex - 1).getLineNumber(), currentToken) + "\n");
+        else
+            System.out.println(getLineToken(currentToken.getLineNumber(), currentToken) + "\n");
         if (tokensIndex > indexLastError + 1 || indexLastError == -1) {
             GrammarErrorUtility.ProceedAnalysis(expectedMessage, this, currentToken.getLineNumber());
         }

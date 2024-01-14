@@ -7,7 +7,7 @@ begin
    A := 3;
    B  4;
    C := ;
-   D := A + B * C;
+   D := A + B * C
    E := (A + B) * C;
     put(A);
 end Main;

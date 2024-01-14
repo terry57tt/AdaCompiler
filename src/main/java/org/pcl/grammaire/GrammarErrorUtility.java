@@ -71,7 +71,7 @@ public class GrammarErrorUtility {
                 PrintStream printStream = new PrintStream(outputStream);
                 System.setOut(printStream);
                 grammar.getSyntaxTree();
-                if (grammar.getTokensIndex() > g.getTokensIndex() && initialError < grammar.getTokensIndex()) {
+                if (grammar.getTokensIndex() > g.getTokensIndex() + 1 && initialError < grammar.getTokensIndex()) {
                     output = outputStream.toString();
                     initialError = grammar.getTokensIndex();
                     numberErrors = grammar.getNumberErrors();
