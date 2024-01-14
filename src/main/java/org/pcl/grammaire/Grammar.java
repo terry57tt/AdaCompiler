@@ -81,6 +81,10 @@ public class Grammar {
         return numberErrors;
     }
 
+    public void setNumberErrors(int numberErrors) {
+        this.numberErrors = numberErrors;
+    }
+
     public SyntaxTree getSyntaxTree() {
         if (this.tokens.size() == 0) {
             return null;

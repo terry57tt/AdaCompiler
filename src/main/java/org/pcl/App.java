@@ -57,6 +57,11 @@ public class App {
                         ((lexeur.getNumber_errors() > 1) ? "s": "") + " generated" +
                         ANSI_RESET);
             }
+            if (grammar.error) {
+                System.out.println(ANSI_RED + grammar.getNumberErrors() + " syntax error" +
+                        ((grammar.getNumberErrors() > 1) ? "s": "") + " generated" +
+                        ANSI_RESET);
+            }
 
         }
     }

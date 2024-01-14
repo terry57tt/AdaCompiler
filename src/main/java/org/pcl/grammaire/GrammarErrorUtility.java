@@ -61,6 +61,7 @@ public class GrammarErrorUtility {
         PrintStream originalOut = System.out;
         int initialError = g.getTokensIndex();
         String output = "";
+        int numberErrors = g.getNumberErrors();
 
         try {
             for (Grammar grammar : grammars) {
@@ -73,6 +74,7 @@ public class GrammarErrorUtility {
                 if (grammar.getTokensIndex() > g.getTokensIndex() && initialError < grammar.getTokensIndex()) {
                     output = outputStream.toString();
                     initialError = grammar.getTokensIndex();
+                    numberErrors = grammar.getNumberErrors();
                 }
             }
         } catch (Exception e) {
@@ -81,6 +83,7 @@ public class GrammarErrorUtility {
             System.setOut(originalOut);
         }
         System.out.println(output);
+        g.setNumberErrors(g.getNumberErrors() + numberErrors);
 
 
     }
