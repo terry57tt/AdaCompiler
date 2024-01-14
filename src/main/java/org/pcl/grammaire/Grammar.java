@@ -213,7 +213,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("begin return ( - number character not true false null new character if for while ident ) else elsif", currentToken);
+                printError("begin return ( - number character not true false null new character if for while ident ) else elsif end", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : begin ou return ou ( ou moins ou number ou character ou true ou false ou null ou new ou character ou if ou for ou while ou ident ou ) ou else ou elsif" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -247,7 +247,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError(", ident begin", currentToken);
+                printError(": ,", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : , ou ident" + " != " + currentToken.getValue() + " = current token" );
             }
         }
@@ -386,7 +386,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; := :", currentToken);
+                printError("; :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu := ; ou :" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -408,6 +408,10 @@ public class Grammar {
                 expr(node);
             }
             else error = true;
+            if (error) {
+                printError("( - number character true false null new character ident ;", currentToken);
+                //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident ou ;" + " != " + currentToken.getValue() + " = current token");
+            }
         }
     }
 
@@ -610,7 +614,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) then . loop or :=", currentToken);
+                printError("; , ) then .. loop or :=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -642,7 +646,7 @@ public class Grammar {
                 priorite_or(nodePrioriteOr2);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident else", currentToken);
+                printError("( - number character true false null new not character ident else", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident ou else" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -668,7 +672,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("( - number character true false null new character ident", currentToken);
+                printError("( - number character true false null new not character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -692,7 +696,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) or then . loop :=", currentToken);
+                printError("; , ) or then .. loop := and", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou then ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -723,7 +727,7 @@ public class Grammar {
                 priorite_and(nodePrioriteAnd2);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident then", currentToken);
+                printError("( - number character true false null new not character ident then", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident ou then" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -751,7 +755,7 @@ public class Grammar {
                 terme_3(nodeTerme2);
             } else error = true;
             if (error) {
-                printError("( - number character true false not null new character ident", currentToken);
+                printError("( - number character true false not null new not character ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -810,7 +814,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , ) or and then not . loop :=", currentToken);
+                printError("; , ) or and then not .. loop := = /=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou ) ou or ou and ou then ou not ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -885,7 +889,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= . loop :=", currentToken);
+                printError("; , = ) or and then not /= .. loop := < <= > >=", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -950,7 +954,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= < <= > >= .. loop :=", currentToken);
+                printError("; , = ) or and then not /= < <= > >= .. loop := + -", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -1024,7 +1028,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("; , = ) or and then not /= < <= > >= + - := .. loop", currentToken);
+                printError("; , = ) or and then not /= < <= > >= + - := .. loop * / rem", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou . ou loop" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -1102,7 +1106,7 @@ public class Grammar {
                 }
                 else error = true;
                 if (error) {
-                    printError("; , = ) or and then not /= < <= > >= + - * / rem .. := loop", currentToken);
+                    printError("; , = ) or and then not /= < <= > >= + - * / rem .. := loop .", currentToken);
                     //System.out.println("ici Erreur syntaxique : terminal attendu : ; ou , ou = ou ) ou or ou and ou then ou not ou /= ou < ou <= ou > ou >= ou + ou - ou * ou / ou rem ou .. ou loop" + " != " + currentToken.getValue() + " = current token");
                 }
             }
@@ -1328,7 +1332,7 @@ public class Grammar {
             }
             else error = true;
             if (error) {
-                printError("begin return ( - number character true false null new character if while for", currentToken);
+                printError("begin return ( - number character true false null new character if while for ident", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : begin ou return ou ( ou - ou number ou character ou true ou false ou null ou new ou character ou if ou while ou for" + " != " + currentToken.getValue() + " = current token");
             }
         }
@@ -1390,6 +1394,7 @@ public class Grammar {
                     || currentToken.getValue().equalsIgnoreCase("false")
                     || currentToken.getValue().equalsIgnoreCase("null")
                     || currentToken.getValue().equalsIgnoreCase("new")
+                    || currentToken.getValue().equalsIgnoreCase("not")
                     || currentToken.getValue().equalsIgnoreCase("character")
                     || currentToken.getType() == TokenType.IDENTIFIER) return;
             else if (currentToken.getValue().equalsIgnoreCase("reverse")) {
@@ -1398,7 +1403,7 @@ public class Grammar {
                 terminalAnalyse("reverse", nodeReverseinterro);
             } else error = true;
             if (error) {
-                printError("( - number character true false null new character ident reverse", currentToken);
+                printError("( - number character true false null new not character ident reverse", currentToken);
                 //System.out.println("Erreur syntaxique : terminal attendu : ( ou - ou number ou character ou true ou false ou null ou new ou character ou ident ou reverse" + " != " + currentToken.getValue() + " = current token");
             }
         }

@@ -51,7 +51,7 @@ begin
         Variable2 := Variable2 + 1;
     else -- Test pour 'ELSEINTERRO'
         -- Quelques instructions
-        Variable2 := Variable2 + 1;
+        Variable2 := Variable2 + 1
     end if;
 
 end Main; -- Test pour 'IDENTINTERRO'
