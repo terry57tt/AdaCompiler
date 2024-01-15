@@ -45,7 +45,6 @@ public class App {
 
             Grammar grammar = new Grammar(tokens);
             SyntaxTree tree = grammar.getSyntaxTree();
-//            new PClWindows(tokens, tree,!grammar.error).start();
 
             grammar.createAST();
             tree = grammar.ast;

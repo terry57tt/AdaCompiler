@@ -148,7 +148,6 @@ public class Grammar {
     }
 
     public void arangeAST(){
-        System.out.println(tokens);
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
         Node lastNode = ast.getRootNode();
         Node currentNode = ast.getRootNode();
@@ -254,7 +253,7 @@ public class Grammar {
 
                //on arrange les appels de fonctions
                if (currentNode.getToken().getType().equals(TokenType.IDENTIFIER) && !currentNode.getParent().getValue().equalsIgnoreCase("procedure")
-                       && tokens.get(tokens.indexOf(currentNode.getToken()) + 1).getValue().equals("(")) {
+                       && !currentNode.getParent().getValue().equalsIgnoreCase("function") && tokens.get(tokens.indexOf(currentNode.getToken()) + 1).getValue().equals("(")) {
                    //on créé un noeud call entre l'identifiant (nom de fonction) et son parent
                     Node nodeCall = new Node("call");
                     int index = currentNode.getParent().getChildren().indexOf(currentNode);
@@ -268,7 +267,6 @@ public class Grammar {
                         nodeCall.addChild(child);
                         child.setParent(nodeCall);
                     }
-                   System.out.println(nodeCall.getParent().getChildren());
                     //on enlève les enfants de l'identifiant
                     currentNode.getChildren().clear();
                     //on ajoute le noeud call à la liste des noeuds à visiter (sauf le nom de la fonction)
@@ -292,22 +290,23 @@ public class Grammar {
 
                //on arrange les déclarations de variables
                if(currentNode.getToken().getValue().equalsIgnoreCase(":")){
-                   if(currentNode.getParent().getToken().getType() == TokenType.IDENTIFIER) {
-                       currentNode.setValue("param");
-                       currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
-                       lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
-                       lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
-                   }
-                   else {
-                       currentNode.setValue("variable");
-                       int i =0;
-                       for (Node declrationVariable : declarationVariables) {
-                           declrationVariable.getParent().getChildren().remove(declrationVariable);
-                           currentNode.getChildren().add(i, declrationVariable);
-                           declrationVariable.setParent(currentNode);
-                           i ++;
+                   if(currentNode.getParent().getToken() != null) {
+                       if (currentNode.getParent().getToken().getType() == TokenType.IDENTIFIER) {
+                           currentNode.setValue("param");
+                           currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                           lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                           lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                       } else {
+                           currentNode.setValue("variable");
+                           int i = 0;
+                           for (Node declrationVariable : declarationVariables) {
+                               declrationVariable.getParent().getChildren().remove(declrationVariable);
+                               currentNode.getChildren().add(i, declrationVariable);
+                               declrationVariable.setParent(currentNode);
+                               i++;
+                           }
+                           declarationVariables.clear();
                        }
-                       declarationVariables.clear();
                    }
 
 
@@ -316,16 +315,14 @@ public class Grammar {
                    declarationVariables.add(currentNode);
                }
 
-
-                //on arrange les return
-/*                if (currentNode.getToken().getValue().equalsIgnoreCase("return")){
-                    currentNode.setValue("return");
-                    currentNode.getParent().getChildren().remove(currentNode); //enlever current node de son parent
-                    lastNode.getParent().addChild(currentNode); //ajout de current node comme enfant du parent de last node (procedure)
-                    currentNode.setParent(lastNode.getParent());
-                }*/
-
-
+               //on arrange les returns
+               if (currentNode.getValue().equalsIgnoreCase("return")) {
+                   if (lastNode.getValue().equalsIgnoreCase("function")){
+                          lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                          currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                          currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                   }
+               }
 
                 //on arrange les types
 /*                if (currentNode.getToken().getValue().equalsIgnoreCase("type")){
@@ -344,8 +341,13 @@ public class Grammar {
 
     public void arangeASTRoot() {
         int indexProcedure = ast.getRootNode().getChildren().indexOf(ast.getRootNode().getChildren().stream().filter(node -> node.getValue().equalsIgnoreCase("procedure")).findFirst().get());
+        Node nameEnd = ast.getRootNode().getChildren().get(ast.getRootNode().getChildren().size()-1);
         this.ast = new SyntaxTree(ast.getRootNode().getChildren().get(indexProcedure));
         this.ast.getRootNode().setValue("Fichier");
+        if(nameEnd.getToken().getType() == TokenType.IDENTIFIER) {
+            this.ast.getRootNode().getChildren().add(nameEnd);
+            nameEnd.setParent(this.ast.getRootNode());
+        }
     }
 
 
