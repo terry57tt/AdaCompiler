@@ -166,6 +166,7 @@ public class Grammar {
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
 
             nodes_to_visit.remove(0);
+
            if(currentNode.getToken() != null){
                 if (lastNode.getValue().equals("declaration") && lastNode.getChildren().size() == 0){
                     lastNode.getParent().getChildren().remove(lastNode);
@@ -335,6 +336,45 @@ public class Grammar {
                           currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
                    }
                }
+
+               //on arrange les for
+               if (currentNode.getValue().equalsIgnoreCase("in") && lastNode.getValue().equalsIgnoreCase("for")){
+                   currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                   currentNode.setParent(lastNode);
+                   lastNode.addChild(currentNode);
+                   currentNode = lastNode;
+               }
+
+               if (currentNode.getValue().equalsIgnoreCase("..") && lastNode.getValue().equalsIgnoreCase("for")){
+                     for(Node child : currentNode.getChildren()){
+                          lastNode.addChild(child);
+                          child.setParent(lastNode);
+                     }
+                     currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                     currentNode = lastNode;
+               }
+
+               if (lastNode.getValue().equalsIgnoreCase("for") && currentNode.getValue().equalsIgnoreCase("loop")){
+                   currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                   currentNode.setParent(lastNode);
+                   lastNode.addChild(currentNode);
+               }
+               if (currentNode.getValue().equalsIgnoreCase("reverse") && currentNode.getParent().getValue().equalsIgnoreCase("in")
+                        && currentNode.getParent().getParent().getValue().equalsIgnoreCase("for")){
+                   int indexIn = currentNode.getParent().getParent().getChildren().indexOf(currentNode.getParent());
+                   currentNode.getParent().getParent().getChildren().remove(currentNode.getParent());
+                   currentNode.getParent().getParent().getChildren().add(indexIn, currentNode);
+                   currentNode.setParent(currentNode.getParent().getParent());
+               }
+               if ((currentNode.getParent().getValue().equalsIgnoreCase("in") || currentNode.getParent().getValue().equalsIgnoreCase("reverse"))
+                   && currentNode.getParent().getParent().getValue().equalsIgnoreCase("for")) {
+                   int index = currentNode.getParent().getParent().getChildren().indexOf(currentNode.getParent()); //index of in or reverse
+                   currentNode.getParent().getChildren().remove(currentNode); //on enlève le noeud courrant de son parent
+                   currentNode.getParent().getParent().getChildren().add(index + 1, currentNode); //on ajoute le noeud courrant au parent de son parent
+                   currentNode.setParent(currentNode.getParent().getParent());
+               }
+
+
 
                 //on arrange les types
 /*                if (currentNode.getToken().getValue().equalsIgnoreCase("type")){
