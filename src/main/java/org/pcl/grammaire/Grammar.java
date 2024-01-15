@@ -42,8 +42,6 @@ public class Grammar {
 
         for (Node child : nodeChildren) {
             //pour tout child, enfant de node
-
-
             if(child.isFinal()){
                 if (child.getToken().getType() != TokenType.NUMBER
                         && child.getToken().getType() != TokenType.IDENTIFIER
@@ -66,15 +64,17 @@ public class Grammar {
                     if (tokens.get(tokens.indexOf(child.getToken()) + 1).getValue().equalsIgnoreCase("(")) {
                         lastTerminalNode = child;
                         newNode.addChild(child);
-    //                    child.setParent(lastTerminalNode);
                         child.setParent(newNode);
                     } else {
                         if (child.getToken().getLineNumber() != 1) {
                             newNode.addChild(child);
-    //                    child.setParent(lastTerminalNode);
                             child.setParent(newNode);
                         }
                     }
+                } else if (child.getToken().getType() == TokenType.NUMBER) {
+                    lastTerminalNode = child;
+                    newNode.addChild(child);
+                    child.setParent(newNode);
                 }
 
             }
@@ -202,7 +202,9 @@ public class Grammar {
                         || currentNode.getToken().getValue().equalsIgnoreCase("/")
                         || currentNode.getToken().getValue().equalsIgnoreCase("=")
                         || currentNode.getToken().getValue().equalsIgnoreCase("rem")
-                        || currentNode.getToken().getValue().equalsIgnoreCase(".")){
+                        || currentNode.getToken().getValue().equalsIgnoreCase(".")
+                        || currentNode.getToken().getValue().equalsIgnoreCase("and")
+                        || currentNode.getToken().getValue().equalsIgnoreCase("or")){
                     currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
                     lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
@@ -251,7 +253,8 @@ public class Grammar {
                     }
                 }
                 if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop"))
-                        && lastNode.getValue().equalsIgnoreCase("end")){
+                        && lastNode.getValue().equalsIgnoreCase("end")
+                        && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
                     if(currentNode.getChildren().size() > 0) {
                         int index = currentNode.getParent().getChildren().indexOf(currentNode);
                         currentNode.getParent().getChildren().addAll(index, currentNode.getChildren()); //on ajoute les enfants de if ou loop à son parent
@@ -384,11 +387,13 @@ public class Grammar {
                     currentNode.setParent(lastNode.getParent());
                 }*/
                if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop"))
-                       && lastNode.getValue().equalsIgnoreCase("end")){
+                       && lastNode.getValue().equalsIgnoreCase("end")
+                       && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
                } else lastNode = currentNode;
             }
             if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop"))
-                    && lastNode.getValue().equalsIgnoreCase("end")){
+                    && lastNode.getValue().equalsIgnoreCase("end")
+                    && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
                 nodes_to_visit.addAll(0, currentNode.getChildren());
             } else nodes_to_visit.addAll(currentNode.getChildren());
         }
