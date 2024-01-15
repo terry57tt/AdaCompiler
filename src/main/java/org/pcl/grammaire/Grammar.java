@@ -148,6 +148,7 @@ public class Grammar {
     }
 
     public void arangeAST(){
+        System.out.println(tokens);
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
         Node lastNode = ast.getRootNode();
         Node currentNode = ast.getRootNode();
@@ -161,6 +162,11 @@ public class Grammar {
                 if (lastNode.getValue().equals("declaration") && lastNode.getChildren().size() == 0){
                     lastNode.getParent().getChildren().remove(lastNode);
                 }
+
+                if (lastNode.getValue().equals(";")) {
+                    lastNode.getParent().getChildren().remove(lastNode);
+                }
+
                 //on arrange les procédures
                 if (currentNode.getToken().getValue().equalsIgnoreCase("is") && currentNode.getToken().getType().equals(TokenType.KEYWORD)){
                     currentNode.setValue("declaration");
