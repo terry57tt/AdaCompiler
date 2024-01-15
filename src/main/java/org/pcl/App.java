@@ -3,14 +3,11 @@ package org.pcl;
 
 import org.pcl.grammaire.Grammar;
 import org.pcl.ig.PClWindows;
-import org.pcl.structure.automaton.Automaton;
 import org.pcl.structure.automaton.Graph;
-import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 import static org.pcl.ColorAnsiCode.ANSI_RED;
 import static org.pcl.ColorAnsiCode.ANSI_RESET;
@@ -19,6 +16,7 @@ import static org.pcl.ColorAnsiCode.ANSI_RESET;
 public class App {
 
     public static void main(String[] args) throws IOException {
+
 
         if (args.length == 0) {
             System.out.println(ANSI_RED + "No files to compile.\n" +
@@ -48,7 +46,12 @@ public class App {
             Grammar grammar = new Grammar(tokens);
             SyntaxTree tree = grammar.getSyntaxTree();
 
-            new PClWindows(tokens, tree, !grammar.error).start();
+            grammar.createAST();
+            tree = grammar.ast;
+
+            new PClWindows(tokens, tree,!grammar.error).start();
+
+
             if (grammar.error) {
                 System.out.println(ANSI_RED + "Analysis Syntax failed, no tree to display" + ANSI_RESET);
             }

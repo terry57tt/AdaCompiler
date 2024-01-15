@@ -28,7 +28,7 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
 public class GrammarTest {
-    
+
     public Lexeur createLexeur(String file) throws IOException {
         Automaton automaton = Graph.create();
         Stream<Character> stream = FileHandler.getCharacters(file);
@@ -53,9 +53,9 @@ public class GrammarTest {
 
     @Test
     public void testExtraTokens() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/SyntaxError/extra_tokens.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -65,9 +65,9 @@ public class GrammarTest {
 
     @Test
     public void testMismatchedParentheses() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/SyntaxError/mismatched_parentheses.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -77,9 +77,9 @@ public class GrammarTest {
 
     @Test
     public void testMissingSemicolon() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/SyntaxError/missing_semicolon.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -89,9 +89,9 @@ public class GrammarTest {
 
     @Test
     public void testUnexpectedToken() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/SyntaxError/unexpected_token.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -101,9 +101,9 @@ public class GrammarTest {
 
     @Test
     public void testWrongKeyword() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/SyntaxError/wrong_keyword.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -113,9 +113,9 @@ public class GrammarTest {
 
     @Test
     public void testWrongOperation() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/SyntaxError/wrong_operation.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -125,9 +125,9 @@ public class GrammarTest {
 
     @Test
     public void testMixedOperations() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/mixed_operations_test.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -137,9 +137,9 @@ public class GrammarTest {
 
     @Test
     public void testRecord() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/record_test.ada");
-        
+
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
 
@@ -149,19 +149,19 @@ public class GrammarTest {
 
     @Test
     public void testLoop() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/test_loop.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
-        
+
         assertFalse(grammar.error,"Syntax error should not be detected");
         assertTrue(grammar.getNumberErrors() == 0,"Number of errors should be 0");
     }
 
     @Test
     public void testSpecific1() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_1.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
@@ -173,7 +173,7 @@ public class GrammarTest {
 
     @Test
     public void testSpecific2() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_2.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
@@ -185,7 +185,7 @@ public class GrammarTest {
 
     @Test
     public void testSpecific3() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_3.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
@@ -197,7 +197,7 @@ public class GrammarTest {
 
     @Test
     public void testSpecific4() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_4.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
@@ -209,7 +209,7 @@ public class GrammarTest {
 
     @Test
     public void testSpecific5() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_5.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
@@ -221,7 +221,7 @@ public class GrammarTest {
 
     @Test
     public void testSpecific6() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_6.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
@@ -233,7 +233,7 @@ public class GrammarTest {
 
     @Test
     public void testSpecific7() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_7.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
@@ -245,12 +245,12 @@ public class GrammarTest {
 
     @Test
     public void testSpecific8() throws IOException {
-      
+
         Lexeur lexeur = createLexeur("demo/CorrectSyntax/specific_test_8.ada");
 
         Grammar grammar = new Grammar(lexeur.tokenize());
         grammar.getSyntaxTree();
-        
+
         assertFalse(grammar.error,"Syntax error should not be detected");
         assertTrue(grammar.getNumberErrors() == 0,"Number of errors should be 0");
     }
@@ -500,4 +500,70 @@ public class GrammarTest {
         testAdaFile("bst.ada");
     }
 
+
+
+/*    public void reduceGrammar() {
+        Token token = new Token("2");
+        ArrayList<Token> tokens = new ArrayList<>();
+        tokens.add(token);
+        Node root = new Node("Fichier");
+        Node node1 = new Node("node1");
+        Node node2 = new Node("node2");
+        Node leaf = new Node(token);
+        root.addChild(node1);
+        node1.setParent(root);
+        node1.addChild(node2);
+        node2.setParent(node1);
+        node2.addChild(leaf);
+        leaf.setParent(node2);
+
+        Grammar grammar = new Grammar(tokens);
+        grammar.syntaxTree = new SyntaxTree(grammar.reduceNodesChildren(root));
+
+        assert grammar.syntaxTree.getRootNode().getValue().equals(root.getValue());
+        assert grammar.syntaxTree.getRootNode().getChildren().get(0) == node2;
+        assert grammar.syntaxTree.getRootNode().getChildren().get(0).getChildren().get(0).equals(leaf);
+
+    }*/
 }
+
+/*    public static void main(String[] args) {
+        Node root = new Node("Fichier");
+        Token tokenEgal = new Token("=");
+        Node node1 = new Node(tokenEgal);
+        root.addChild(node1);
+        node1.setParent(root);
+
+        Node child1 = new Node("NT1");
+        Node child3 = new Node("NT2");
+        Token tokenFois = new Token(TokenType.SEPARATOR, "*", 4);
+        Node child2 = new Node(tokenFois);
+        node1.addChild(child1);
+        node1.addChild(child2);
+        node1.addChild(child3);
+        child1.setParent(node1);
+        child2.setParent(node1);
+        child3.setParent(node1);
+
+        Token tokenX = new Token(TokenType.IDENTIFIER, "x", 4);
+        Token token3 = new Token(TokenType.NUMBER,"3", 4);
+        Node cc1 = new Node(tokenX);
+        cc1.setParent(child1);
+        child1.addChild(cc1);
+        Node cc2 = new Node(token3);
+        cc2.setParent(child3);
+        child3.addChild(cc2);
+
+        ArrayList<Token> tokens = new ArrayList<>();
+        tokens.add(tokenEgal);
+        tokens.add(tokenFois);
+        tokens.add(tokenX);
+        tokens.add(token3);
+
+        Grammar grammar = new Grammar(tokens);
+        grammar.syntaxTree = new SyntaxTree(root);
+        grammar.createAST();
+        new PClWindows(tokens, grammar.ast,!grammar.error).start();
+
+
+    }*/

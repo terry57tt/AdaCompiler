@@ -13,7 +13,10 @@ public class Node {
     private NodeType type;
 
     /* Children of the node. */
-    private final ArrayList<Node> children;
+    private ArrayList<Node> children;
+
+    /* Parent of the node. */
+    private Node parent;
 
     /* If the node is a leaf */
     private final boolean isFinal;
@@ -25,6 +28,17 @@ public class Node {
     public Node() {
         this.children = new ArrayList<>();
         this.isFinal = false;
+        this.parent = null;
+    }
+
+    /* Create the same node as node without children */
+    public Node(Node node) {
+        this.children = new ArrayList<>();
+        this.isFinal = node.isFinal();
+        this.parent = node.getParent();
+        this.token = node.getToken();
+        this.value = node.getValue();
+        this.type = node.getType();
     }
 
     /* Create a node with a semantic action. */
@@ -32,6 +46,7 @@ public class Node {
         this.type = type;
         this.children = children;
         this.isFinal = false;
+        this.parent = null;
     }
 
     /* Create final node with a token. */
@@ -40,6 +55,7 @@ public class Node {
         this.children = new ArrayList<>();
         this.isFinal = true;
         this.value = token.getValue();
+        this.parent = null;
     }
 
     /* Create intermediate node with a non_terminal */
@@ -48,11 +64,13 @@ public class Node {
         this.children = new ArrayList<>();
         this.isFinal = false;
         this.value = value;
+        this.parent = null;
     }
 
     /* Add a child to the node. */
     public void addChild(Node node) {
         this.children.add(node);
+        node.parent = this;
     }
 
     /* Add a list of children to the node. */
@@ -60,6 +78,15 @@ public class Node {
         for (Node node : nodeList) {
             this.addChild(node);
         }
+    }
+
+    public void replaceChild(Node childToBeReplaced, Node remplacement){
+        int indexChild = children.indexOf(childToBeReplaced);
+        children.set(indexChild, remplacement);
+    }
+
+    public void deleteChildren(){
+        this.children = new ArrayList<>();
     }
 
     /** Return the semantic action of the node. */
@@ -89,4 +116,51 @@ public class Node {
         return value;
     }
 
+    public Boolean nonTerminalInChildren(){
+        //return true if there is a non-terminal Node in Node's children and children's children...
+        ArrayList<Node> nodesToVisit = new ArrayList<>();
+        Node currentNode = this; //current Node of parse Tree
+        nodesToVisit.add(currentNode);
+
+        while (!nodesToVisit.isEmpty()) {
+            currentNode = nodesToVisit.get(0);
+            nodesToVisit.remove(0);
+            int i = 0;
+            for (Node child : currentNode.getChildren()) {
+                nodesToVisit.add(i, child);
+                i++;
+            }
+            if (!currentNode.isFinal()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Boolean nonTerminalInDirectChildren(){
+        for(Node child : this.children){
+            if (!child.isFinal){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Node getParent(){
+        return parent;
+    }
+    public void setParent(Node parent){
+        this.parent = parent;
+    }
+
+    public void setValue(String value){
+        this.value = value;
+    }
+    public void getToken(Token token){
+        this.token = token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
 }
