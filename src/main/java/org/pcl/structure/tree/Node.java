@@ -156,4 +156,11 @@ public class Node {
     public void setValue(String value){
         this.value = value;
     }
+    public void getToken(Token token){
+        this.token = token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
 }

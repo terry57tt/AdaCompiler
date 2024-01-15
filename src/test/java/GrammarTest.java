@@ -500,10 +500,9 @@ public class GrammarTest {
         testAdaFile("bst.ada");
     }
 
-}
 
 
-    public void reduceGrammar() {
+/*    public void reduceGrammar() {
         Token token = new Token("2");
         ArrayList<Token> tokens = new ArrayList<>();
         tokens.add(token);
@@ -525,7 +524,7 @@ public class GrammarTest {
         assert grammar.syntaxTree.getRootNode().getChildren().get(0) == node2;
         assert grammar.syntaxTree.getRootNode().getChildren().get(0).getChildren().get(0).equals(leaf);
 
-    }
+    }*/
 }
 
 /*    public static void main(String[] args) {
