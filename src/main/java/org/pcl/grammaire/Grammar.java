@@ -2,6 +2,7 @@ package org.pcl.grammaire;
 
 import org.pcl.ColorAnsiCode;
 import org.pcl.Token;
+import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
@@ -155,7 +156,9 @@ public class Grammar {
         ArrayList<Node> declarationVariables = new ArrayList<>();
 
         while (!nodes_to_visit.isEmpty()){
+
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
+
             nodes_to_visit.remove(0);
            if(currentNode.getToken() != null){
                 if (lastNode.getValue().equals("declaration") && lastNode.getChildren().size() == 0){
@@ -181,8 +184,7 @@ public class Grammar {
                 }
 
                 //on arrange les opérations, affectations
-                if (currentNode.getToken().getValue().equalsIgnoreCase(":=")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("/=")
+                if (currentNode.getToken().getValue().equalsIgnoreCase("/=")
                         || currentNode.getToken().getValue().equalsIgnoreCase(">")
                         || currentNode.getToken().getValue().equalsIgnoreCase(">=")
                         || currentNode.getToken().getValue().equalsIgnoreCase("<")
@@ -194,14 +196,16 @@ public class Grammar {
                         || currentNode.getToken().getValue().equalsIgnoreCase("=")
                         || currentNode.getToken().getValue().equalsIgnoreCase("rem")
                         || currentNode.getToken().getValue().equalsIgnoreCase(".")){
-
-                    if (currentNode.getToken().getValue().equalsIgnoreCase(":=")){
-                        currentNode.setValue("affectation");
-                    }
                     currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
                     lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
                 }
+               if (currentNode.getToken().getValue().equalsIgnoreCase(":=")){
+                   currentNode.setValue("affectation");
+                   currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                   lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                   lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+               }
 
                 //on arrange les if, elsif, else
                 if (currentNode.getToken().getValue().equalsIgnoreCase("then")){
@@ -249,6 +253,8 @@ public class Grammar {
                         }
                     }
                     currentNode.getParent().getChildren().remove(currentNode); // on supprime if de son parent
+
+
                 }
 
                //on arrange les appels de fonctions
@@ -331,10 +337,14 @@ public class Grammar {
                     lastNode.getParent().addChild(currentNode); //ajout de current node comme enfant du parent de last node (procedure)
                     currentNode.setParent(lastNode.getParent());
                 }*/
-
-            lastNode = currentNode;
+               if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop"))
+                       && lastNode.getValue().equalsIgnoreCase("end")){
+               } else lastNode = currentNode;
             }
-            nodes_to_visit.addAll(currentNode.getChildren());
+            if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop"))
+                    && lastNode.getValue().equalsIgnoreCase("end")){
+                nodes_to_visit.addAll(0, currentNode.getChildren());
+            } else nodes_to_visit.addAll(currentNode.getChildren());
         }
         arangeASTRoot();
     }
