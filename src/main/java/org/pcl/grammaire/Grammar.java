@@ -293,9 +293,6 @@ public class Grammar {
                        currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
                        lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                        lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
-                    if (currentNode.getToken().getValue().equalsIgnoreCase(".")){
-                        currentNode.setValue("access");
-                    }
                }
 
                //on arrange les appels de fonctions
