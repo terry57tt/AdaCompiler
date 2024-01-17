@@ -8,6 +8,7 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
 import javax.swing.plaf.IconUIResource;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,10 +154,9 @@ public class Grammar {
             }
         }
 
-        new PClWindows(tokens, ast, !error).start();
 
         //l'ast est presque fini, il reste à arranger les opérations : on fait un parcours en largeur
-
+new PClWindows(tokens, ast, !error).start();
         arangeAST();
     }
 
@@ -168,9 +168,10 @@ public class Grammar {
         ArrayList<Node> declarationVariables = new ArrayList<>();
 
         while (!nodes_to_visit.isEmpty()){
-            System.out.println(currentNode.getValue());
+
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
             nodes_to_visit.remove(0);
+            System.out.println("current node : " +currentNode);
 
            if(currentNode.getToken() != null){
                 if (lastNode.getValue().equals("declaration") && lastNode.getChildren().size() == 0){
@@ -182,7 +183,7 @@ public class Grammar {
                 }
 
                 //on arrange les procédures
-                if (currentNode.getToken().getValue().equalsIgnoreCase("is") && currentNode.getToken().getType().equals(TokenType.KEYWORD)){
+                if (currentNode.getValue().equalsIgnoreCase("is") && currentNode.getToken().getType().equals(TokenType.KEYWORD)){
                     currentNode.setValue("declaration");
                     lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
                     currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
@@ -196,7 +197,7 @@ public class Grammar {
                 }
 
                 //on arrange les virgules
-               if (currentNode.getToken().getValue().equalsIgnoreCase(",")
+               if (currentNode.getValue().equalsIgnoreCase(",")
                        && currentNode.getToken().getType().equals(TokenType.SEPARATOR)
                        && currentNode.getParent().getToken() != null
                        && currentNode.getParent().getToken().getType() == TokenType.KEYWORD){
@@ -211,33 +212,13 @@ public class Grammar {
                    currentNode = lastNode;
                }
 
-                //on arrange les opérations
-                if ((currentNode.getToken().getValue().equalsIgnoreCase("/=")
-                        || currentNode.getToken().getValue().equalsIgnoreCase(">")
-                        || currentNode.getToken().getValue().equalsIgnoreCase(">=")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("<")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("<=")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("+")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("*")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("/")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("=")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("rem")
-                        || currentNode.getToken().getValue().equalsIgnoreCase(".")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("and")
-                        || currentNode.getToken().getValue().equalsIgnoreCase("or"))
-                && (currentNode.getToken().getType().equals(TokenType.OPERATOR) || currentNode.getToken().getType().equals(TokenType.SEPARATOR))){
-                    currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
-                    lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
-                    lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
-//                    if (currentNode.getToken().getValue().equalsIgnoreCase(".")){
-//                        currentNode.setValue("access");
-//                    }
-                }
-                if (currentNode.getToken().getValue().equalsIgnoreCase("-")
+
+                if (currentNode.getValue().equalsIgnoreCase("-")
                         && (currentNode.getToken().getType().equals(TokenType.OPERATOR) || currentNode.getToken().getType().equals(TokenType.SEPARATOR))
                         && ((tokens.get(tokens.indexOf(currentNode.getToken())-1).getType() == TokenType.NUMBER)
                         || (tokens.get(tokens.indexOf(currentNode.getToken())-1).getType() == TokenType.IDENTIFIER))){
                     //si le - est un opérateur et non un moins unaire
+
                     currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
                     lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
@@ -260,7 +241,6 @@ public class Grammar {
                         currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
                         currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
                    }
-                   currentNode = lastNode;
 
                }
 
@@ -288,6 +268,14 @@ public class Grammar {
                         currentNode.getParent().getChildren().remove(currentNode);
                     }
                 }
+                if(currentNode.getToken().getType()== TokenType.IDENTIFIER && tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equalsIgnoreCase("end")){
+                    int indexCurrentNode = currentNode.getParent().getChildren().indexOf(currentNode);
+                    Node nodeProcedure = currentNode.getParent().getChildren().get(indexCurrentNode-1);
+                    nodeProcedure.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                    currentNode.setParent(nodeProcedure);//ajout de lastNode comme parent de currentNode
+
+                }
                 if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop") || currentNode.getValue().equalsIgnoreCase("record"))
                         && lastNode.getValue().equalsIgnoreCase("end")
                         && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
@@ -303,10 +291,23 @@ public class Grammar {
 
                 }
 
+                //on arrange les points access
+               if (currentNode.getValue().equalsIgnoreCase(".")
+                    && currentNode.getToken().getType().equals(TokenType.SEPARATOR)){
+                       currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                       lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                       lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    if (currentNode.getToken().getValue().equalsIgnoreCase(".")){
+                        currentNode.setValue("access");
+                    }
+               }
+
                //on arrange les appels de fonctions
-               if (currentNode.getToken().getType().equals(TokenType.IDENTIFIER) && !currentNode.getParent().getValue().equalsIgnoreCase("procedure") && !currentNode.getParent().getValue().equalsIgnoreCase("call")
-                       && !currentNode.getParent().getValue().equalsIgnoreCase("function") && tokens.get(tokens.indexOf(currentNode.getToken()) + 1).getValue().equals("(")){
+               if (currentNode.getToken().getType().equals(TokenType.IDENTIFIER) && !currentNode.getParent().getValue().equalsIgnoreCase("procedure")
+                       && !currentNode.getParent().getValue().equalsIgnoreCase("function") && tokens.get(tokens.indexOf(currentNode.getToken()) + 1).getValue().equals("(")
+                       && currentNode.getChildren().size() != 0){
                    //on créé un noeud call entre l'identifiant (nom de fonction) et son parent
+
                     Node nodeCall = new Node("call");
                     int index = currentNode.getParent().getChildren().indexOf(currentNode);
                     nodeCall.setParent(currentNode.getParent());
@@ -326,7 +327,6 @@ public class Grammar {
                     childrenToAdd.addAll(nodeCall.getChildren());
                     childrenToAdd.remove(0);
                     nodes_to_visit.addAll(childrenToAdd);
-
                }
 
                //on arrange Character'Val
@@ -417,19 +417,12 @@ public class Grammar {
                }
 
 
-
-                //on arrange les types
-/*                if (currentNode.getToken().getValue().equalsIgnoreCase("type")){
-                    currentNode.setValue("type");
-                    currentNode.getParent().getChildren().remove(currentNode); //enlever current node de son parent
-                    lastNode.getParent().addChild(currentNode); //ajout de current node comme enfant du parent de last node (procedure)
-                    currentNode.setParent(lastNode.getParent());
-                }*/
+           }
                if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop") || currentNode.getValue().equalsIgnoreCase("record"))
                        && lastNode.getValue().equalsIgnoreCase("end")
                        && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
                } else lastNode = currentNode;
-            }
+
             if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop") || currentNode.getValue().equalsIgnoreCase("record"))
                     && lastNode.getValue().equalsIgnoreCase("end")
                     && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
@@ -437,7 +430,7 @@ public class Grammar {
             } else nodes_to_visit.addAll(currentNode.getChildren());
         }
         arangeASTRoot();
-        arangeAffectation();
+        arange2();
     }
 
     public void arangeASTRoot() {
@@ -452,7 +445,7 @@ public class Grammar {
         }
     }
 
-    public void arangeAffectation(){
+    public void arange2(){
         //il y a parfois un pb d'affectation : un node := a 3 fils ou 1 fils. Les fils se sont mal placés
         //on va donc réarranger les fils
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
@@ -478,6 +471,27 @@ public class Grammar {
                 lastNode.addChild(currentNode); //ajout de current node comme enfant du parent de last node (if)
                 currentNode.setParent(lastNode);
                 currentNode = lastNode;
+            }
+            //on arrange les opérations
+            if ((currentNode.getValue().equalsIgnoreCase("/=")
+                    || currentNode.getValue().equalsIgnoreCase(">")
+                    || currentNode.getValue().equalsIgnoreCase(">=")
+                    || currentNode.getValue().equalsIgnoreCase("<")
+                    || currentNode.getValue().equalsIgnoreCase("<=")
+                    || currentNode.getValue().equalsIgnoreCase("+")
+                    || currentNode.getValue().equalsIgnoreCase("*")
+                    || currentNode.getValue().equalsIgnoreCase("/")
+                    || currentNode.getValue().equalsIgnoreCase("=")
+                    || currentNode.getValue().equalsIgnoreCase("rem")
+                    || currentNode.getValue().equalsIgnoreCase("and")
+                    || currentNode.getValue().equalsIgnoreCase("or"))
+                    && (currentNode.getToken().getType().equals(TokenType.OPERATOR) || currentNode.getToken().getType().equals(TokenType.SEPARATOR) || currentNode.getToken().getType().equals(TokenType.KEYWORD))){
+                currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+//                    if (currentNode.getToken().getValue().equalsIgnoreCase(".")){
+//                        currentNode.setValue("access");
+//                    }
             }
             lastNode = currentNode;
             nodes_to_visit.addAll(currentNode.getChildren());
