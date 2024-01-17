@@ -23,39 +23,6 @@ procedure Pascal is
       end if;
    end;
 
-   function Create(N: Integer) return List is
-      L: List;
-   begin
-      if N = 0 then return null; end if;
-      L := new Node;
-      L.Value := 0;
-      L.Next := Create(N - 1);
-      return L;
-   end;
-
-   N: Integer := 42;
-   R: List := Create(N + 1);
-
-   procedure print_row(I: Integer) is
-   begin
-      for J in 0..I loop
-         if Get(R, J) /= 0 then
-            Put('*');
-         else
-            Put('.');
-         end if;
-      end loop;
-      New_Line;
-   end Print_Row;
-
-   procedure compute_row(I: Integer) is
-   begin
-      for J in reverse 1..I loop
-         Set(R, J, (Get(R, J) + Get(R, J-1)) rem 7);
-      end loop;
-      Set(R, 0, 1);
-   end Compute_Row;
-
 begin
    for i in 0 .. N-1 loop
       Set(R, I, 0);

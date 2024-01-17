@@ -8,6 +8,7 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 public class Grammar {
 
@@ -25,13 +26,17 @@ public class Grammar {
     public SyntaxTree ast = null;
     private Boolean indicateur_acces = false;
     public int tokensIndex = 0;
+    private String file;
     ArrayList<Token> tokens;
 
-    public Grammar(ArrayList<Token> tokens){
+    public Grammar(ArrayList<Token> tokens, String file){
         this.tokens = tokens;
+        this.file = file;
     }
 
-
+    public Grammar(ArrayList<Token> tokens){
+        this(tokens, "test");
+    }
 
     private void printError(String expectedMessage, Token currentToken){
         if (!firstTime) return;
@@ -39,14 +44,14 @@ public class Grammar {
         firstTime = false;
         boolean multiples = expectedMessage.contains(" ");
         numberErrors++;
-        System.out.println("line " + currentToken.getLineNumber() + ":" + ColorAnsiCode.ANSI_RED + " error:" + ColorAnsiCode.ANSI_RESET +
+        System.out.println( file + ":" + currentToken.getLineNumber() + ":" + ColorAnsiCode.ANSI_RED + " error:" + ColorAnsiCode.ANSI_RESET +
                 " expected " + (multiples ? " one of them": "") + " \"" + expectedMessage + "\" got [value=" + currentToken.getValue() + " type=" + currentToken.getType() + "]");
         if (expectedMessage.equals(";"))
             System.out.println(getLineToken(tokens.get(tokensIndex - 1).getLineNumber(), currentToken) + "\n");
         else
             System.out.println(getLineToken(currentToken.getLineNumber(), currentToken) + "\n");
         if (tokensIndex > indexLastError + 1 || indexLastError == -1) {
-            GrammarErrorUtility.ProceedAnalysis(expectedMessage, this, currentToken.getLineNumber());
+            GrammarErrorUtility.ProceedAnalysis(expectedMessage, this, currentToken.getLineNumber(), file);
         }
         error = true;
     }
@@ -59,8 +64,8 @@ public class Grammar {
         return indexLastError;
     }
 
-    public static  Grammar createGrammarError(Grammar grammar, int decal, Token newToken) {
-        Grammar grammarError = new Grammar(GrammarErrorUtility.deepClone(grammar.tokens));
+    public static  Grammar createGrammarError(Grammar grammar, int decal, Token newToken, String file) {
+        Grammar grammarError = new Grammar(GrammarErrorUtility.deepClone(grammar.tokens), file);
 
         grammarError.indexLastError = grammar.tokensIndex;
         grammarError.tokens.add(grammar.tokensIndex + decal, newToken);
@@ -1599,9 +1604,7 @@ public class Grammar {
         arangeComa();
         arangeAST();
         arangeASTRoot();
-        new PCLWindows(this.tokens, this.ast, true).start();
         arange2();
-        new PCLWindows(this.tokens, this.ast, true).start();
         arangeOperator1PlusMinus();
         arangeOperator2SupInf();
     }
@@ -1871,14 +1874,16 @@ public class Grammar {
 
     public void arangeASTRoot() {
         //on arrange le noeud racine
-        int indexProcedure = ast.getRootNode().getChildren().indexOf(ast.getRootNode().getChildren().stream().filter(node -> node.getValue().equalsIgnoreCase("procedure")).findFirst().get());
-        Node nameEnd = ast.getRootNode().getChildren().get(ast.getRootNode().getChildren().size()-1);
-        this.ast = new SyntaxTree(ast.getRootNode().getChildren().get(indexProcedure));
-        this.ast.getRootNode().setValue("Fichier");
-        if(nameEnd.getToken().getType() == TokenType.IDENTIFIER) {
-            this.ast.getRootNode().getChildren().add(nameEnd);
-            nameEnd.setParent(this.ast.getRootNode());
-        }
+        try {
+            int indexProcedure = ast.getRootNode().getChildren().indexOf(ast.getRootNode().getChildren().stream().filter(node -> node.getValue().equalsIgnoreCase("procedure")).findFirst().get());
+            Node nameEnd = ast.getRootNode().getChildren().get(ast.getRootNode().getChildren().size() - 1);
+            this.ast = new SyntaxTree(ast.getRootNode().getChildren().get(indexProcedure));
+            this.ast.getRootNode().setValue("Fichier");
+            if (nameEnd.getToken().getType() == TokenType.IDENTIFIER) {
+                this.ast.getRootNode().getChildren().add(nameEnd);
+                nameEnd.setParent(this.ast.getRootNode());
+            }
+        } catch (NoSuchElementException ignored) {}
     }
 
     public void arange2(){

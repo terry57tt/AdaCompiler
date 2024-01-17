@@ -47,17 +47,17 @@ public class GrammarErrorUtility {
     }
 
     /** Generate all the alternate Grammars to be tried to find other errors */
-    public static List<Grammar> generateGrammars(String value, Grammar g, long currentline) {
+    public static List<Grammar> generateGrammars(String value, Grammar g, long currentline, String file) {
         List<Token> tokens = fromString(value, currentline);
         List<Grammar> grammars = new ArrayList<>();
         for (Token token : tokens) {
-            grammars.add(Grammar.createGrammarError(g, 0, token));
+            grammars.add(Grammar.createGrammarError(g, 0, token, file));
              }
         return grammars;
     }
 
-    public static void ProceedAnalysis(String value, Grammar g, long currentLine) {
-        List<Grammar> grammars = generateGrammars(value, g, currentLine);
+    public static void ProceedAnalysis(String value, Grammar g, long currentLine, String file) {
+        List<Grammar> grammars = generateGrammars(value, g, currentLine, file);
         PrintStream originalOut = System.out;
         int initialError = g.getTokensIndex();
         String output = "";

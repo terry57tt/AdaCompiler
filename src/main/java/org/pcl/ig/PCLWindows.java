@@ -41,7 +41,7 @@ public class PCLWindows {
     }
 
     public void start() {
-        JFrame frame = new JFrame("PCL windows");
+        JFrame frame = new JFrame("PCL AST");
         // Set the size of the windows
         frame.setSize(1200, 800);
         // Set the default close operation
@@ -53,11 +53,11 @@ public class PCLWindows {
 
         if (showTree) {
             setupTree(frame);
+            frame.setBackground(Color.WHITE);
+            frame.setResizable(false);
             frame.setVisible(true);
         }
-        frame.setBackground(Color.WHITE);
 
-        frame.setResizable(false);
         // Set the JFrame to be visible
 
     }

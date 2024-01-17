@@ -40,15 +40,16 @@ public class App {
 
             System.out.println("- Compiling file: " + file + "\n");
 
-            Lexeur lexeur = new Lexeur(Graph.create(), FileHandler.getCharacters(file), file);
+            Lexeur lexeur = new Lexeur(Graph.create(), FileHandler.getCharacters(file), FileHandler.getFileName(file));
             ArrayList<Token> tokens = lexeur.getTokens();
 
-            Grammar grammar = new Grammar(tokens);
+            Grammar grammar = new Grammar(tokens, FileHandler.getFileName(file));
             SyntaxTree tree = grammar.getSyntaxTree();
 
             grammar.createAST();
             tree = grammar.ast;
 
+            //if (!grammar.error)
             new PCLWindows(tokens, tree,!grammar.error).start();
 
 
