@@ -157,11 +157,12 @@ public class Grammar {
 
         //l'ast est presque fini, il reste à arranger les opérations : on fait un parcours en largeur
 
-        arangeComa();
         arangeAST();
     }
 
+
     public void arangeAST(){
+        arangeComa();
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
         Node lastNode = ast.getRootNode();
         Node currentNode = ast.getRootNode();
@@ -172,7 +173,6 @@ public class Grammar {
 
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
             nodes_to_visit.remove(0);
-            System.out.println("current node : " +currentNode);
 
            if(currentNode.getToken() != null){
                 if (lastNode.getValue().equals("declaration") && lastNode.getChildren().size() == 0){
@@ -263,7 +263,6 @@ public class Grammar {
                     }
                     else {
                         int indexEnd = currentNode.getParent().getChildren().indexOf(currentNode);
-                        System.out.println("index end : " + indexEnd);
                         for (Node child : currentNode.getChildren()) {
                             child.setParent(currentNode.getParent());
                         }
@@ -410,6 +409,7 @@ public class Grammar {
                    currentNode.getParent().getChildren().remove(currentNode); //on enlève le noeud courrant de son parent
                    currentNode.getParent().getParent().getChildren().add(index + 1, currentNode); //on ajoute le noeud courrant au parent de son parent
                    currentNode.setParent(currentNode.getParent().getParent());
+
                }
 
 
@@ -505,6 +505,26 @@ public class Grammar {
 
 
                 }
+
+                //on arrange les for in/reverse
+                if((currentNode.getValue().equalsIgnoreCase("in") || currentNode.getValue().equalsIgnoreCase("reverse"))
+                        && currentNode.getToken().getType().equals(TokenType.KEYWORD)
+                        && currentNode.getParent().getValue().equalsIgnoreCase("for")){
+                    if (currentNode.getChildren().size()>0){
+                        int indexIn = currentNode.getParent().getChildren().indexOf(currentNode);
+                        currentNode.getParent().getChildren().addAll(indexIn+1, currentNode.getChildren());
+                        currentNode.getChildren().clear();
+                    }
+                }
+
+                //on arrange les variables (mal placés quand il y a plusieurs variables)
+                if (currentNode.getParent().getValue().equalsIgnoreCase("variable")&& currentNode.getToken().getType() == TokenType.IDENTIFIER){
+                    if (currentNode.getChildren().size() > 0){
+                        int indexIdent = currentNode.getParent().getChildren().indexOf(currentNode);
+                        currentNode.getParent().getChildren().addAll(indexIdent+1, currentNode.getChildren());
+                        currentNode.getChildren().clear();
+                    }
+                }
             }
 
 
@@ -519,7 +539,6 @@ public class Grammar {
         Node lastNode = ast.getRootNode();
         Node currentNode = ast.getRootNode();
         nodes_to_visit.add(ast.getRootNode());
-        ArrayList<Node> declarationVariables = new ArrayList<>();
 
         while (!nodes_to_visit.isEmpty()){
 
@@ -537,6 +556,7 @@ public class Grammar {
                         child.setParent(lastNode);
                     }
                 }
+                currentNode.getChildren().clear();
                 currentNode = lastNode;
             }
             lastNode = currentNode;
