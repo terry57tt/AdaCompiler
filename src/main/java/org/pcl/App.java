@@ -2,7 +2,7 @@ package org.pcl;
 
 
 import org.pcl.grammaire.Grammar;
-import org.pcl.ig.PClWindows;
+import org.pcl.ig.PCLWindows;
 import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.tree.SyntaxTree;
 
@@ -49,7 +49,7 @@ public class App {
             grammar.createAST();
             tree = grammar.ast;
 
-            new PClWindows(tokens, tree,!grammar.error).start();
+            new PCLWindows(tokens, tree,!grammar.error).start();
 
 
             if (grammar.error) {

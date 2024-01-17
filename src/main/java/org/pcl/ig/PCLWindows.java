@@ -21,7 +21,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class PClWindows {
+public class PCLWindows {
 
 
     private final ArrayList<Token> tokens;
@@ -34,7 +34,7 @@ public class PClWindows {
 
     private Dimension preferredSizeRect = new Dimension(800,800);
 
-    public PClWindows(ArrayList<Token> tokens, SyntaxTree syntaxTree, boolean showTree) {
+    public PCLWindows(ArrayList<Token> tokens, SyntaxTree syntaxTree, boolean showTree) {
         this.tokens = tokens;
         this.syntaxTree = syntaxTree;
         this.showTree = showTree;
@@ -51,14 +51,15 @@ public class PClWindows {
         JPanel mainPanel = new JPanel(new BorderLayout());
         frame.setContentPane(mainPanel);
 
-        setupTokens(frame, tokens);
-        if (showTree)
+        if (showTree) {
             setupTree(frame);
+            frame.setVisible(true);
+        }
         frame.setBackground(Color.WHITE);
 
         frame.setResizable(false);
         // Set the JFrame to be visible
-        frame.setVisible(true);
+
     }
 
     public void setupTree(JFrame frame) {
@@ -89,9 +90,9 @@ public class PClWindows {
         vv.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 
-        centerPanel.setPreferredSize(new Dimension(800, 800));
+        centerPanel.setPreferredSize(new Dimension(1180, 800));
         centerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        vv.setPreferredSize(new Dimension(1200, 800));
+        vv.setPreferredSize(new Dimension(1180, 800));
 
         DefaultModalGraphMouse<String, Number> gm1 = new DefaultModalGraphMouse<>();
         //AbstractModalGraphMouse gm1 = new ModalLensGraphMouse();
@@ -110,32 +111,6 @@ public class PClWindows {
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         frame.setContentPane(mainPanel);
     }
-
-
-    public void setupTokens(JFrame frame, ArrayList<Token> tokens) {
-        Container mainPanel = frame.getContentPane();
-
-        frame.setBackground(Color.WHITE);
-        JPanel rightPanel = new JPanel();
-        JTextArea textArea = new JTextArea();
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        rightPanel.setPreferredSize(new Dimension(400, 800));
-        textArea.setEditable(false);
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setBackground(Color.WHITE);
-        for (Token token: tokens) {
-            textArea.append(token.toString() + "\n");
-        }
-        textArea.setPreferredSize(new Dimension(400, 800));
-        scrollPane.setPreferredSize(new Dimension(400, 800));
-        rightPanel.add(scrollPane);
-        mainPanel.add(rightPanel, BorderLayout.EAST);
-        frame.setContentPane(mainPanel);
-    }
-
 
 }
 
