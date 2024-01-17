@@ -2,17 +2,11 @@ package org.pcl.grammaire;
 
 import org.pcl.ColorAnsiCode;
 import org.pcl.Token;
-import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
 
-import javax.swing.plaf.IconUIResource;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
 
 public class Grammar {
 
