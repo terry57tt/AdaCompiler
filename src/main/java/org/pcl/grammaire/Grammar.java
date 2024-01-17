@@ -49,7 +49,7 @@ public class Grammar {
                         && child.getToken().getType() != TokenType.IDENTIFIER
                         && !child.getToken().getValue().equalsIgnoreCase("(")
                         && !child.getToken().getValue().equalsIgnoreCase(")")
-                        && !child.getToken().getValue().equalsIgnoreCase(",")
+//                        && !child.getToken().getValue().equalsIgnoreCase(",")
                         && !child.getToken().getValue().equalsIgnoreCase(";")){
     //                    && !child.getToken().getValue().equalsIgnoreCase(":"))
 
@@ -156,7 +156,8 @@ public class Grammar {
 
 
         //l'ast est presque fini, il reste à arranger les opérations : on fait un parcours en largeur
-new PClWindows(tokens, ast, !error).start();
+
+        arangeComa();
         arangeAST();
     }
 
@@ -261,21 +262,17 @@ new PClWindows(tokens, ast, !error).start();
                         currentNode.getParent().getChildren().remove(currentNode);
                     }
                     else {
-                        for (Node endChild : currentNode.getChildren()) {
-                            endChild.setParent(currentNode.getParent());
-                            currentNode.getParent().addChild(endChild);
+                        int indexEnd = currentNode.getParent().getChildren().indexOf(currentNode);
+                        System.out.println("index end : " + indexEnd);
+                        for (Node child : currentNode.getChildren()) {
+                            child.setParent(currentNode.getParent());
                         }
+                        currentNode.getParent().getChildren().addAll(indexEnd, currentNode.getChildren());
                         currentNode.getParent().getChildren().remove(currentNode);
                     }
                 }
-                if(currentNode.getToken().getType()== TokenType.IDENTIFIER && tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equalsIgnoreCase("end")){
-                    int indexCurrentNode = currentNode.getParent().getChildren().indexOf(currentNode);
-                    Node nodeProcedure = currentNode.getParent().getChildren().get(indexCurrentNode-1);
-                    nodeProcedure.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
-                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
-                    currentNode.setParent(nodeProcedure);//ajout de lastNode comme parent de currentNode
 
-                }
+
                 if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop") || currentNode.getValue().equalsIgnoreCase("record"))
                         && lastNode.getValue().equalsIgnoreCase("end")
                         && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
@@ -361,9 +358,8 @@ new PClWindows(tokens, ast, !error).start();
                            declarationVariables.clear();
                        }
                    }
-
-
                }
+
                if((currentNode.getParent().getValue().equalsIgnoreCase("declaration") || currentNode.getParent().getValue().equalsIgnoreCase("record"))
                        && currentNode.getToken().getType().equals(TokenType.IDENTIFIER)) {
                    declarationVariables.add(currentNode);
@@ -455,7 +451,6 @@ new PClWindows(tokens, ast, !error).start();
         ArrayList<Node> declarationVariables = new ArrayList<>();
 
         while (!nodes_to_visit.isEmpty()){
-
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
             nodes_to_visit.remove(0);
             if (currentNode.getValue().equalsIgnoreCase(":=") && currentNode.getToken().getType().equals(TokenType.SEPARATOR)
@@ -489,9 +484,60 @@ new PClWindows(tokens, ast, !error).start();
                 currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
                 lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                 lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
-//                    if (currentNode.getToken().getValue().equalsIgnoreCase(".")){
-//                        currentNode.setValue("access");
-//                    }
+
+            }
+
+            //on arrange les paramètres des fonctions : lorsque Set(L: List; I, V: Integer)
+            if (currentNode.getToken() != null) {
+                if (currentNode.getToken().getType()== TokenType.IDENTIFIER && currentNode.getParent().getValue().equalsIgnoreCase("param") &&currentNode.getChildren().size() > 0){
+                        //on ajoute les enfants de l'identifiant au noeud param
+                        int indexIdentChild = currentNode.getParent().getChildren().indexOf(currentNode);
+                        currentNode.getParent().getChildren().addAll(indexIdentChild + 1, currentNode.getChildren());
+                        currentNode.getChildren().clear();
+                    }
+
+                //on arrange les noms des fonctions à la fin des fonctions
+                if(currentNode.getToken().getType()== TokenType.IDENTIFIER && tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equalsIgnoreCase("end")
+                    && (lastNode.getValue().equalsIgnoreCase("procedure") || lastNode.getValue().equalsIgnoreCase("function"))){
+                    currentNode.getParent().getChildren().remove(currentNode);
+                    lastNode.addChild(currentNode);
+                    currentNode.setParent(lastNode);
+
+
+                }
+            }
+
+
+            lastNode = currentNode;
+            nodes_to_visit.addAll(currentNode.getChildren());
+        }
+    }
+
+    public void arangeComa(){
+        //on arrange les virgules
+        ArrayList<Node> nodes_to_visit = new ArrayList<>();
+        Node lastNode = ast.getRootNode();
+        Node currentNode = ast.getRootNode();
+        nodes_to_visit.add(ast.getRootNode());
+        ArrayList<Node> declarationVariables = new ArrayList<>();
+
+        while (!nodes_to_visit.isEmpty()){
+
+            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
+            nodes_to_visit.remove(0);
+            if (currentNode.getValue().equalsIgnoreCase(",")
+                    && currentNode.getToken().getType().equals(TokenType.SEPARATOR)
+                    && currentNode.getParent().getToken() != null
+                   ){
+                currentNode.getParent().getChildren().remove(currentNode); // on supprime la virgule de son parent
+                if(currentNode.getChildren().size() > 0) {
+                    //on ajoute les enfants de la virgule au dernier noeud rencontré
+                    for (Node child : currentNode.getChildren()) {
+                        lastNode.addChild(child);
+                        child.setParent(lastNode);
+                    }
+                }
+                currentNode = lastNode;
             }
             lastNode = currentNode;
             nodes_to_visit.addAll(currentNode.getChildren());
