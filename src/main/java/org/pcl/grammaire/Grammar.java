@@ -338,7 +338,7 @@ public class Grammar {
                }
 
                //on arrange les déclarations de variables
-               if(currentNode.getValue().equalsIgnoreCase(":")){
+               if(currentNode.getToken().getValue().equalsIgnoreCase(":")){
                    if(currentNode.getParent().getToken() != null) {
                        if (currentNode.getParent().getToken().getType() == TokenType.IDENTIFIER) {
                            currentNode.setValue("param");
@@ -354,6 +354,7 @@ public class Grammar {
                                declrationVariable.setParent(currentNode);
                                i++;
                            }
+
                            declarationVariables.clear();
                        }
                    }
