@@ -2024,7 +2024,6 @@ public class Grammar {
     }
 
     public void arangeOperator1PlusMinus(){
-        new PCLWindows(tokens, ast, true).start();
 
         //on arrange les opérations : + et -
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
