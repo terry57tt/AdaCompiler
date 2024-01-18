@@ -11,7 +11,7 @@ begin
     elsif pgcd < 0 then
             x := 2;
     else
-       x := (46 * 5 + 3 rem 7);
+       x := (-9 rem 1 - 3) - 7/ 4 + 2 + (3 / 1 - 12) * (46 * 5 + 3 rem 7);
     end if;
 
     while x < 10 loop

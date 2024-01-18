@@ -1606,7 +1606,9 @@ public class Grammar {
         arangeASTRoot();
         arange2();
         arangeOperator1PlusMinus();
+        arangeOperator1PlusMinus();
         arangeOperator2SupInf();
+
     }
 
 
@@ -2022,6 +2024,8 @@ public class Grammar {
     }
 
     public void arangeOperator1PlusMinus(){
+        new PCLWindows(tokens, ast, true).start();
+
         //on arrange les opérations : + et -
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
         Node lastNode = ast.getRootNode();
@@ -2032,21 +2036,44 @@ public class Grammar {
         while (!nodes_to_visit.isEmpty()){
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
             nodes_to_visit.remove(0);
+
             if(currentNode.getChildren().size() !=2){
                 if (currentNode.getValue().equalsIgnoreCase("+")
                         && (currentNode.getToken().getType().equals(TokenType.SEPARATOR))){
-                    currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
-                    lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
-                    lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+
+                    if ((lastNode.getToken().getType() == TokenType.NUMBER || lastNode.getToken().getType() == TokenType.IDENTIFIER)
+                            && (lastNode.getParent().getValue().equalsIgnoreCase("*") || lastNode.getParent().getValue().equalsIgnoreCase("/")
+                            || lastNode.getParent().getValue().equalsIgnoreCase("rem"))
+                            && (lastNode.getParent().getToken().getType().equals(TokenType.OPERATOR) || lastNode.getParent().getToken().getType().equals(TokenType.SEPARATOR) || lastNode.getParent().getToken().getType().equals(TokenType.KEYWORD))){
+                        currentNode.getChildren().add(0, lastNode.getParent()); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getParent().getChildren().remove(lastNode.getParent());//suppression de lastNode de son parent
+                        lastNode.getParent().setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    } else {
+                        currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                        lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    }
+
                 }
                 if (currentNode.getValue().equalsIgnoreCase("-")
                         && (currentNode.getToken().getType().equals(TokenType.OPERATOR) || currentNode.getToken().getType().equals(TokenType.SEPARATOR))
                         && ((tokens.get(tokens.indexOf(currentNode.getToken())-1).getType() == TokenType.NUMBER)
-                        || (tokens.get(tokens.indexOf(currentNode.getToken())-1).getType() == TokenType.IDENTIFIER))){
+                        || (tokens.get(tokens.indexOf(currentNode.getToken())-1).getType() == TokenType.IDENTIFIER)
+                        || (tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equalsIgnoreCase(")")))){
                     //si le - est un opérateur et non un moins unaire
+                    if ((lastNode.getToken().getType() == TokenType.NUMBER || lastNode.getToken().getType() == TokenType.IDENTIFIER)
+                            && (lastNode.getParent().getValue().equalsIgnoreCase("*") || lastNode.getParent().getValue().equalsIgnoreCase("/")
+                            || lastNode.getParent().getValue().equalsIgnoreCase("rem"))
+                            && (lastNode.getParent().getToken().getType().equals(TokenType.OPERATOR) || lastNode.getParent().getToken().getType().equals(TokenType.SEPARATOR) || lastNode.getParent().getToken().getType().equals(TokenType.KEYWORD))){
+                        currentNode.getChildren().add(0, lastNode.getParent()); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getParent().getChildren().remove(lastNode.getParent());//suppression de lastNode de son parent
+                        lastNode.getParent().setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    } else {
                     currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
                     lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
                     lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    }
+
                 }
             }
 
