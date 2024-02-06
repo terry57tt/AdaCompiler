@@ -1,0 +1,132 @@
+Colonne 1 : nom du noeud dans l'AST (X -> pas dans AST, ? -> pas encore déterminé)
+
+FILE            FICHIER -> with ADA_TEXT_IO point_virgule USE ADA_TEXT_IO point_virgule procedure IDENT is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule eof .
+?               DECLSTAR -> DECL DECLSTAR .
+X               DECLSTAR -> .
+BODY            INSTRSTAR -> INSTR INSTRSTAR .
+X               INSTRSTAR -> .
+X               IDENTINTERRO -> IDENT .
+X               IDENTINTERRO -> .
+VIRGULE         IDENTSTAR_VIRGULE -> virgule IDENT IDENTSTAR_VIRGULE.
+X               IDENTSTAR_VIRGULE -> .
+TYPE            DECL -> type IDENT .
+X               DECL2 -> point_virgule .
+IS              DECL2 -> is DECL3 .
+ACCESS          DECL3 -> access IDENT point_virgule .
+RECORD          DECL3 -> record CHAMPS CHAMPSSTAR end record point_virgule .
+DECL_VAR        DECL -> IDENT IDENTSTAR_VIRGULE deux_points TYPE EXPRINTERRO point_virgule .
+DECL_PROC       DECL -> procedure IDENT PARAMSINTERRO is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule .
+DECL_FUNC       DECL -> function IDENT PARAMSINTERRO return TYPE is DECLSTAR begin INSTR INSTRSTAR end IDENTINTERRO point_virgule .
+FIELD           CHAMPS -> IDENT IDENTSTAR_VIRGULE deux_points TYPE point_virgule .
+INITIALIZATION  EXPRINTERRO -> deux_points_egal EXPR .
+X               EXPRINTERRO -> .
+?               CHAMPSSTAR -> CHAMPS CHAMPSSTAR .
+X               CHAMPSSTAR -> .
+X               PARAMSINTERRO -> PARAMS .
+X               PARAMSINTERRO -> .
+X               TYPE -> IDENT .
+ACCESS          TYPE -> access IDENT point_virgule .
+PARAMETERS      PARAMS -> parenthese_ouvrante PARAM PARAMSTAR_POINT_VIRGULE parenthese_fermante.
+MULTIPLE_PARAM  PARAMSTAR_POINT_VIRGULE -> point_virgule PARAM PARAMSTAR_POINT_VIRGULE .
+X               PARAMSTAR_POINT_VIRGULE -> .
+MODE            PARAM -> IDENT IDENTSTAR_VIRGULE deux_points MODEINTERRO TYPE point_virgule .
+IN              MODE -> in .
+INOUT           MODE -> inout point_virgule .
+X               MODEINTERRO -> MODE .
+X               MODEINTERRO -> .
+
+
+?               EXPR-> TERME_1 PRIORITE_OR .
+
+OR              PRIORITE_OR -> or PRIORITE_OR_2 .
+X               PRIORITE_OR -> .
+
+?               PRIORITE_OR_2 -> TERME_1 PRIORITE_OR .
+ELSE            PRIORITE_OR_2 -> else TERME_1 PRIORITE_OR .
+
+X               TERME_1 -> TERME_2 PRIORITE_AND .
+
+AND             PRIORITE_AND -> and PRIORITE_AND_2 .
+X               PRIORITE_AND -> .
+
+X               PRIORITE_AND_2 -> TERME_2 PRIORITE_AND .
+THEN            PRIORITE_AND_2 -> then TERME_2 PRIORITE_AND .
+
+X               TERME_2 -> TERME_3
+NOT             TERME_2 -> not TERME_3
+
+?               TERME_3 -> TERME_4 PRIORITE_EGAL .
+
+SLASH_EQUAL     PRIORITE_EGAL -> slash_egal TERME_4 PRIORITE_EGAL .
+EQUAL           PRIORITE_EGAL -> egal TERME_4 PRIORITE_EGAL .
+X               PRIORITE_EGAL -> .
+
+X               TERME_4 -> TERME_5 PRIORITE_INFERIEUR .
+
+INFERIOR        PRIORITE_INFERIEUR -> inferieur TERME_5 PRIORITE_INFERIEUR .
+INFERIOR_EQUAL  PRIORITE_INFERIEUR -> inferieur_egal TERME_5 PRIORITE_INFERIEUR .
+SUPERIOR        PRIORITE_INFERIEUR -> superieur TERME_5 PRIORITE_INFERIEUR .
+SUPERIOR_EQUAL  PRIORITE_INFERIEUR -> superieur_egal TERME_5 PRIORITE_INFERIEUR .
+X               PRIORITE_INFERIEUR -> .
+
+X               TERME_5 -> TERME_6 PRIORITE_ADDITION .
+
+ADDITION        PRIORITE_ADDITION -> plus TERME_6 PRIORITE_ADDITION .
+SUBSTRACTION    PRIORITE_ADDITION -> moins TERME_6 PRIORITE_ADDITION .
+X               PRIORITE_ADDITION -> .
+
+X               TERME_6 -> TERME_7 PRIORITE_MULTIPLICATION .
+
+MULTIPLY        PRIORITE_MULTIPLICATION -> fois TERME_7 PRIORITE_MULTIPLICATION .
+DIVIDE          PRIORITE_MULTIPLICATION -> divise TERME_7 PRIORITE_MULTIPLICATION .
+REM             PRIORITE_MULTIPLICATION -> rem TERME_7 PRIORITE_MULTIPLICATION .
+X               PRIORITE_MULTIPLICATION -> .
+
+X               TERME_7 -> FACTEUR PRIORITE_POINT .
+NEGATIVE_SIGN   TERME_7 -> moins FACTEUR PRIORITE_POINT .
+
+POINT           PRIORITE_POINT -> point IDENT PRIORITE_POINT .
+X               PRIORITE_POINT -> .
+
+X               FACTEUR -> parenthese_ouvrante EXPR parenthese_fermante .
+INTEGER         FACTEUR -> entier .
+CHARACTER       FACTEUR -> caractere .
+TRUE            FACTEUR -> true .
+FALSE           FACTEUR -> false .
+NULL            FACTEUR -> null .
+NEW             FACTEUR -> new IDENT .
+?               FACTEUR-> IDENT FACTEUR2 .
+?               FACTEUR2 -> parenthese_ouvrante EXPR EXPRSTAR_VIRGULE parenthese_fermante .
+X               FACTEUR2 -> .
+CHAR_VAL        FACTEUR -> character apostrophe val parenthese_ouvrante EXPR parenthese_fermante .
+
+X               ACCES -> EXPR.
+
+?               INSTR -> ACCES INSTR2_PRIME .
+?               INSTR -> IDENT INSTR2 .
+RETURN          INSTR -> return EXPRINTERRO2 point_virgule .
+BEGIN           INSTR -> begin INSTR INSTRSTAR end point_virgule .
+IF              INSTR -> if EXPR then INSTR INSTRSTAR ELSIFSTAR end if point_virgule .
+FOR             INSTR -> for IDENT in REVERSEINTERRO EXPR point_point EXPR loop INSTR INSTRSTAR end loop point_virgule .
+WHILE           INSTR -> while EXPR loop INSTR INSTRSTAR end loop point_virgule .
+
+X               INSTR2 -> INSTR2_PRIME.
+X               INSTR2 -> point_virgule .
+?               INSTR2 -> parenthese_ouvrante EXPR EXPRSTAR_VIRGULE parenthese_fermante point_virgule .
+
+AFFECTATION     INSTR2_PRIME -> deux_points_egal EXPR point_virgule .
+
+X               EXPRINTERRO2 -> EXPR .
+X               EXPRINTERRO2 -> .
+
+REVERSE         REVERSEINTERRO -> reverse .
+X               REVERSEINTERRO -> .
+
+ELSIF           ELSIFSTAR -> elsif EXPR then INSTR INSTRSTAR ELSIFSTAR .
+ELSE            ELSIFSTAR -> else INSTR INSTRSTAR.
+X               ELSIFSTAR -> .
+
+EXPRESSION      EXPRSTAR_VIRGULE -> virgule EXPR EXPRSTAR_VIRGULE .
+X               EXPRSTAR_VIRGULE -> .
+
+IDENTIFIER      IDENT -> idf .
