@@ -29,12 +29,14 @@ tasks.register('run', JavaExec) {
 
 }
 
+
 repositories {
     mavenCentral()
 }
 
 
 dependencies {
+    implementation 'de.vandermeer:asciitable:0.3.2'
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
     implementation("net.sf.jung:jung-graph-impl:2.1.1")

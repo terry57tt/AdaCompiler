@@ -4,6 +4,9 @@ package org.pcl;
 import org.pcl.grammaire.Grammar;
 import org.pcl.ig.PCLWindows;
 import org.pcl.structure.automaton.Graph;
+import org.pcl.structure.tds.Symbol;
+import org.pcl.structure.tds.SymbolType;
+import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
@@ -66,6 +69,11 @@ public class App {
                         ((grammar.getNumberErrors() > 1) ? "s": "") + " generated" +
                         ANSI_RESET);
             }
+
+            Tds tds = new Tds(1);
+            tds.addSymbol(new Symbol(SymbolType.TYPE, "main"));
+            tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value"));
+            System.out.println(tds + "\n");
 
         }
     }

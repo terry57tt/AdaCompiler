@@ -11,4 +11,9 @@ public class Symbol {
         this.type = type;
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return type + " " + value;
+    }
 }
