@@ -70,7 +70,7 @@ public class App {
                         ANSI_RESET);
             }
 
-            Tds tds = new Tds(1);
+            Tds tds = new Tds();
             tds.addSymbol(new Symbol(SymbolType.TYPE, "main"));
             tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value"));
             System.out.println(tds + "\n");

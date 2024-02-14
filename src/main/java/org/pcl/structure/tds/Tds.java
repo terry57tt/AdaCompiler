@@ -19,24 +19,29 @@ public class Tds {
 
     private int region;
 
-    public Tds(List<Symbol> symbols, Tds parent, int imbrication) {
+    public Tds(List<Symbol> symbols, Tds parent) {
         this.symbols = symbols;
         this.parent = parent;
         region = REGION_COUNTER;
         REGION_COUNTER++;
+        if (parent != null) {
+            imbrication = parent.imbrication + 1;
+        } else {
+            imbrication = 0;
+        }
     }
 
 
-    public Tds(Tds parent, int imbrication) {
-        this(new ArrayList<>(), parent, imbrication);
+    public Tds(Tds parent) {
+        this(new ArrayList<>(), parent);
     }
 
-    public Tds(List<Symbol> symbols, int imbrication) {
-        this(symbols, null, imbrication);
+    public Tds(List<Symbol> symbols) {
+        this(symbols, null);
     }
 
-    public Tds(int imbrication) {
-        this(new ArrayList<>(), null, imbrication);
+    public Tds() {
+        this(new ArrayList<>(), null);
     }
 
     public List<Symbol> getSymbols() {
