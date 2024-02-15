@@ -60,11 +60,11 @@ public class Tds {
     public String toString() {
         AsciiTable asciiTable = new AsciiTable();
         asciiTable.addRule();
-        asciiTable.addRow("TDS - Région:" + region + " Imbrication:" + imbrication);
+        asciiTable.addRow("TDS - Région:" + region + " Imbrication:" + imbrication, " Déplacement");
         asciiTable.addRule();
 
         for (Symbol symbol : symbols) {
-            asciiTable.addRow(symbol);
+            asciiTable.addRow(symbol, symbol.getDeplacement());
             //asciiTable.addRule();
         }
         asciiTable.addRule();

@@ -333,3 +333,4 @@ $RECYCLE.BIN/
 # Add by project team
 .idea
 .gradle
+output.s

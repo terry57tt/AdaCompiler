@@ -71,8 +71,8 @@ public class App {
             }
 
             Tds tds = new Tds();
-            tds.addSymbol(new Symbol(SymbolType.TYPE, "main"));
-            tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value"));
+            tds.addSymbol(new Symbol(SymbolType.TYPE, "main", 0));
+            tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value", 4));
             System.out.println(tds + "\n");
 
         }

@@ -7,9 +7,16 @@ public class Symbol {
 
     private String value;
 
-    public Symbol(SymbolType type, String value) {
+    private int deplacement;
+
+    public Symbol(SymbolType type, String value, int deplacement) {
         this.type = type;
         this.value = value;
+        this.deplacement = deplacement;
+    }
+
+    public int getDeplacement() {
+        return deplacement;
     }
 
     @Override
