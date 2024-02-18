@@ -113,6 +113,9 @@ public class Node {
     /** Return the node as a string. */
     @Override
     public String toString() {
+        if(type != null){
+            return type.name();
+        }
         return value;
     }
 
@@ -162,5 +165,175 @@ public class Node {
 
     public void setToken(Token token) {
         this.token = token;
+    }
+
+    public void setType(NodeType type) {
+        this.type = type;
+    }
+
+    public void defineName() {
+        switch (this.value) {
+            case "PROGRAM":
+                this.type = NodeType.PROGRAM;
+                break;
+            case "IDENTIFIER":
+                this.type = NodeType.IDENTIFIER;
+                break;
+            case "Fichier":
+                this.type = NodeType.FILE;
+                break;
+            case "BODY":
+                this.type = NodeType.BODY;
+                break;
+            case "VIRGULE":
+                this.type = NodeType.VIRGULE;
+                break;
+            case "TYPE":
+                this.type = NodeType.TYPE;
+                break;
+            case "IS":
+                this.type = NodeType.IS;
+                break;
+            case "ACCESS":
+                this.type = NodeType.ACCESS;
+                break;
+            case "RECORD":
+                this.type = NodeType.RECORD;
+                break;
+            case "DECL_VAR":
+                this.type = NodeType.DECL_VAR;
+                break;
+            case "DECL_PROC":
+                this.type = NodeType.DECL_PROC;
+                break;
+            case "DECL_FUNC":
+                this.type = NodeType.DECL_FUNC;
+                break;
+            case "FIELD":
+                this.type = NodeType.FIELD;
+                break;
+            case "INITIALIZATION":
+                this.type = NodeType.INITIALIZATION;
+                break;
+            case "PARAMETERS":
+                this.type = NodeType.PARAMETERS;
+                break;
+            case "MULTIPLE_PARAM":
+                this.type = NodeType.MULTIPLE_PARAM;
+                break;
+            case "MODE":
+                this.type = NodeType.MODE;
+                break;
+            case "IN":
+                this.type = NodeType.IN;
+                break;
+            case "INOUT":
+                this.type = NodeType.INOUT;
+                break;
+            case "OR":
+                this.type = NodeType.OR;
+                break;
+            case "ELSE":
+                this.type = NodeType.ELSE;
+                break;
+            case "AND":
+                this.type = NodeType.AND;
+                break;
+            case "THEN":
+                this.type = NodeType.THEN;
+                break;
+            case "NOT":
+                this.type = NodeType.NOT;
+                break;
+            case "SLASH_EQUAL":
+                this.type = NodeType.SLASH_EQUAL;
+                break;
+            case "EQUAL":
+                this.type = NodeType.EQUAL;
+                break;
+            case "INFERIOR":
+                this.type = NodeType.INFERIOR;
+                break;
+            case "INFERIOR_EQUAL":
+                this.type = NodeType.INFERIOR_EQUAL;
+                break;
+            case "SUPERIOR":
+                this.type = NodeType.SUPERIOR;
+                break;
+            case "SUPERIOR_EQUAL":
+                this.type = NodeType.SUPERIOR_EQUAL;
+                break;
+            case "+":
+                this.type = NodeType.ADDITION;
+                break;
+            case "-":
+                this.type = NodeType.SUBSTRACTION;
+                break;
+            case "*":
+                this.type = NodeType.MULTIPLY;
+                break;
+            case "/":
+                this.type = NodeType.DIVIDE;
+                break;
+            case "REM":
+                this.type = NodeType.REM;
+                break;
+            case "NEGATIVE_SIGN":
+                this.type = NodeType.NEGATIVE_SIGN;
+                break;
+            case "POINT":
+                this.type = NodeType.POINT;
+                break;
+            case "INTEGER":
+                this.type = NodeType.INTEGER;
+                break;
+            case "CHARACTER":
+                this.type = NodeType.CHARACTER;
+                break;
+            case "TRUE":
+                this.type = NodeType.TRUE;
+                break;
+            case "FALSE":
+                this.type = NodeType.FALSE;
+                break;
+            case "NULL":
+                this.type = NodeType.NULL;
+                break;
+            case "NEW":
+                this.type = NodeType.NEW;
+                break;
+            case "CHAR_VAL":
+                this.type = NodeType.CHAR_VAL;
+                break;
+            case "RETURN":
+                this.type = NodeType.RETURN;
+                break;
+            case "BEGIN":
+                this.type = NodeType.BEGIN;
+                break;
+            case "IF":
+                this.type = NodeType.IF;
+                break;
+            case "FOR":
+                this.type = NodeType.FOR;
+                break;
+            case "WHILE":
+                this.type = NodeType.WHILE;
+                break;
+            case "AFFECTATION":
+                this.type = NodeType.AFFECTATION;
+                break;
+            case "REVERSE":
+                this.type = NodeType.REVERSE;
+                break;
+            case "ELSIF":
+                this.type = NodeType.ELSIF;
+                break;
+            case "EXPRESSION":
+                this.type = NodeType.EXPRESSION;
+                break;
+            default:
+                break;
+        }
     }
 }

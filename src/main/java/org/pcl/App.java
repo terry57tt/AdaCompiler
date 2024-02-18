@@ -4,6 +4,7 @@ package org.pcl;
 import org.pcl.grammaire.Grammar;
 import org.pcl.ig.PCLWindows;
 import org.pcl.structure.automaton.Graph;
+import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
@@ -47,6 +48,8 @@ public class App {
             SyntaxTree tree = grammar.getSyntaxTree();
 
             grammar.createAST();
+            grammar.nameNodes();
+
             tree = grammar.ast;
 
             //if (!grammar.error)
