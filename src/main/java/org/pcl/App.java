@@ -2,7 +2,7 @@ package org.pcl;
 
 
 import org.pcl.grammaire.Grammar;
-import org.pcl.ig.PCLWindows;
+import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.tds.Symbol;
 import org.pcl.structure.tds.SymbolType;
@@ -53,7 +53,7 @@ public class App {
             tree = grammar.ast;
 
             //if (!grammar.error)
-            new PCLWindows(tokens, tree,!grammar.error).start();
+            //new PCLWindows(tokens, tree,!grammar.error).start();
 
 
             if (grammar.error) {

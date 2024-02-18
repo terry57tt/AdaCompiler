@@ -21,13 +21,16 @@ public class Tds {
 
     private int region;
 
-    public Tds(List<Symbol> symbols) {
+    private String name;
+
+    public Tds(List<Symbol> symbols, String name) {
         this.symbols = symbols;
         this.parent = null;
         this.child = new ArrayList<>();
         imbrication = 0;
         region = REGION_COUNTER;
         REGION_COUNTER++;
+        this.name = name;
     }
 
     public void addChild(Tds tds) {
@@ -36,8 +39,8 @@ public class Tds {
         child.add(tds);
     }
 
-    public Tds() {
-        this(new ArrayList<>());
+    public Tds(String name) {
+        this(new ArrayList<>(), name);
     }
 
     public List<Symbol> getSymbols() {
@@ -58,6 +61,34 @@ public class Tds {
 
     public int getRegion() {
         return region;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Tds> getChild() {
+        return child;
+    }
+
+    public void setChild(List<Tds> child) {
+        this.child = child;
+    }
+
+    public void setParent(Tds parent) {
+        this.parent = parent;
+    }
+
+    public void setImbrication(int imbrication) {
+        this.imbrication = imbrication;
+    }
+
+    public void setRegion(int region) {
+        this.region = region;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
