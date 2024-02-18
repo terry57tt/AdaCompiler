@@ -13,35 +13,31 @@ public class Tds {
 
     private List<Symbol> symbols;
 
+    private List<Tds> child;
+
     private Tds parent;
 
     private int imbrication;
 
     private int region;
 
-    public Tds(List<Symbol> symbols, Tds parent) {
+    public Tds(List<Symbol> symbols) {
         this.symbols = symbols;
-        this.parent = parent;
+        this.parent = null;
+        this.child = new ArrayList<>();
+        imbrication = 0;
         region = REGION_COUNTER;
         REGION_COUNTER++;
-        if (parent != null) {
-            imbrication = parent.imbrication + 1;
-        } else {
-            imbrication = 0;
-        }
     }
 
-
-    public Tds(Tds parent) {
-        this(new ArrayList<>(), parent);
-    }
-
-    public Tds(List<Symbol> symbols) {
-        this(symbols, null);
+    public void addChild(Tds tds) {
+        tds.parent = this;
+        tds.imbrication = tds.parent.imbrication + 1;
+        child.add(tds);
     }
 
     public Tds() {
-        this(new ArrayList<>(), null);
+        this(new ArrayList<>());
     }
 
     public List<Symbol> getSymbols() {
@@ -56,6 +52,14 @@ public class Tds {
         symbols.add(symbol);
     }
 
+    public int getImbrication() {
+        return imbrication;
+    }
+
+    public int getRegion() {
+        return region;
+    }
+
     @Override
     public String toString() {
         AsciiTable asciiTable = new AsciiTable();
@@ -65,9 +69,10 @@ public class Tds {
 
         for (Symbol symbol : symbols) {
             asciiTable.addRow(symbol, symbol.getDeplacement());
-            //asciiTable.addRule();
         }
-        asciiTable.addRule();
+        if (!symbols.isEmpty())
+            asciiTable.addRule();
+
         asciiTable.setTextAlignment(TextAlignment.CENTER);
         return asciiTable.render();
     }
