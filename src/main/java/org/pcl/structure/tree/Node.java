@@ -173,6 +173,9 @@ public class Node {
 
     public void defineName() {
         switch (this.value) {
+            case "declaration":
+                this.type = NodeType.DECLARATION;
+                break;
             case "PROGRAM":
                 this.type = NodeType.PROGRAM;
                 break;
@@ -182,31 +185,31 @@ public class Node {
             case "Fichier":
                 this.type = NodeType.FILE;
                 break;
-            case "BODY":
+            case "body", "then", "loop", "else":
                 this.type = NodeType.BODY;
                 break;
             case "VIRGULE":
                 this.type = NodeType.VIRGULE;
                 break;
-            case "TYPE":
+            case "type":
                 this.type = NodeType.TYPE;
                 break;
             case "IS":
                 this.type = NodeType.IS;
                 break;
-            case "ACCESS":
+            case "access":
                 this.type = NodeType.ACCESS;
                 break;
-            case "RECORD":
+            case "record":
                 this.type = NodeType.RECORD;
                 break;
-            case "DECL_VAR":
+            case "variable":
                 this.type = NodeType.DECL_VAR;
                 break;
-            case "DECL_PROC":
+            case "procedure":
                 this.type = NodeType.DECL_PROC;
                 break;
-            case "DECL_FUNC":
+            case "function":
                 this.type = NodeType.DECL_FUNC;
                 break;
             case "FIELD":
@@ -215,7 +218,7 @@ public class Node {
             case "INITIALIZATION":
                 this.type = NodeType.INITIALIZATION;
                 break;
-            case "PARAMETERS":
+            case "param":
                 this.type = NodeType.PARAMETERS;
                 break;
             case "MULTIPLE_PARAM":
@@ -230,38 +233,14 @@ public class Node {
             case "INOUT":
                 this.type = NodeType.INOUT;
                 break;
-            case "OR":
-                this.type = NodeType.OR;
-                break;
-            case "ELSE":
-                this.type = NodeType.ELSE;
-                break;
-            case "AND":
-                this.type = NodeType.AND;
-                break;
-            case "THEN":
-                this.type = NodeType.THEN;
-                break;
-            case "NOT":
+            case "not":
                 this.type = NodeType.NOT;
                 break;
-            case "SLASH_EQUAL":
+            case "/=":
                 this.type = NodeType.SLASH_EQUAL;
                 break;
-            case "EQUAL":
-                this.type = NodeType.EQUAL;
-                break;
-            case "INFERIOR":
-                this.type = NodeType.INFERIOR;
-                break;
-            case "INFERIOR_EQUAL":
-                this.type = NodeType.INFERIOR_EQUAL;
-                break;
-            case "SUPERIOR":
-                this.type = NodeType.SUPERIOR;
-                break;
-            case "SUPERIOR_EQUAL":
-                this.type = NodeType.SUPERIOR_EQUAL;
+            case "<", ">","=","<=",">=","and","or":
+                this.type = NodeType.COMPARATOR;
                 break;
             case "+":
                 this.type = NodeType.ADDITION;
@@ -275,26 +254,14 @@ public class Node {
             case "/":
                 this.type = NodeType.DIVIDE;
                 break;
-            case "REM":
+            case "rem":
                 this.type = NodeType.REM;
                 break;
-            case "NEGATIVE_SIGN":
-                this.type = NodeType.NEGATIVE_SIGN;
-                break;
-            case "POINT":
+            case ".":
                 this.type = NodeType.POINT;
-                break;
-            case "INTEGER":
-                this.type = NodeType.INTEGER;
                 break;
             case "CHARACTER":
                 this.type = NodeType.CHARACTER;
-                break;
-            case "TRUE":
-                this.type = NodeType.TRUE;
-                break;
-            case "FALSE":
-                this.type = NodeType.FALSE;
                 break;
             case "NULL":
                 this.type = NodeType.NULL;
@@ -305,32 +272,26 @@ public class Node {
             case "CHAR_VAL":
                 this.type = NodeType.CHAR_VAL;
                 break;
-            case "RETURN":
+            case "RETURN": // two types of return
                 this.type = NodeType.RETURN;
                 break;
-            case "BEGIN":
-                this.type = NodeType.BEGIN;
-                break;
-            case "IF":
+            case "if":
                 this.type = NodeType.IF;
                 break;
-            case "FOR":
+            case "for":
                 this.type = NodeType.FOR;
                 break;
-            case "WHILE":
+            case "while":
                 this.type = NodeType.WHILE;
                 break;
-            case "AFFECTATION":
+            case ":=":
                 this.type = NodeType.AFFECTATION;
                 break;
-            case "REVERSE":
+            case "reverse":
                 this.type = NodeType.REVERSE;
                 break;
-            case "ELSIF":
+            case "elsif":
                 this.type = NodeType.ELSIF;
-                break;
-            case "EXPRESSION":
-                this.type = NodeType.EXPRESSION;
                 break;
             default:
                 break;

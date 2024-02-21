@@ -54,4 +54,6 @@ public enum NodeType {
     REVERSE,
     ELSIF,
     EXPRESSION,
+    DECLARATION,
+    COMPARATOR,
 }
