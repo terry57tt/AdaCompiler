@@ -5,6 +5,7 @@ import org.pcl.Token;
 //import org.pcl.ig.PCLWindows;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
+import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.util.ArrayList;
@@ -2112,4 +2113,17 @@ public class Grammar {
         }
     }
 
+    public void nameNodes() {
+        Node currentNode;
+
+        ArrayList<Node> nodes_to_visit = new ArrayList<>();
+        nodes_to_visit.add(ast.getRootNode());
+
+        while (!nodes_to_visit.isEmpty()) {
+            currentNode = nodes_to_visit.get(0);
+            nodes_to_visit.remove(0);
+            currentNode.defineName();
+            nodes_to_visit.addAll(currentNode.getChildren());
+        }
+    }
 }

@@ -2,12 +2,13 @@ package org.pcl;
 
 
 import org.pcl.grammaire.Grammar;
-import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.tds.Symbol;
 import org.pcl.structure.tds.SymbolType;
 import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.SyntaxTree;
+import org.pcl.ig.PClWindows;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,11 +51,12 @@ public class App {
             SyntaxTree tree = grammar.getSyntaxTree();
 
             grammar.createAST();
+            grammar.nameNodes();
+
             tree = grammar.ast;
 
             //if (!grammar.error)
             //new PCLWindows(tokens, tree,!grammar.error).start();
-
 
             if (grammar.error) {
                 System.out.println(ANSI_RED + "Analysis Syntax failed, no tree to display" + ANSI_RESET);
@@ -70,7 +72,7 @@ public class App {
                         ANSI_RESET);
             }
 
-            Tds tds = new Tds();
+            Tds tds = new Tds("TDS");
             tds.addSymbol(new Symbol(SymbolType.TYPE, "main", 0));
             tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value", 4));
             System.out.println(tds + "\n");
