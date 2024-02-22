@@ -24,11 +24,13 @@ public class Node {
     /* Associated token */
     private Token token;
     private String value;
+    private boolean meaningful;
 
     public Node() {
         this.children = new ArrayList<>();
         this.isFinal = false;
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Create the same node as node without children */
@@ -39,6 +41,7 @@ public class Node {
         this.token = node.getToken();
         this.value = node.getValue();
         this.type = node.getType();
+        this.meaningful = false;
     }
 
     /* Create a node with a semantic action. */
@@ -47,6 +50,7 @@ public class Node {
         this.children = children;
         this.isFinal = false;
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Create final node with a token. */
@@ -56,6 +60,7 @@ public class Node {
         this.isFinal = true;
         this.value = token.getValue();
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Create intermediate node with a non_terminal */
@@ -65,11 +70,17 @@ public class Node {
         this.isFinal = false;
         this.value = value;
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Add a child to the node. */
     public void addChild(Node node) {
         this.children.add(node);
+        node.parent = this;
+    }
+
+    public void addChild(int index, Node node){
+        this.children.add(index, node);
         node.parent = this;
     }
 
@@ -98,6 +109,13 @@ public class Node {
     public ArrayList<Node> getChildren() {
         return children;
     }
+    public Node getChild(int index){
+        return children.get(index);
+    }
+    public void setChildren(ArrayList<Node> children){
+        this.children = children;
+    }
+
     /** Return if the node is final. */
     public boolean isFinal() {
         return isFinal;
@@ -163,4 +181,25 @@ public class Node {
     public void setToken(Token token) {
         this.token = token;
     }
+
+    public void setMeaningful(boolean meaningful){
+        this.meaningful = meaningful;
+    }
+    public Boolean isMeaningful(){
+        return this.meaningful;
+    }
+
+    public Node firstChild(){
+        return this.children.get(0);
+    }
+
+    public void deleteFromParent(){
+        this.parent.children.remove(this);
+    }
+
+    public int indexInBrothers(){
+        return this.parent.children.indexOf(this);
+    }
+
+
 }

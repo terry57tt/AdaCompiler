@@ -2,6 +2,7 @@ package org.pcl;
 
 
 import org.pcl.grammaire.Grammar;
+import org.pcl.grammaire.Grammar2;
 import org.pcl.ig.PCLWindows;
 import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.tree.SyntaxTree;
@@ -43,9 +44,9 @@ public class App {
             Lexeur lexeur = new Lexeur(Graph.create(), FileHandler.getCharacters(file), FileHandler.getFileName(file));
             ArrayList<Token> tokens = lexeur.getTokens();
 
-            Grammar grammar = new Grammar(tokens, FileHandler.getFileName(file));
+            Grammar2 grammar = new Grammar2(tokens, FileHandler.getFileName(file));
             SyntaxTree tree = grammar.getSyntaxTree();
-
+            new PCLWindows(tokens, tree,!grammar.error).start();
             grammar.createAST();
             tree = grammar.ast;
 
