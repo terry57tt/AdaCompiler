@@ -5,22 +5,14 @@ public class Symbol {
 
     private SymbolType type;
 
-    private String value;
-
     private int deplacement;
 
-    public Symbol(SymbolType type, String value, int deplacement) {
+    public Symbol(SymbolType type, int deplacement) {
         this.type = type;
-        this.value = value;
         this.deplacement = deplacement;
     }
 
     public int getDeplacement() {
         return deplacement;
-    }
-
-    @Override
-    public String toString() {
-        return type + " " + value;
     }
 }

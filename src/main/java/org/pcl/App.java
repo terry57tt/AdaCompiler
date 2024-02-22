@@ -72,10 +72,10 @@ public class App {
                         ANSI_RESET);
             }
 
-            Tds tds = new Tds("TDS");
-            tds.addSymbol(new Symbol(SymbolType.TYPE, "main", 0));
-            tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value", 4));
-            System.out.println(tds + "\n");
+            // Tds tds = new Tds("TDS");
+            // tds.addSymbol(new Symbol(SymbolType.TYPE, "main", 0));
+            // tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value", 4));
+            // System.out.println(tds + "\n");
 
         }
     }
