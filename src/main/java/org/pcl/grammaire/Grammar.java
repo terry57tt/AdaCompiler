@@ -1988,7 +1988,7 @@ public class Grammar {
                 currentNode.setMeaningful(true);
             }
             //final return in function block
-            if (currentNode.getValue().equals("nodeIntr1") && currentNode.getParent().getValue().equals("body")
+            if (currentNode.getValue().contains("nodeIntr1")
                     && currentNode.firstChild().getValue().equalsIgnoreCase("return")) {
                 currentNode.setValue("nodeIntr1Return");
                 currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
