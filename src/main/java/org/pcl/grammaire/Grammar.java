@@ -1842,6 +1842,12 @@ public class Grammar {
                     currentNode.setValue("nodeIntr1Then");
                     currentNode.setMeaningful(true);
                 }
+                if (currentNode.getParent().getChild(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("nodeIntr1Then")
+                        && !currentNode.getValue().contains("Elsif") && !currentNode.getValue().contains("Else")) {
+                    int indexCurrentNode = currentNode.indexInBrothers();
+                    currentNode.deleteFromParent();
+                    currentNode.getParent().getChild(indexCurrentNode - 1).addChild(currentNode);
+                }
             }
             //loop
             if (currentNode.getValue().equalsIgnoreCase("loop") && currentNode.isFinal()) {
