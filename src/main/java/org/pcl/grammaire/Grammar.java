@@ -2060,6 +2060,17 @@ public class Grammar {
                 currentNode.setMeaningful(true);
             }
 
+            //Character'Val
+            if (currentNode.getValue().equals("nodeFacteur") && currentNode.firstChild().getValue().equalsIgnoreCase("character")
+                    && currentNode.getChild(1).getValue().equals("'")
+                    && currentNode.getChild(2).getValue().equalsIgnoreCase("val")){
+                currentNode.firstChild().deleteFromParent();
+                currentNode.firstChild().deleteFromParent();
+                currentNode.firstChild().deleteFromParent();
+                currentNode.setValue("Character'Val");
+                currentNode.setMeaningful(true);
+            }
+
 
             //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
             int i = 0;
