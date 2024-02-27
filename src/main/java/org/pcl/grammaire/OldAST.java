@@ -2,7 +2,6 @@ package org.pcl.grammaire;
 
 import org.pcl.ColorAnsiCode;
 import org.pcl.Token;
-import org.pcl.ig.PCLWindows;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
@@ -10,7 +9,7 @@ import org.pcl.structure.tree.SyntaxTree;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
-public class Grammar2 {
+public class OldAST {
 
     public Boolean error = false;
 
@@ -29,12 +28,12 @@ public class Grammar2 {
     private String file;
     ArrayList<Token> tokens;
 
-    public Grammar2(ArrayList<Token> tokens, String file){
+    public OldAST(ArrayList<Token> tokens, String file){
         this.tokens = tokens;
         this.file = file;
     }
 
-    public Grammar2(ArrayList<Token> tokens){
+    public OldAST(ArrayList<Token> tokens){
         this(tokens, "test");
     }
 
@@ -64,8 +63,8 @@ public class Grammar2 {
         return indexLastError;
     }
 
-    public static  Grammar2 createGrammarError(Grammar2 grammar, int decal, Token newToken, String file) {
-        Grammar2 grammarError = new Grammar2(GrammarErrorUtility.deepClone(grammar.tokens), file);
+    public static OldAST createGrammarError(OldAST grammar, int decal, Token newToken, String file) {
+        OldAST grammarError = new OldAST(GrammarErrorUtility.deepClone(grammar.tokens), file);
 
         grammarError.indexLastError = grammar.tokensIndex;
         grammarError.tokens.add(grammar.tokensIndex + decal, newToken);
@@ -1483,608 +1482,635 @@ public class Grammar2 {
 
     //AST
 
+    public Node reduceNodesChildren(Node node) {
+        Node lastTerminalNode = node; //last terminal Node without numbers and identifiers
+        Node newNode = new Node(node); //création d'un nouveau noeud égal à node sans ses enfants
+
+        ArrayList<Node> nodeChildren = node.getChildren(); //enfants de node
+
+        for (Node child : nodeChildren) {
+            //pour tout child, enfant de node
+            if(child.isFinal()){
+                if (child.getToken().getType() != TokenType.NUMBER
+                        && child.getToken().getType() != TokenType.IDENTIFIER
+                        && !child.getToken().getValue().equalsIgnoreCase("(")
+                        && !child.getToken().getValue().equalsIgnoreCase(")")
+                        && !child.getToken().getValue().equalsIgnoreCase(";")){
+
+                    /*si child est terminal (n'est pas un nombre, (, ), :, ;,
+                    ou n'est pas un identificateur sauf un identificateur de fonction)
+                    alors on le note comment dernier non terminal et on l'ajoute comme fils du nouveau noeud
+                     */
+                    lastTerminalNode = child;
+                    newNode.addChild(child);
+                    child.setParent(lastTerminalNode);
+                    child.setParent(newNode);
+
+                }else if (child.getToken().getType() == TokenType.IDENTIFIER) {
+                    if (tokens.get(tokens.indexOf(child.getToken()) + 1).getValue().equalsIgnoreCase("(")) {
+                        lastTerminalNode = child;
+                        newNode.addChild(child);
+                        child.setParent(newNode);
+                    } else {
+                        if (child.getToken().getLineNumber() != 1) {
+                            newNode.addChild(child);
+                            child.setParent(newNode);
+                        }
+                    }
+                } else if (child.getToken().getType() == TokenType.NUMBER) {
+                    lastTerminalNode = child;
+                    newNode.addChild(child);
+                    child.setParent(newNode);
+                }
+
+            }
+
+            if (!child.isFinal()) {
+                //si child est non terminal
+                for (Node childChild : child.getChildren()) {
+                    /* pour tout childChild, enfant de child*/
+                    if (lastTerminalNode == node) {
+                        //s'il n'a pas eu d'enfants terminal avant child
+                        //on ajoute les enfants de l'enfant aux enfants du nouveau noeud
+                        //le noeud non terminal est donc supprimé
+                        childChild.setParent(newNode);
+                        newNode.addChild(childChild);
+
+                    } else {
+                        //sinon on ajoute les enfants de l'enfant non terminal au dernier terminal rencontré (en dehors des cas particuliers)
+                        lastTerminalNode.addChild(childChild);
+                        childChild.setParent(lastTerminalNode);
+                        newNode.addChild(lastTerminalNode);
+                        lastTerminalNode.setParent(newNode);
+                    }
+                    newNode.getChildren().remove(lastTerminalNode);
+                }
+                //on réinitialise le lastTerminalNode entre chaque branche
+                lastTerminalNode = node;
+
+            }
+        }
+        return newNode;
+    }
+
+
     public void createAST(){
-        // create AST from parse tree
         if(this.syntaxTree == null){
             System.out.println("Il n'y a pas encore de parse tree.");
             return;
         }
         this.ast = this.syntaxTree;
-
-        meaningfulNode();
-        reduceChains();
-        meaningfulNode2();
-        renameNodes();
-        reduceChains();
-    }
-    public void meaningfulNode() {
-        // browse through tree and convert meaningful non terminal and terminal nodes to meaningful nodes
-
         ArrayList<Node> nodes_to_visit = new ArrayList<>();
         Node currentNode = ast.getRootNode();
-        nodes_to_visit.add(currentNode);
 
-        while (!nodes_to_visit.isEmpty()) {
+
+
+        //cas du noeud racine : en fin de boucle, le noeud racine n'a plus d'enfants non terminaux
+        while (currentNode.nonTerminalInDirectChildren()) {
+            currentNode = reduceNodesChildren(currentNode);
+            this.ast = new SyntaxTree(currentNode);
+        }
+
+
+        //on ajoute les enfants du nouveau noeud racine à la liste de noeud à visiter
+        nodes_to_visit.addAll(0, currentNode.getChildren());
+
+        //cas des autres noeuds
+        while (!nodes_to_visit.isEmpty()){
             //on étudie le prochain noeud à visiter (parcours en profondeur), on l'enlève des noeuds à visiter
             currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
             nodes_to_visit.remove(0);
 
-            if (!currentNode.isFinal()) {
 
-                // case currentNode is an operation node
-                if (currentNode.getValue().contains("nodePriorite")) {
+            while (currentNode.nonTerminalInDirectChildren()) {
+                //tant que le noeud courant a encore des enfants non terminaux
+                //on réduit le noeud et on remplace le noeud dans l'arbre précédent
+                Node nodeToBeAdded = reduceNodesChildren(currentNode);
+                currentNode.getParent().replaceChild(currentNode, nodeToBeAdded);
+                currentNode = nodeToBeAdded;
+            }
 
-                    // node addition and soustraction
-                    if (currentNode.getValue().equals("nodePrioriteAddition")) {
-                        if (currentNode.firstChild().getValue().equals("+") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node +
-                        }
-                        if (currentNode.firstChild().getValue().equals("-") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node -
-                            currentNode.setValue("nodePrioriteSoustraction");
-                        }
-                    }
-                    // node multiplication, division and rem
-                    if (currentNode.getValue().equals("nodePrioriteMultiplication")) {
-                        if (currentNode.firstChild().getValue().equals("*") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node *
-                        }
-                        if (currentNode.firstChild().getValue().equals("/") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node /
-                            currentNode.setValue("nodePrioriteDivision");
-                        }
-                        if(currentNode.firstChild().getValue().equals("rem") && currentNode.firstChild().isFinal()){
-                            currentNode.getChildren().remove(0); //delete node rem
-                            currentNode.setValue("nodePrioriteRem");
-                        }
-                    }
-                    // node lower, lower or equal, greater and greater or equal
-                    if (currentNode.getValue().equals("nodePrioriteInferieur")) {
-                        if (currentNode.firstChild().getValue().equals("<") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node <
-                        }
-                        if (currentNode.firstChild().getValue().equals("<=") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node <=
-                            currentNode.setValue("nodePrioriteInferieurEgal");
-                        }
-                        if (currentNode.firstChild().getValue().equals(">") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node >
-                            currentNode.setValue("nodePrioriteSuperieur");
-                        }
-                        if (currentNode.firstChild().getValue().equals(">=") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node >=
-                            currentNode.setValue("nodePrioriteSuperieurEgal");
-                        }
-                    }
-                    //node equality and inequality
-                    if (currentNode.getValue().equals("nodePrioriteEgal")) {
-                        if (currentNode.firstChild().getValue().equals("=") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node =
-                        }
-                        if (currentNode.firstChild().getValue().equals("/=") && currentNode.firstChild().isFinal()) {
-                            currentNode.getChildren().remove(0); //delete node /=
-                            currentNode.setValue("nodePrioriteInegal");
-                        }
-                    }
+            //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
+            int i = 0;
+            for (Node child : currentNode.getChildren()){
+                nodes_to_visit.add(i, child);
+                i ++;
+            }
+        }
 
 
-                    //if parent contains terme, add parent's first child to current node's children (first child)
-                    if (currentNode.getParent().getValue().contains("nodeTerme") && !currentNode.isMeaningful()) {
-                        currentNode.getParent().getChildren().get(0).setParent(currentNode);
-                        currentNode.getChildren().add(0, currentNode.getParent().getChildren().get(0));
-                        currentNode.getParent().getChildren().remove(0);
-                    } else if (currentNode.getParent().getValue().contains("nodePriorite")
-                            && !currentNode.isMeaningful()) {
-                     //if parent is a nodePriorite, add parent to current node's children (first child)
-                        int indexPapa = currentNode.getParent().getParent().getChildren().indexOf(currentNode.getParent());
-                        //add current node to his grandparent's children
+        //l'ast est presque fini, il reste à arranger les opérations : on fait un parcours en largeur
+
+        arangeComa();
+        arangeAST();
+        arangeASTRoot();
+        arange2();
+        arangeOperator1PlusMinus();
+        arangeOperator1PlusMinus();
+        arangeOperator2SupInf();
+
+    }
+
+
+    public void arangeAST(){
+
+        ArrayList<Node> nodes_to_visit = new ArrayList<>();
+        Node lastNode = ast.getRootNode();
+        Node currentNode = ast.getRootNode();
+        nodes_to_visit.add(ast.getRootNode());
+        ArrayList<Node> declarationVariables = new ArrayList<>();
+
+        while (!nodes_to_visit.isEmpty()){
+
+            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
+            nodes_to_visit.remove(0);
+
+            if(currentNode.getToken() != null){
+                if (lastNode.getValue().equals("declaration") && lastNode.getChildren().size() == 0){
+                    lastNode.getParent().getChildren().remove(lastNode);
+                }
+
+                if (lastNode.getValue().equals(";")) {
+                    lastNode.getParent().getChildren().remove(lastNode);
+                }
+
+                //on arrange les procédures
+                if (currentNode.getValue().equalsIgnoreCase("is") && currentNode.getToken().getType().equals(TokenType.KEYWORD)){
+                    currentNode.setValue("declaration");
+                    lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                    currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                }
+                if(currentNode.getValue().equalsIgnoreCase("begin")){
+                    currentNode.setValue("body");
+                    currentNode.getParent().getChildren().remove(currentNode); //enlever current node de son parent
+                    lastNode.getParent().addChild(currentNode); //ajout de current node comme enfant du parent de last node (procedure)
+                    currentNode.setParent(lastNode.getParent());
+                }
+
+                //on arrange les virgules
+                if (currentNode.getValue().equalsIgnoreCase(",")
+                        && currentNode.getToken().getType().equals(TokenType.SEPARATOR)
+                        && currentNode.getParent().getToken() != null
+                        && currentNode.getParent().getToken().getType() == TokenType.KEYWORD){
+                    currentNode.getParent().getChildren().remove(currentNode); // on supprime la virgule de son parent
+                    if(currentNode.getChildren().size() > 0) {
+                        //on ajoute les enfants de la virgule au dernier noeud rencontré
+                        for (Node child : currentNode.getChildren()) {
+                            lastNode.addChild(child);
+                            child.setParent(lastNode);
+                        }
+                    }
+                    currentNode = lastNode;
+                }
+
+
+
+                // on arrange les affectations
+                if (currentNode.getValue().equalsIgnoreCase(":=") && currentNode.getToken().getType().equals(TokenType.SEPARATOR)){
+                    if (!lastNode.getValue().equalsIgnoreCase(":=")){
+                        currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                        lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    }
+                }
+
+                //on arrange les if, elsif, else
+                if (currentNode.getValue().equalsIgnoreCase("then") &&
+                        (lastNode.getValue().equalsIgnoreCase("if") || lastNode.getValue().equalsIgnoreCase("elsif"))){
+                    if (!currentNode.getParent().getValue().equals("if") && !currentNode.getParent().getValue().equals("elsif")){
+                        lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                        currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                        currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                    }
+
+                }
+
+
+
+                //on arrange les boucles while
+                if (!lastNode.equals(ast.getRootNode())){
+                    if (lastNode.getValue().equalsIgnoreCase("while")){
+                        lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                        currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                        currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                    }
+                }
+
+                //on enlève les end
+                if (currentNode.getValue().equalsIgnoreCase("end")){
+                    if(currentNode.getChildren().size() == 0) {
                         currentNode.getParent().getChildren().remove(currentNode);
-                        currentNode.getParent().getParent().getChildren().add(indexPapa, currentNode); //papa's index = indexPapa+1
-                        currentNode.setParent(currentNode.getParent().getParent());
-                        //add papa as current node's first child
-                        Node papa = currentNode.getParent().getChild(indexPapa + 1);
-                        currentNode.getParent().getChildren().remove(papa);
-                        papa.setParent(currentNode);
-                        currentNode.addChild(0, papa);
                     }
-                    currentNode.setMeaningful(true);
-                }
-                // unary minus
-                else if (currentNode.getValue().equals("nodeTerme7")) {
-                    if (currentNode.firstChild().getValue().equals("-") && currentNode.firstChild().isFinal()) {
-                        currentNode.getChildren().remove(0); //delete node -
-                        currentNode.setValue("moinsUnaire");
-                        currentNode.setMeaningful(true);
+                    else {
+                        int indexEnd = currentNode.getParent().getChildren().indexOf(currentNode);
+                        for (Node child : currentNode.getChildren()) {
+                            child.setParent(currentNode.getParent());
+                        }
+                        currentNode.getParent().getChildren().addAll(indexEnd, currentNode.getChildren());
+                        currentNode.getParent().getChildren().remove(currentNode);
                     }
                 }
 
 
-            } else {
-                //on est sur un noeud terminal
-                currentNode.setMeaningful(true);
+                if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop") || currentNode.getValue().equalsIgnoreCase("record"))
+                        && lastNode.getValue().equalsIgnoreCase("end")
+                        && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
+                    if(currentNode.getChildren().size() > 0) {
+                        int index = currentNode.getParent().getChildren().indexOf(currentNode);
+                        currentNode.getParent().getChildren().addAll(index, currentNode.getChildren()); //on ajoute les enfants de if ou loop à son parent
+                        for(Node ifChild : currentNode.getChildren()){
+                            ifChild.setParent(currentNode.getParent());
+                        }
+                    }
+                    currentNode.getParent().getChildren().remove(currentNode); // on supprime if de son parent
 
-                if ((currentNode.getValue().equals("(") || currentNode.getValue().equals(")") || currentNode.getValue().equals(";") || currentNode.getValue().equals(":"))
-                        && currentNode.getToken().getType()==TokenType.SEPARATOR) {
-                    currentNode.deleteFromParent();
-                }
-                //end
-                if (currentNode.getValue().equalsIgnoreCase("end") && currentNode.getToken().getType()==TokenType.KEYWORD) {
-                    currentNode.deleteFromParent();
-                }
-                //end if
-                if(currentNode.getValue().equalsIgnoreCase("if") && currentNode.getToken().getType()==TokenType.KEYWORD
-                        && isNodeNextToken(currentNode, ";") && isNodePreviousToken(currentNode, "end")){
-                    currentNode.deleteFromParent();
-                }
-                //end loop
-                if(currentNode.getValue().equalsIgnoreCase("loop") && currentNode.getToken().getType()==TokenType.KEYWORD
-                        && isNodeNextToken(currentNode, ";") && isNodePreviousToken(currentNode, "end")){
-                    currentNode.deleteFromParent();
-                }
-                //end record
-                if(currentNode.getValue().equalsIgnoreCase("record") && currentNode.getToken().getType()==TokenType.KEYWORD
-                        && isNodeNextToken(currentNode, ";") && isNodePreviousToken(currentNode, "end")){
-                    currentNode.deleteFromParent();
+
                 }
 
-            }
-
-
-            //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
-            int i = 0;
-            for (Node child : currentNode.getChildren()) {
-                nodes_to_visit.add(i, child);
-                i++;
-            }
-        }
-
-    }
-
-    public void reduceChains(){
-        // delete node with only one child, if this child is not a terminal or a meaningful node
-        // currentNode = node to delete
-
-        ArrayList<Node> nodes_to_visit = new ArrayList<>();
-        Node currentNode = ast.getRootNode();
-        nodes_to_visit.add(currentNode);
-
-        while (!nodes_to_visit.isEmpty()){
-            //on étudie le prochain noeud à visiter (parcours en profondeur), on l'enlève des noeuds à visiter
-            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
-            nodes_to_visit.remove(0);
-
-            if (!currentNode.isMeaningful()){
-                if (currentNode.getChildren().size() == 1){
-                    //on supprime le noeud courant et on remplace par son enfant
-                    int indexCurrentNode = currentNode.getParent().getChildren().indexOf(currentNode);
-                    currentNode.getParent().getChildren().set(indexCurrentNode, currentNode.getChildren().get(0));
-                    currentNode.getChildren().get(0).setParent(currentNode.getParent());
+                //on arrange les points access
+                if (currentNode.getValue().equalsIgnoreCase(".")
+                        && currentNode.getToken().getType().equals(TokenType.SEPARATOR)){
+                    currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                    lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                    lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
                 }
-                if (currentNode.getChildren().isEmpty() && !currentNode.isFinal()){
-                    currentNode.deleteFromParent();
-                }
-            }
 
+                //on arrange les appels de fonctions
+                if (currentNode.getToken().getType().equals(TokenType.IDENTIFIER) && !currentNode.getParent().getValue().equalsIgnoreCase("procedure")
+                        && !currentNode.getParent().getValue().equalsIgnoreCase("function") && tokens.get(tokens.indexOf(currentNode.getToken()) + 1).getValue().equals("(")
+                        && currentNode.getChildren().size() != 0){
+                    //on créé un noeud call entre l'identifiant (nom de fonction) et son parent
 
-            //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
-            int i = 0;
-            for (Node child : currentNode.getChildren()){
-                nodes_to_visit.add(i, child);
-                i ++;
-            }
-        }
-
-
-    }
-
-    public void renameNodes(){
-        // delete node with only one child, if this child is not a terminal or a meaningful node
-        // currentNode = node to delete
-
-        ArrayList<Node> nodes_to_visit = new ArrayList<>();
-        Node currentNode = ast.getRootNode();
-        nodes_to_visit.add(currentNode);
-
-        while (!nodes_to_visit.isEmpty()){
-            //on étudie le prochain noeud à visiter (parcours en profondeur), on l'enlève des noeuds à visiter
-            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
-            nodes_to_visit.remove(0);
-
-            if (currentNode.getValue().equals("nodePrioriteAddition") && !currentNode.isFinal()){
-                currentNode.setValue("+");
-            }
-            if (currentNode.getValue().equals("nodePrioriteSoustraction") && !currentNode.isFinal()){
-                currentNode.setValue("-");
-            }
-            if (currentNode.getValue().equals("nodePrioriteMultiplication") && !currentNode.isFinal()){
-                currentNode.setValue("*");
-            }
-            if (currentNode.getValue().equals("nodePrioriteDivision") && !currentNode.isFinal()){
-                currentNode.setValue("/");
-            }
-            if (currentNode.getValue().equals("nodePrioriteRem") && !currentNode.isFinal()){
-                currentNode.setValue("rem");
-            }
-            if (currentNode.getValue().equals("nodePrioriteInferieur") && !currentNode.isFinal()){
-                currentNode.setValue("<");
-            }
-            if (currentNode.getValue().equals("nodePrioriteInferieurEgal") && !currentNode.isFinal()){
-                currentNode.setValue("<=");
-            }
-            if (currentNode.getValue().equals("nodePrioriteSuperieur") && !currentNode.isFinal()){
-                currentNode.setValue(">");
-            }
-            if (currentNode.getValue().equals("nodePrioriteSuperieurEgal") && !currentNode.isFinal()){
-                currentNode.setValue(">=");
-            }
-            if (currentNode.getValue().equals("nodePrioriteEgal") && !currentNode.isFinal()){
-                currentNode.setValue("=");
-            }
-            if (currentNode.getValue().equals("nodePrioriteInegal") && !currentNode.isFinal()){
-                currentNode.setValue("/=");
-            }
-            if(currentNode.getValue().equals("nodeIntr1If") && !currentNode.isFinal()){
-                currentNode.setValue(currentNode.getToken().getValue());
-            }
-            if(currentNode.getValue().equals("nodeIntr1Elsif") && !currentNode.isFinal()){
-                currentNode.setValue(currentNode.getToken().getValue());
-            }
-            if(currentNode.getValue().equals("nodeIntr1Else") && !currentNode.isFinal()){
-                currentNode.setValue(currentNode.getToken().getValue());
-            }
-            if(currentNode.getValue().equals("nodeIntr1Then") && !currentNode.isFinal()){
-                currentNode.setValue(currentNode.getToken().getValue());
-            }
-            if(currentNode.getValue().equals("nodeIntr1Loop") && !currentNode.isFinal()){
-                currentNode.setValue(currentNode.getToken().getValue());
-            }
-            if (currentNode.getValue().equals("nodeIntr1While") && !currentNode.isFinal()){
-                currentNode.setValue(currentNode.getToken().getValue());
-            }
-            if (currentNode.getValue().equals("nodeIntr1Return") && !currentNode.isFinal()){
-                currentNode.setValue(currentNode.getToken().getValue());
-            }
-            //nodeDeclstar : declaration in procedure
-            if(currentNode.getValue().equalsIgnoreCase("nodeDeclstar") && !currentNode.isFinal()){
-                currentNode.setValue("declaration");
-            }
-            if(currentNode.getValue().equalsIgnoreCase("nodeIntr1For") && !currentNode.isFinal()){
-                currentNode.setValue("for");
-            }
-            if(currentNode.getValue().equalsIgnoreCase("moinsUnaire") && !currentNode.isFinal()){
-                currentNode.setValue("-");
-            }
-
-
-            //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
-            int i = 0;
-            for (Node child : currentNode.getChildren()){
-                nodes_to_visit.add(i, child);
-                i ++;
-            }
-        }
-
-
-    }
-
-    public void meaningfulNode2() {
-        // browse through tree and convert meaningful non terminal and terminal nodes to meaningful nodes
-
-        ArrayList<Node> nodes_to_visit = new ArrayList<>();
-        Node currentNode = ast.getRootNode();
-        nodes_to_visit.add(currentNode);
-
-        while (!nodes_to_visit.isEmpty()) {
-            //on étudie le prochain noeud à visiter (parcours en profondeur), on l'enlève des noeuds à visiter
-            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
-            nodes_to_visit.remove(0);
-
-
-            // affectation :=
-            if (currentNode.getValue().equals("nodeIntr2prime") && currentNode.getParent().getValue().contains("nodeIntr1") && currentNode.firstChild().getValue().equals(":=")) {
-                currentNode.getChildren().remove(0); //delete node :=
-                currentNode.setValue(":=");
-                currentNode.getParent().firstChild().setParent(currentNode);
-                currentNode.getChildren().add(0, currentNode.getParent().firstChild());
-                currentNode.getParent().getChildren().remove(0);
-                currentNode.setMeaningful(true);
-            }
-
-            // . (point)
-            if (currentNode.getValue().equals("nodePrioritePoint") && currentNode.getChildIndex(1).getValue().equals(".")) {
-                currentNode.getChildIndex(1).deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue(".");
-                currentNode.setMeaningful(true);
-            }
-
-            // new
-            if (currentNode.getValue().equals("nodeFacteur") && currentNode.firstChild().getValue().equals("new")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue("new");
-                currentNode.setMeaningful(true);
-            }
-
-            //if
-            if (currentNode.getValue().contains("nodeIntr1") && currentNode.firstChild().getValue().equalsIgnoreCase("if")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent(); //delete node if
-                currentNode.setValue("nodeIntr1If");
-                currentNode.setMeaningful(true);
-            }
-            // else if
-            if (currentNode.getValue().equals("nodeElsifstar") && currentNode.firstChild().getValue().equalsIgnoreCase("elsif")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent(); //delete node else
-                currentNode.setValue("nodeIntr1Elsif");
-                currentNode.setMeaningful(true);
-                if (currentNode.getParent().getValue().equals("nodeIntr1Elsif") && currentNode.getParent().isMeaningful()) {
-                    // add currentnode to currentNode.getParent().getParent()
+                    Node nodeCall = new Node("call");
+                    int index = currentNode.getParent().getChildren().indexOf(currentNode);
+                    nodeCall.setParent(currentNode.getParent());
+                    currentNode.getParent().getChildren().add(index, nodeCall);
                     currentNode.getParent().getChildren().remove(currentNode);
-                    currentNode.getParent().getParent().getChildren().add(currentNode);
+                    currentNode.setParent(nodeCall);
+                    nodeCall.addChild(currentNode);
+                    //on ajoute les paramètres de la fonction (les enfants de l'identifiant) aux enfants du noeud call
+                    for (Node child : currentNode.getChildren()) {
+                        nodeCall.addChild(child);
+                        child.setParent(nodeCall);
+                    }
+                    //on enlève les enfants de l'identifiant
+                    currentNode.getChildren().clear();
+                    //on ajoute le noeud call à la liste des noeuds à visiter (sauf le nom de la fonction)
+                    ArrayList<Node> childrenToAdd = new ArrayList<>();
+                    childrenToAdd.addAll(nodeCall.getChildren());
+                    childrenToAdd.remove(0);
+                    nodes_to_visit.addAll(childrenToAdd);
+                }
+
+                //on arrange Character'Val
+                if (lastNode.getValue().equalsIgnoreCase("Character")
+                        && lastNode.getToken().getType().equals(TokenType.KEYWORD)
+                        && currentNode.getValue().equalsIgnoreCase("'")){
+                    lastNode.getParent().getChildren().remove(lastNode); // on retire le node Character
+                }
+                if (lastNode.getValue().equalsIgnoreCase("'")
+                        && currentNode.getValue().equalsIgnoreCase("Val")){
+                    lastNode.getParent().getChildren().remove(lastNode); //on retire le node '
+                    currentNode.setValue("Character'Val");
+                }
+
+                //on arrange les déclarations de variables
+                if(currentNode.getToken().getValue().equalsIgnoreCase(":")){
+                    if(currentNode.getParent().getToken() != null) {
+                        if (currentNode.getParent().getToken().getType() == TokenType.IDENTIFIER) {
+                            currentNode.setValue("param");
+                            currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                            lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                            lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                        } else {
+                            currentNode.setValue("variable");
+                            int i = 0;
+                            for (Node declrationVariable : declarationVariables) {
+                                declrationVariable.getParent().getChildren().remove(declrationVariable);
+                                currentNode.getChildren().add(i, declrationVariable);
+                                declrationVariable.setParent(currentNode);
+                                i++;
+                            }
+
+                            declarationVariables.clear();
+                        }
+                    }
+                }
+
+                if((currentNode.getParent().getValue().equalsIgnoreCase("declaration") || currentNode.getParent().getValue().equalsIgnoreCase("record"))
+                        && currentNode.getToken().getType().equals(TokenType.IDENTIFIER)) {
+                    declarationVariables.add(currentNode);
+                }
+
+                //on arrange les returns
+
+                if (currentNode.getValue().equalsIgnoreCase("return")) {
+                    if (lastNode.getValue().equalsIgnoreCase("function")){
+                        lastNode.getChildren().add(currentNode); //ajout de currentNode comme enfant de last Node
+                        currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                        currentNode.setParent(lastNode);//ajout de lastNode comme parent de currentNode
+                    }
+                    // si le dernier enfant de return est body, on l'ajoute aux enfants de son parent
+                    Node body = currentNode.getChildren().get(currentNode.getChildren().size()-1);
+                    if (body.getValue().equalsIgnoreCase("body") && currentNode.getParent().getValue().equalsIgnoreCase("function")){
+                        body.getParent().getChildren().remove(body); //enlever body de son parent
+                        currentNode.getParent().addChild(body); //ajout de current node comme enfant du parent de last node (procedure)
+                        body.setParent(currentNode.getParent());
+                    }
+                }
+
+                //on arrange les for
+                if (currentNode.getValue().equalsIgnoreCase("in") && lastNode.getValue().equalsIgnoreCase("for")){
+                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                    currentNode.setParent(lastNode);
+                    lastNode.addChild(currentNode);
+                    currentNode = lastNode;
+                }
+
+                if (currentNode.getValue().equalsIgnoreCase("..") && lastNode.getValue().equalsIgnoreCase("for")){
+                    for(Node child : currentNode.getChildren()){
+                        lastNode.addChild(child);
+                        child.setParent(lastNode);
+                    }
+                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                    currentNode = lastNode;
+                }
+
+                if (lastNode.getValue().equalsIgnoreCase("for") && currentNode.getValue().equalsIgnoreCase("loop")){
+                    currentNode.getParent().getChildren().remove(currentNode);//suppression de currentNode de son parent
+                    currentNode.setParent(lastNode);
+                    lastNode.addChild(currentNode);
+                }
+                if (currentNode.getValue().equalsIgnoreCase("reverse") && currentNode.getParent().getValue().equalsIgnoreCase("in")
+                        && currentNode.getParent().getParent().getValue().equalsIgnoreCase("for")){
+                    int indexIn = currentNode.getParent().getParent().getChildren().indexOf(currentNode.getParent());
+                    currentNode.getParent().getParent().getChildren().remove(currentNode.getParent());
+                    currentNode.getParent().getParent().getChildren().add(indexIn, currentNode);
                     currentNode.setParent(currentNode.getParent().getParent());
                 }
-            }
-            //else
-            if (currentNode.getValue().equals("nodeElsifstar") && currentNode.firstChild().getValue().equalsIgnoreCase("else")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent(); //delete node else
-                currentNode.setValue("nodeIntr1Else");
-                currentNode.setMeaningful(true);
-                if (currentNode.getParent().getValue().equals("nodeIntr1Elsif") && currentNode.getParent().isMeaningful()) {
-                    // add currentnode to currentNode.getParent().getParent()
-                    currentNode.getParent().getChildren().remove(currentNode);
-                    currentNode.getParent().getParent().getChildren().add(currentNode);
+                if ((currentNode.getParent().getValue().equalsIgnoreCase("in") || currentNode.getParent().getValue().equalsIgnoreCase("reverse"))
+                        && currentNode.getParent().getParent().getValue().equalsIgnoreCase("for")) {
+                    int index = currentNode.getParent().getParent().getChildren().indexOf(currentNode.getParent()); //index of in or reverse
+                    currentNode.getParent().getChildren().remove(currentNode); //on enlève le noeud courrant de son parent
+                    currentNode.getParent().getParent().getChildren().add(index + 1, currentNode); //on ajoute le noeud courrant au parent de son parent
                     currentNode.setParent(currentNode.getParent().getParent());
-                }
-            }
-            //then
-            if (currentNode.getValue().contains("nodeIntr1")
-                    && (currentNode.getParent().getValue().equals("nodeIntr1If") || currentNode.getParent().getValue().equals("nodeIntr1Elsif"))) {
-                if (currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("then")
-                        && currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).isFinal()) {
-                    currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).deleteFromParentTransferringChildTokenTo(currentNode); //delete node then
-                    currentNode.setValue("nodeIntr1Then");
-                    currentNode.setMeaningful(true);
-                }
-            }
-            //loop
-            if (currentNode.getValue().equalsIgnoreCase("loop") && currentNode.isFinal()) {
-                int i = currentNode.indexInBrothers();
-                ;
-                // move all brother after loop node to loop's children
-                while (i < currentNode.getParent().getChildren().size()) {
-                    if (!currentNode.getParent().getChildren().get(i).isFinal()) {
-                        currentNode.addChild(currentNode.getParent().getChildren().get(i));
-                        currentNode.getParent().getChildren().remove(i);
-                    } else i++;
+
                 }
 
-            }
-            //while
-            if (currentNode.getValue().contains("nodeIntr1")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("while")
-                    && isNodesTokenType(currentNode.firstChild(), TokenType.KEYWORD)) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent(); //delete node while
-                currentNode.setValue("nodeIntr1While");
-                currentNode.setMeaningful(true);
-            }
 
-            //declaration block
+            }
+            if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop") || currentNode.getValue().equalsIgnoreCase("record"))
+                    && lastNode.getValue().equalsIgnoreCase("end")
+                    && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
+            } else lastNode = currentNode;
 
-            if (currentNode.getValue().equals("nodeDeclstar") && currentNode.getParent().getValue().equals("nodeDeclstar")) {
-                int indexCurrentNode = currentNode.indexInBrothers();
-                currentNode.deleteFromParent();
-                currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
-            }
-
-            //type
-            if (currentNode.getValue().equals("nodeDecl")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("type")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue(currentNode.getToken().getValue());
-                currentNode.setMeaningful(true);
-            }
-
-            // is in type block
-            if (currentNode.getValue().equals("nodeDecl2") && currentNode.getParent().getValue().equalsIgnoreCase("type")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("is")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue("declaration");
-                currentNode.setMeaningful(true);
-            }
-            //access in type block
-            if (currentNode.getValue().equals("nodeDecl3") && currentNode.getParent().getValue().equals("declaration")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("access")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue(currentNode.getToken().getValue());
-                currentNode.setMeaningful(true);
-            }
-            //record in type block
-            if (currentNode.getValue().equals("nodeDecl3") && currentNode.getParent().getValue().equals("declaration")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("record")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue(currentNode.getToken().getValue());
-                currentNode.setMeaningful(true);
-            }
-            //nodeChamps in record (type block)
-            if (currentNode.getValue().equals("nodeChamps") && currentNode.getParent().getValue().equalsIgnoreCase("record")) {
-                currentNode.setValue("variable");
-                currentNode.setMeaningful(true);
-            }
-
-            //function block
-            if (currentNode.getValue().equals("nodeDecl")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("function")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue(currentNode.getToken().getValue());
-                currentNode.setMeaningful(true);
-            }
-
-            //param in function block and procedure block
-            if (currentNode.getValue().equals("nodeParams")
-                    && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure"))) {
-                //move currentNode to previous brother's children
-                int indexCurrentNode = currentNode.indexInBrothers();
-                currentNode.deleteFromParent();
-                Node nodeFunctionName = currentNode.getParent().getChildren().get(indexCurrentNode - 1);
-                nodeFunctionName.addChildren(currentNode.getChildren());
-            }
-            if (currentNode.getValue().equals("nodeParam")) {
-                if (currentNode.getParent().getValue().equalsIgnoreCase("function")
-                        || currentNode.getParent().getValue().equalsIgnoreCase("procedure")) {
-                    //move currentNode to previous brother's children (previous brother is nodeFunctionName)
-                    int indexCurrentNode = currentNode.indexInBrothers();
-                    currentNode.deleteFromParent();
-                    Node nodeFunctionName = currentNode.getParent().getChildren().get(indexCurrentNode - 1);
-                    nodeFunctionName.addChild(currentNode);
-                    currentNode.setMeaningful(true);
-                }
-                currentNode.setValue("param");
-            }
-            if (currentNode.getValue().equals("nodeParamstar")) {
-                currentNode.deleteFromParent();
-                currentNode.getParent().addChildren(currentNode.getChildren());
-            }
-            if (currentNode.getValue().equals("nodeIdentstar") && currentNode.getParent().getValue().equals("param")) {
-                int indexCurrentNode = currentNode.indexInBrothers();
-                currentNode.deleteFromParent();
-                if (currentNode.firstChild().getValue().equals(",")) {
-                    currentNode.firstChild().deleteFromParent();
-                }
-                currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
-            }
-            //return type in function block
-            if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getToken().getType() == TokenType.KEYWORD
-                    && currentNode.getParent().getValue().equalsIgnoreCase("function")) {
-                int indexCurrentNode = currentNode.indexInBrothers();
-                if (currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken().getType() == TokenType.IDENTIFIER
-                        && currentNode.getParent().getChildren().get(indexCurrentNode + 1).isFinal()) {
-                    Node nextBrother = currentNode.getParent().getChildren().get(indexCurrentNode + 1);
-                    currentNode.getParent().getChildren().get(indexCurrentNode + 1).deleteFromParent();
-                    currentNode.addChild(nextBrother);
-                }
-                currentNode.setMeaningful(true);
-            }
-            //is in function block and procedure block and fichier
-            if (currentNode.getValue().equalsIgnoreCase("is") && currentNode.getToken().getType() == TokenType.KEYWORD
-                    && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure") || currentNode.getParent().getValue().equalsIgnoreCase("Fichier"))) {
-                currentNode.deleteFromParent();
-            }
-            //begin in function block and procedure block and fichier
-            if (currentNode.getValue().equalsIgnoreCase("begin") && currentNode.getToken().getType() == TokenType.KEYWORD
-                    && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure") || currentNode.getParent().getValue().equalsIgnoreCase("Fichier"))) {
-                currentNode.setValue("body");
-                int i = currentNode.indexInBrothers();
-                ;
-                // move all brother after begin node to begin's children (unless it's a terminal, return name of function)
-                while (i < currentNode.getParent().getChildren().size()) {
-                    if (!currentNode.getParent().getChildren().get(i).isFinal()) {
-                        currentNode.addChild(currentNode.getParent().getChildren().get(i));
-                        currentNode.getParent().getChildren().remove(i);
-                    } else i++;
-                }
-                currentNode.setMeaningful(true);
-            }
-            //final return in function block
-            if (currentNode.getValue().equals("nodeIntr1") && currentNode.getParent().getValue().equals("body")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("return")) {
-                currentNode.setValue("nodeIntr1Return");
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setMeaningful(true);
-            }
-
-            //function call
-            if ((currentNode.getValue().equals("nodeFacteur") || currentNode.getValue().equals("nodeIntr1"))
-                    && currentNode.firstChild().isFinal()
-                    && currentNode.firstChild().getToken().getType() == TokenType.IDENTIFIER
-                    && isNodeNextToken(currentNode.firstChild(), "(")) {
-                currentNode.setValue("call");
-            }
-            //function call parameters
-            if (currentNode.getValue().contains("nodeIntr") && currentNode.getParent().getValue().equals("call")) {
-                int indexCurrentNode = currentNode.indexInBrothers();
-                currentNode.deleteFromParent();
-                currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
-            }
-            if (currentNode.getValue().equals("nodeExprstarVirgule") && currentNode.getParent().getValue().equals("call")
-                    && currentNode.firstChild().getValue().equals(",")) {
-                int indexCurrentNode = currentNode.indexInBrothers();
-                currentNode.deleteFromParent();
-                currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
-                currentNode.firstChild().deleteFromParent();
-            }
-
-
-            //procedure block
-            if (currentNode.getValue().equals("nodeDecl")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("procedure")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue(currentNode.getToken().getValue());
-                currentNode.setMeaningful(true);
-            }
-
-            //declaration (types) in procedure block
-            if (currentNode.getValue().equals("nodeDeclstar") && currentNode.getParent().getValue().equalsIgnoreCase("procedure")) {
-                currentNode.setMeaningful(true);
-            }
-
-
-            //for block
-            if (currentNode.getValue().equals("nodeIntr1") && currentNode.firstChild().getValue().equalsIgnoreCase("for")) {
-                currentNode.setValue("nodeIntr1For");
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setMeaningful(true);
-            }
-            if (currentNode.getValue().equals("nodeInstrstar") && !currentNode.isMeaningful()) {
-                currentNode.deleteFromParent();
-                currentNode.getParent().addChildren(currentNode.getChildren());
-                currentNode.setMeaningful(true);
-            }
-            if(currentNode.getValue().equals("..") && currentNode.getParent().getValue().equals("nodeIntr1For")){
-                currentNode.deleteFromParent();
-            }
-
-            // variable declaration (ex :    N: Integer := 42)
-            if (currentNode.getValue().equals("nodeExprinterro") && currentNode.getParent().getValue().equals("nodeDecl") && currentNode.firstChild().getValue().equals(":=")) {
-                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
-                currentNode.setValue(currentNode.getToken().getValue());
-                currentNode.getParent().setValue("variable");
-                int indexPapa = currentNode.getParent().indexInBrothers();
-                currentNode.deleteFromParent();
-                currentNode.getParent().getParent().addChild(indexPapa +1 , currentNode);
-                currentNode.addChild(0, currentNode.getParent().getChild(indexPapa));
-                currentNode.getParent().getChildren().remove(indexPapa);
-            }
-
-            //Fichier (root node)
-            if (currentNode.getValue().equals("Fichier")) {
-                for (int i = 0; i < 9; i++) {
-                    currentNode.getChildren().get(0).deleteFromParent();
-                }
-                currentNode.setMeaningful(true);
-            }
-
-
-            //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
-            int i = 0;
-            for (Node child : currentNode.getChildren()) {
-                nodes_to_visit.add(i, child);
-                i++;
-            }
-
+            if ((currentNode.getValue().equalsIgnoreCase("if") || currentNode.getValue().equalsIgnoreCase("loop") || currentNode.getValue().equalsIgnoreCase("record"))
+                    && lastNode.getValue().equalsIgnoreCase("end")
+                    && !tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equals(";")){
+                nodes_to_visit.addAll(0, currentNode.getChildren());
+            } else nodes_to_visit.addAll(currentNode.getChildren());
         }
 
     }
 
-    public boolean isNodeNextToken(Node node, String string){
-        //return true if the node's token's next token in the token list is string
-        return tokens.get(tokens.indexOf(node.getToken()) + 1).getValue().equals(string);
+    public void arangeASTRoot() {
+        //on arrange le noeud racine
+        try {
+            int indexProcedure = ast.getRootNode().getChildren().indexOf(ast.getRootNode().getChildren().stream().filter(node -> node.getValue().equalsIgnoreCase("procedure")).findFirst().get());
+            Node nameEnd = ast.getRootNode().getChildren().get(ast.getRootNode().getChildren().size() - 1);
+            this.ast = new SyntaxTree(ast.getRootNode().getChildren().get(indexProcedure));
+            this.ast.getRootNode().setValue("Fichier");
+            if (nameEnd.getToken().getType() == TokenType.IDENTIFIER) {
+                this.ast.getRootNode().getChildren().add(nameEnd);
+                nameEnd.setParent(this.ast.getRootNode());
+            }
+        } catch (NoSuchElementException ignored) {}
     }
 
-    public boolean isNodePreviousToken(Node node, String string){
-        //return true if the node's token's previous token in the token list is string
-        return tokens.get(tokens.indexOf(node.getToken()) - 1).getValue().equals(string);
+    public void arange2(){
+
+        ArrayList<Node> nodes_to_visit = new ArrayList<>();
+        Node lastNode = ast.getRootNode();
+        Node currentNode = ast.getRootNode();
+        nodes_to_visit.add(ast.getRootNode());
+        ArrayList<Node> declarationVariables = new ArrayList<>();
+
+        while (!nodes_to_visit.isEmpty()){
+            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
+            nodes_to_visit.remove(0);
+
+            //il y a parfois un pb d'affectation : un node := a 3 fils ou 1 fils. Les fils se sont mal placés
+            //on va donc réarranger les fils
+
+            if (currentNode.getValue().equalsIgnoreCase(":=") && currentNode.getToken().getType().equals(TokenType.SEPARATOR)
+                    && lastNode.getValue().equalsIgnoreCase(":=") && lastNode.getChildren().size() == 3){
+                Node lastNodeLastChild = lastNode.getChildren().get(2);
+                lastNode.getChildren().remove(lastNodeLastChild);
+                currentNode.getChildren().add(0, lastNodeLastChild);
+                lastNodeLastChild.setParent(currentNode);
+            }
+            if ((currentNode.getValue().equalsIgnoreCase("elsif") || currentNode.getValue().equalsIgnoreCase("else"))
+                    && (!currentNode.getParent().getValue().equals("if") && !currentNode.getParent().getValue().equals("elsif"))){
+                currentNode.getParent().getChildren().remove(currentNode); //enlever current node de son parent
+                lastNode.addChild(currentNode); //ajout de current node comme enfant du parent de last node (if)
+                currentNode.setParent(lastNode);
+                currentNode = lastNode;
+            }
+            if (currentNode.getValue().equalsIgnoreCase("if") && lastNode.getValue().equalsIgnoreCase("elsif")){
+                currentNode.getParent().getChildren().remove(currentNode); //enlever current node de son parent
+                lastNode.addChild(currentNode); //ajout de current node comme enfant du parent de last node (elsif)
+                currentNode.setParent(lastNode);
+                currentNode = lastNode;
+            }
+
+
+            //on arrange les paramètres des fonctions : lorsque Set(L: List; I, V: Integer)
+            if (currentNode.getToken() != null) {
+                if (currentNode.getToken().getType()== TokenType.IDENTIFIER && currentNode.getParent().getValue().equalsIgnoreCase("param") &&currentNode.getChildren().size() > 0){
+                    //on ajoute les enfants de l'identifiant au noeud param
+                    int indexIdentChild = currentNode.getParent().getChildren().indexOf(currentNode);
+                    currentNode.getParent().getChildren().addAll(indexIdentChild + 1, currentNode.getChildren());
+                    currentNode.getChildren().clear();
+                }
+
+                //on arrange les noms des fonctions à la fin des fonctions
+                if(currentNode.getToken().getType()== TokenType.IDENTIFIER && tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equalsIgnoreCase("end")
+                        && (lastNode.getValue().equalsIgnoreCase("procedure") || lastNode.getValue().equalsIgnoreCase("function"))){
+                    currentNode.getParent().getChildren().remove(currentNode);
+                    lastNode.addChild(currentNode);
+                    currentNode.setParent(lastNode);
+
+
+                }
+
+                //on arrange les for in/reverse
+                if((currentNode.getValue().equalsIgnoreCase("in") || currentNode.getValue().equalsIgnoreCase("reverse"))
+                        && currentNode.getToken().getType().equals(TokenType.KEYWORD)
+                        && currentNode.getParent().getValue().equalsIgnoreCase("for")){
+                    if (currentNode.getChildren().size()>0){
+                        int indexIn = currentNode.getParent().getChildren().indexOf(currentNode);
+                        currentNode.getParent().getChildren().addAll(indexIn+1, currentNode.getChildren());
+                        currentNode.getChildren().clear();
+                    }
+                }
+
+                //on arrange les variables (mal placés quand il y a plusieurs variables)
+                if (currentNode.getParent().getValue().equalsIgnoreCase("variable")&& currentNode.getToken().getType() == TokenType.IDENTIFIER){
+                    if (currentNode.getChildren().size() > 0){
+                        int indexIdent = currentNode.getParent().getChildren().indexOf(currentNode);
+                        currentNode.getParent().getChildren().addAll(indexIdent+1, currentNode.getChildren());
+                        currentNode.getChildren().clear();
+                    }
+                }
+
+                if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getParent().getValue().equalsIgnoreCase("function")) {
+                    // si le dernier enfant de return est body, on l'ajoute aux enfants de son parent
+                    Node body = currentNode.getChildren().get(currentNode.getChildren().size()-1);
+                    if (body.getValue().equalsIgnoreCase("body")){
+                        body.getParent().getChildren().remove(body); //enlever body de son parent
+                        currentNode.getParent().addChild(body); //ajout de current node comme enfant du parent de last node (procedure)
+                        body.setParent(currentNode.getParent());
+                    }
+                    currentNode = body;
+                }
+
+                if (currentNode.getValue().equalsIgnoreCase("*")
+                        || currentNode.getValue().equalsIgnoreCase("/")
+                        || currentNode.getValue().equalsIgnoreCase("rem")
+                        && (currentNode.getToken().getType().equals(TokenType.SEPARATOR) || currentNode.getToken().getType().equals(TokenType.KEYWORD))){
+                    currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                    lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                    lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                }
+            }
+
+
+            lastNode = currentNode;
+            nodes_to_visit.addAll(currentNode.getChildren());
+        }
+
     }
 
-    public boolean isNodesTokenType(Node node, TokenType type){
-        //return true if the node's token's type is type
-        return node.getToken().getType() == type;
+    public void arangeComa(){
+        //on arrange les virgules
+        ArrayList<Node> nodes_to_visit = new ArrayList<>();
+        Node lastNode = ast.getRootNode();
+        Node currentNode = ast.getRootNode();
+        nodes_to_visit.add(ast.getRootNode());
+
+        while (!nodes_to_visit.isEmpty()){
+
+            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
+            nodes_to_visit.remove(0);
+            if (currentNode.getValue().equalsIgnoreCase(",")
+                    && currentNode.getToken().getType().equals(TokenType.SEPARATOR)
+                    && currentNode.getParent().getToken() != null
+            ){
+                currentNode.getParent().getChildren().remove(currentNode); // on supprime la virgule de son parent
+                if(currentNode.getChildren().size() > 0) {
+                    //on ajoute les enfants de la virgule au dernier noeud rencontré
+                    for (Node child : currentNode.getChildren()) {
+                        lastNode.addChild(child);
+                        child.setParent(lastNode);
+                    }
+                }
+                currentNode.getChildren().clear();
+                currentNode = lastNode;
+            }
+            lastNode = currentNode;
+            nodes_to_visit.addAll(currentNode.getChildren());
+        }
     }
+
+    public void arangeOperator1PlusMinus(){
+
+        //on arrange les opérations : + et -
+        ArrayList<Node> nodes_to_visit = new ArrayList<>();
+        Node lastNode = ast.getRootNode();
+        Node currentNode = ast.getRootNode();
+        nodes_to_visit.add(ast.getRootNode());
+
+
+        while (!nodes_to_visit.isEmpty()){
+            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
+            nodes_to_visit.remove(0);
+
+            if(currentNode.getChildren().size() !=2){
+                if (currentNode.getValue().equalsIgnoreCase("+")
+                        && (currentNode.getToken().getType().equals(TokenType.SEPARATOR))){
+
+                    if ((lastNode.getToken().getType() == TokenType.NUMBER || lastNode.getToken().getType() == TokenType.IDENTIFIER)
+                            && (lastNode.getParent().getValue().equalsIgnoreCase("*") || lastNode.getParent().getValue().equalsIgnoreCase("/")
+                            || lastNode.getParent().getValue().equalsIgnoreCase("rem"))
+                            && (lastNode.getParent().getToken().getType().equals(TokenType.OPERATOR) || lastNode.getParent().getToken().getType().equals(TokenType.SEPARATOR) || lastNode.getParent().getToken().getType().equals(TokenType.KEYWORD))){
+                        currentNode.getChildren().add(0, lastNode.getParent()); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getParent().getChildren().remove(lastNode.getParent());//suppression de lastNode de son parent
+                        lastNode.getParent().setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    } else {
+                        currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                        lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    }
+
+                }
+                if (currentNode.getValue().equalsIgnoreCase("-")
+                        && (currentNode.getToken().getType().equals(TokenType.OPERATOR) || currentNode.getToken().getType().equals(TokenType.SEPARATOR))
+                        && ((tokens.get(tokens.indexOf(currentNode.getToken())-1).getType() == TokenType.NUMBER)
+                        || (tokens.get(tokens.indexOf(currentNode.getToken())-1).getType() == TokenType.IDENTIFIER)
+                        || (tokens.get(tokens.indexOf(currentNode.getToken())-1).getValue().equalsIgnoreCase(")")))){
+                    //si le - est un opérateur et non un moins unaire
+                    if ((lastNode.getToken().getType() == TokenType.NUMBER || lastNode.getToken().getType() == TokenType.IDENTIFIER)
+                            && (lastNode.getParent().getValue().equalsIgnoreCase("*") || lastNode.getParent().getValue().equalsIgnoreCase("/")
+                            || lastNode.getParent().getValue().equalsIgnoreCase("rem"))
+                            && (lastNode.getParent().getToken().getType().equals(TokenType.OPERATOR) || lastNode.getParent().getToken().getType().equals(TokenType.SEPARATOR) || lastNode.getParent().getToken().getType().equals(TokenType.KEYWORD))){
+                        currentNode.getChildren().add(0, lastNode.getParent()); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getParent().getChildren().remove(lastNode.getParent());//suppression de lastNode de son parent
+                        lastNode.getParent().setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    } else {
+                        currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                        lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                        lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                    }
+
+                }
+            }
+
+            lastNode = currentNode;
+            nodes_to_visit.addAll(currentNode.getChildren());
+        }
+    }
+
+    public void arangeOperator2SupInf(){
+        //on arrange les opérations : > et <
+        ArrayList<Node> nodes_to_visit = new ArrayList<>();
+        Node lastNode = ast.getRootNode();
+        Node currentNode = ast.getRootNode();
+        nodes_to_visit.add(ast.getRootNode());
+        while (!nodes_to_visit.isEmpty()){
+            currentNode = nodes_to_visit.get(0); // c'est un noeud de l'ast
+            nodes_to_visit.remove(0);
+            if(currentNode.getChildren().size() !=2){
+                if ((currentNode.getValue().equalsIgnoreCase("/=")
+                        || currentNode.getValue().equalsIgnoreCase(">")
+                        || currentNode.getValue().equalsIgnoreCase(">=")
+                        || currentNode.getValue().equalsIgnoreCase("<")
+                        || currentNode.getValue().equalsIgnoreCase("<=")
+                        || currentNode.getValue().equalsIgnoreCase("=")
+                        || currentNode.getValue().equalsIgnoreCase("and")
+                        || currentNode.getValue().equalsIgnoreCase("or"))
+                        && (currentNode.getToken().getType().equals(TokenType.OPERATOR) || currentNode.getToken().getType().equals(TokenType.SEPARATOR) || currentNode.getToken().getType().equals(TokenType.KEYWORD))){
+                    currentNode.getChildren().add(0, lastNode); //ajout de lastNode comme 1er enfant
+                    lastNode.getParent().getChildren().remove(lastNode);//suppression de lastNode de son parent
+                    lastNode.setParent(currentNode);//ajout de currentNode comme parent de lastNode
+                }
+
+            }
+
+            lastNode = currentNode;
+            nodes_to_visit.addAll(currentNode.getChildren());
+        }
+    }
+
 }
+
