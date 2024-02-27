@@ -91,6 +91,13 @@ public class Node {
         }
     }
 
+    public void addChildren(int index, List<Node> nodeList){
+        for (Node node : nodeList) {
+            this.addChild(index, node);
+            index++;
+        }
+    }
+
     public void replaceChild(Node childToBeReplaced, Node remplacement){
         int indexChild = children.indexOf(childToBeReplaced);
         children.set(indexChild, remplacement);
@@ -195,6 +202,15 @@ public class Node {
 
     public void deleteFromParent(){
         this.parent.children.remove(this);
+    }
+
+    public void deleteFromParentTransferringChildTokenToParent(){
+        this.parent.children.remove(this);
+        this.parent.token = this.token;
+    }
+    public void deleteFromParentTransferringChildTokenTo(Node node){
+        this.parent.children.remove(this);
+        node.token = this.token;
     }
 
     public int indexInBrothers(){
