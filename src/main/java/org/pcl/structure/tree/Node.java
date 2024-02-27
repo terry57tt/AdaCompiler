@@ -197,7 +197,19 @@ public class Node {
     }
 
     public Node firstChild(){
+        if(this.children.isEmpty())
+            return null;
         return this.children.get(0);
+    }
+    public Node lastChild(){
+        if(this.children.isEmpty())
+            return null;
+        return this.children.get(this.children.size()-1);
+    }
+    public Node getChildIndex(int index){
+        if(this.children.isEmpty())
+            return null;
+        return this.children.get(index);
     }
 
     public void deleteFromParent(){
