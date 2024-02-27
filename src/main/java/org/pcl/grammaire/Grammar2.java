@@ -1751,6 +1751,9 @@ public class Grammar2 {
             if(currentNode.getValue().equalsIgnoreCase("nodeIntr1For") && !currentNode.isFinal()){
                 currentNode.setValue("for");
             }
+            if(currentNode.getValue().equalsIgnoreCase("moinsUnaire") && !currentNode.isFinal()){
+                currentNode.setValue("-");
+            }
 
 
             //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
@@ -1791,6 +1794,13 @@ public class Grammar2 {
             if (currentNode.getValue().equals("nodePrioritePoint") && currentNode.getChildIndex(1).getValue().equals(".")) {
                 currentNode.getChildIndex(1).deleteFromParentTransferringChildTokenToParent();
                 currentNode.setValue(".");
+                currentNode.setMeaningful(true);
+            }
+
+            // new
+            if (currentNode.getValue().equals("nodeFacteur") && currentNode.firstChild().getValue().equals("new")) {
+                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
+                currentNode.setValue("new");
                 currentNode.setMeaningful(true);
             }
 
@@ -1952,14 +1962,14 @@ public class Grammar2 {
                 }
                 currentNode.setMeaningful(true);
             }
-            //is in function block and procedure block
+            //is in function block and procedure block and fichier
             if (currentNode.getValue().equalsIgnoreCase("is") && currentNode.getToken().getType() == TokenType.KEYWORD
-                    && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure"))) {
+                    && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure") || currentNode.getParent().getValue().equalsIgnoreCase("Fichier"))) {
                 currentNode.deleteFromParent();
             }
-            //begin in function block and procedure
+            //begin in function block and procedure block and fichier
             if (currentNode.getValue().equalsIgnoreCase("begin") && currentNode.getToken().getType() == TokenType.KEYWORD
-                    && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure"))) {
+                    && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure") || currentNode.getParent().getValue().equalsIgnoreCase("Fichier"))) {
                 currentNode.setValue("body");
                 int i = currentNode.indexInBrothers();
                 ;
@@ -2022,8 +2032,7 @@ public class Grammar2 {
                 currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
                 currentNode.setMeaningful(true);
             }
-            if (currentNode.getValue().equals("nodeInstrstar") && currentNode.getParent().getValue().equals("loop")
-                    && !currentNode.isMeaningful()) {
+            if (currentNode.getValue().equals("nodeInstrstar") && !currentNode.isMeaningful()) {
                 currentNode.deleteFromParent();
                 currentNode.getParent().addChildren(currentNode.getChildren());
                 currentNode.setMeaningful(true);
@@ -2032,6 +2041,25 @@ public class Grammar2 {
                 currentNode.deleteFromParent();
             }
 
+            // variable declaration (ex :    N: Integer := 42)
+            if (currentNode.getValue().equals("nodeExprinterro") && currentNode.getParent().getValue().equals("nodeDecl") && currentNode.firstChild().getValue().equals(":=")) {
+                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
+                currentNode.setValue(currentNode.getToken().getValue());
+                currentNode.getParent().setValue("variable");
+                int indexPapa = currentNode.getParent().indexInBrothers();
+                currentNode.deleteFromParent();
+                currentNode.getParent().getParent().addChild(indexPapa +1 , currentNode);
+                currentNode.addChild(0, currentNode.getParent().getChild(indexPapa));
+                currentNode.getParent().getChildren().remove(indexPapa);
+            }
+
+            //Fichier (root node)
+            if (currentNode.getValue().equals("Fichier")) {
+                for (int i = 0; i < 9; i++) {
+                    currentNode.getChildren().get(0).deleteFromParent();
+                }
+                currentNode.setMeaningful(true);
+            }
 
 
             //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
@@ -2040,6 +2068,7 @@ public class Grammar2 {
                 nodes_to_visit.add(i, child);
                 i++;
             }
+
         }
 
     }
