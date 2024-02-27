@@ -45,12 +45,14 @@ public class App {
 
             Grammar grammar = new Grammar(tokens, FileHandler.getFileName(file));
             SyntaxTree tree = grammar.getSyntaxTree();
-            new PCLWindows(tokens, tree,!grammar.error).start();
-            grammar.createAST();
-            tree = grammar.ast;
 
-            //if (!grammar.error)
-            new PCLWindows(tokens, tree,!grammar.error).start();
+
+            if (!grammar.error) {
+                grammar.createAST();
+                tree = grammar.ast;
+                new PCLWindows(tokens, tree,!grammar.error).start();
+            }
+
 
 
             if (grammar.error) {
