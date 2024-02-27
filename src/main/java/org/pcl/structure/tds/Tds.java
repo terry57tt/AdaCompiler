@@ -23,7 +23,9 @@ public class Tds {
 
     private String name;
 
-    public Tds(List<Symbol> symbols, String name) {
+    private String chainage; 
+
+    public Tds(List<Symbol> symbols, String name, String chainage) {
         this.symbols = symbols;
         this.parent = null;
         this.child = new ArrayList<>();
@@ -39,8 +41,8 @@ public class Tds {
         child.add(tds);
     }
 
-    public Tds(String name) {
-        this(new ArrayList<>(), name);
+    public Tds(String name, String chainage) {
+        this(new ArrayList<>(), name, chainage);
     }
 
     public List<Symbol> getSymbols() {
@@ -89,6 +91,33 @@ public class Tds {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setSymbols(List<Symbol> symbols) {
+        this.symbols = symbols;
+    }
+
+    public void addSymbols(List<Symbol> symbols) {
+        this.symbols.addAll(symbols);
+    }
+
+    public void addSymbols(Tds tds) {
+        this.symbols.addAll(tds.getSymbols());
+    }
+
+    public boolean containsSymbol(String SymbolName) {
+        for (Symbol symbol : symbols) {
+            if (symbol.getName().equals(SymbolName)) {
+                return true;
+            }
+        }
+        if (chainage.equals("true") || parent.getName().equals("root")) {
+            boolean a = parent.containsSymbol(SymbolName);
+            if (a) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

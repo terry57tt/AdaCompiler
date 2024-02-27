@@ -7,6 +7,8 @@ public class Symbol {
 
     private int deplacement;
 
+    private String name;
+
     public Symbol(SymbolType type, int deplacement) {
         this.type = type;
         this.deplacement = deplacement;
@@ -14,5 +16,18 @@ public class Symbol {
 
     public int getDeplacement() {
         return deplacement;
+    }
+
+    public SymbolType getType() {
+        return type;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
