@@ -170,9 +170,9 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
                             paramSymbols.add(paramSymbol);
                         }
                     }
-                    FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, nom_fonction, valeur_retour.getValue(), paramSymbols);
-                    tds.addSymbol(functionSymbol);
                 }
+                FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, nom_fonction, valeur_retour.getValue(), paramSymbols);
+                tds.addSymbol(functionSymbol);
             }
             else {
                 FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, nom_fonction, valeur_retour.getValue());

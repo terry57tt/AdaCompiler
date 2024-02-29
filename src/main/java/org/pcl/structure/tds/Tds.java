@@ -141,9 +141,10 @@ public class Tds {
         asciiTable.addRow("TDS" + this.name, " nom du symbole", " type du symbole", " déplacement");
 
         System.out.println(symbols.size());
+        System.out.println(symbols);
         for (Symbol symbol : symbols) {
             asciiTable.addRule();
-            asciiTable.addRow(symbol.getName(), symbol.getType(), symbol.getDeplacement());
+            asciiTable.addRow("Symbol", symbol.getName(), symbol.getType(), symbol.getDeplacement());
         }
         
         if (parent != null) {
