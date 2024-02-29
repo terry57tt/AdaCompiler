@@ -50,7 +50,7 @@ public class App {
 
             Grammar grammar = new Grammar(tokens, FileHandler.getFileName(file));
             SyntaxTree tree = grammar.getSyntaxTree();
-
+            new PCLWindows(tokens, tree,!grammar.error).start();
             grammar.createAST();
             grammar.nameNodes();
 

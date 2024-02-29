@@ -24,11 +24,13 @@ public class Node {
     /* Associated token */
     private Token token;
     private String value;
+    private boolean meaningful;
 
     public Node() {
         this.children = new ArrayList<>();
         this.isFinal = false;
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Create the same node as node without children */
@@ -39,6 +41,7 @@ public class Node {
         this.token = node.getToken();
         this.value = node.getValue();
         this.type = node.getType();
+        this.meaningful = false;
     }
 
     /* Create a node with a semantic action. */
@@ -47,6 +50,7 @@ public class Node {
         this.children = children;
         this.isFinal = false;
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Create final node with a token. */
@@ -56,6 +60,7 @@ public class Node {
         this.isFinal = true;
         this.value = token.getValue();
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Create intermediate node with a non_terminal */
@@ -65,6 +70,7 @@ public class Node {
         this.isFinal = false;
         this.value = value;
         this.parent = null;
+        this.meaningful = false;
     }
 
     /* Add a child to the node. */
@@ -73,10 +79,22 @@ public class Node {
         node.parent = this;
     }
 
+    public void addChild(int index, Node node){
+        this.children.add(index, node);
+        node.parent = this;
+    }
+
     /* Add a list of children to the node. */
     public void addChildren(List<Node> nodeList) {
         for (Node node : nodeList) {
             this.addChild(node);
+        }
+    }
+
+    public void addChildren(int index, List<Node> nodeList){
+        for (Node node : nodeList) {
+            this.addChild(index, node);
+            index++;
         }
     }
 
@@ -98,6 +116,13 @@ public class Node {
     public ArrayList<Node> getChildren() {
         return children;
     }
+    public Node getChild(int index){
+        return children.get(index);
+    }
+    public void setChildren(ArrayList<Node> children){
+        this.children = children;
+    }
+
     /** Return if the node is final. */
     public boolean isFinal() {
         return isFinal;
@@ -296,5 +321,45 @@ public class Node {
             default:
                 break;
         }
+    }
+
+    public void setMeaningful(boolean meaningful){
+        this.meaningful = meaningful;
+    }
+    public Boolean isMeaningful(){
+        return this.meaningful;
+    }
+
+    public Node firstChild(){
+        if(this.children.isEmpty())
+            return null;
+        return this.children.get(0);
+    }
+    public Node lastChild(){
+        if(this.children.isEmpty())
+            return null;
+        return this.children.get(this.children.size()-1);
+    }
+    public Node getChildIndex(int index){
+        if(this.children.isEmpty())
+            return null;
+        return this.children.get(index);
+    }
+
+    public void deleteFromParent(){
+        this.parent.children.remove(this);
+    }
+
+    public void deleteFromParentTransferringChildTokenToParent(){
+        this.parent.children.remove(this);
+        this.parent.token = this.token;
+    }
+    public void deleteFromParentTransferringChildTokenTo(Node node){
+        this.parent.children.remove(this);
+        node.token = this.token;
+    }
+
+    public int indexInBrothers(){
+        return this.parent.children.indexOf(this);
     }
 }
