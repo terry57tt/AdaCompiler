@@ -6,6 +6,7 @@ import org.pcl.structure.automaton.Graph;
 import org.pcl.structure.tds.Symbol;
 import org.pcl.structure.tds.SymbolType;
 import org.pcl.structure.tds.Tds;
+import org.pcl.structure.tds.Semantic;
 import org.pcl.structure.tree.SyntaxTree;
 import org.pcl.ig.PClWindows;
 
@@ -71,6 +72,11 @@ public class App {
                         ((grammar.getNumberErrors() > 1) ? "s": "") + " generated" +
                         ANSI_RESET);
             }
+
+            Semantic semantic = new Semantic(tree);
+
+            System.out.println("coucou");
+            System.out.println(semantic.getGlobalTds().toString());
 
             // Tds tds = new Tds("TDS");
             // tds.addSymbol(new Symbol(SymbolType.TYPE, "main", 0));

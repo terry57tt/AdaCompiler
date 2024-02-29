@@ -102,6 +102,14 @@ Si la fonction a un type de retour, vérifier que le parent est bien un noeud d�
 Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a déclaré dans la TDS 
 
 */
+    public Semantic(SyntaxTree ast) {
+        buildTds(ast);
+        controleSemantiqueFile(ast.getRootNode());
+    }
+
+    public Tds getGlobalTds() {
+        return GlobalTds;
+    }
 
     public void buildTds(SyntaxTree ast) {
         Node root = ast.getRootNode();
@@ -111,6 +119,8 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
     public void constructorTDS(Node node, Tds tds) {
         //Il doit y avoir un if pour chaque type de l'enum NodeType
 
+        System.out.println(node.getType());
+
         if (node.getChildren() == null) {
             return;
         }
@@ -118,15 +128,9 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
 
         if (node.getType() == NodeType.FILE) {
             List<Node> children = node.getChildren();
-            String Nom_procedure_principale = children.get(0).getValue();
-            Node declaration = children.get(1);
-            Node body = children.get(2);
-            if (children.size() == 4) {
-                String Nom_procedure_principale_fin = children.get(3).getValue();
+            for (Node child : children) {
+                constructorTDS(child,  tds);
             }
-
-            constructorTDS(declaration, tds);
-            constructorTDS(body, tds);
         }
 
         if (node.getType() == NodeType.DECLARATION) {
