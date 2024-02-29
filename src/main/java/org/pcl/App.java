@@ -74,8 +74,6 @@ public class App {
             }
 
             Semantic semantic = new Semantic(tree);
-
-            System.out.println("coucou");
             System.out.println(semantic.getGlobalTds().toString());
 
             // Tds tds = new Tds("TDS");
