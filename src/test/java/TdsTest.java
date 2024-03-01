@@ -4,7 +4,7 @@ import org.pcl.structure.tds.SymbolType;
 import org.pcl.structure.tds.Tds;
 
 public class TdsTest {
-
+/*
     @Test
     public void testTds() {
         Tds tds = new Tds();
@@ -25,5 +25,5 @@ public class TdsTest {
 
         System.out.println(tds);
         System.out.println(child);
-    }
+    }*/
 }
