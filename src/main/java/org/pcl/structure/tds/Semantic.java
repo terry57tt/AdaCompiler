@@ -123,6 +123,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
 
         System.out.println(node.getType() + " " +  node.getValue());
         if (node.getChildren() == null) return;
+        if (node.getType() == null) return;
 
         switch (node.getType()) {
             case FILE, DECLARATION, AFFECTATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, RETURN, BEGIN,

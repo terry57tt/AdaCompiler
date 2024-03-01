@@ -4,33 +4,24 @@ import java.util.List;
 
 
 public class FunctionSymbol extends Symbol {
-    private String nom;
+
     private String returnType;
     private List<ParamSymbol> parameters;
 
-    public FunctionSymbol(SymbolType type, int deplacement, String nom, String returnType, List<ParamSymbol> parameters) {
-        super(type, deplacement);
-        this.nom = nom;
+    public FunctionSymbol(SymbolType type, int deplacement, String name, String returnType, List<ParamSymbol> parameters) {
+        super(type, deplacement, name);
         this.returnType = returnType;
         this.parameters = parameters;
     }
 
-    public FunctionSymbol(SymbolType type, int deplacement, String nom, String returnType) {
-        super(type, deplacement);
-        this.nom = nom;
+    public FunctionSymbol(SymbolType type, int deplacement, String name, String returnType) {
+        super(type, deplacement, name);
         this.returnType = returnType;
     }
 
-    public String getNom() {
-        return nom;
-    }
 
     public String getReturnType() {
         return returnType;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
     }
 
     public void setReturnType(String returnType) {
@@ -46,7 +37,7 @@ public class FunctionSymbol extends Symbol {
     }
 
     public String toString() {
-        return  super.toString() + " " + nom + " return " + returnType + "\n parameters: " + parameters;
+        return  "FUNCTION - return type: " + returnType + "<br>Parameters: " + parameters;
     }
 
 }

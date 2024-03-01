@@ -22,6 +22,6 @@ public class ParamSymbol extends VariableSymbol {
 
     @Override
     public String toString() {
-        return super.toString() + " mode: " + mode;
+       return "(" + getType_variable() + " " + getValue() + " " + mode + ")";
     }
 }

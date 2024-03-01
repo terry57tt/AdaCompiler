@@ -3,41 +3,28 @@ package org.pcl.structure.tds;
 import java.util.List;
 
 public class ProcedureSymbol extends Symbol {
-    
-        private String nom;
+
         private String nom_apres_end;
         private List<ParamSymbol> parameters;
     
-        public ProcedureSymbol(SymbolType type, int deplacement, String nom) {
-            super(type, deplacement);
-            this.nom = nom;
+        public ProcedureSymbol(SymbolType type, int deplacement, String name) {
+            super(type, deplacement, name);
         }
 
-        public ProcedureSymbol(SymbolType type, int deplacement, String nom, String nom_apres_end) {
-            super(type, deplacement);
-            this.nom = nom;
+        public ProcedureSymbol(SymbolType type, int deplacement, String name, String nom_apres_end) {
+            super(type, deplacement, name);
             this.nom_apres_end = nom_apres_end;
         }
 
-        public ProcedureSymbol(SymbolType type, int deplacement, String nom, List<ParamSymbol> parameters) {
-            super(type, deplacement);
-            this.nom = nom;
+        public ProcedureSymbol(SymbolType type, int deplacement, String name, List<ParamSymbol> parameters) {
+            super(type, deplacement, name);
             this.parameters = parameters;
         }
 
-        public ProcedureSymbol(SymbolType type, int deplacement, String nom, String nom_apres_end, List<ParamSymbol> parameters) {
-            super(type, deplacement);
-            this.nom = nom;
+        public ProcedureSymbol(SymbolType type, int deplacement, String name, String nom_apres_end, List<ParamSymbol> parameters) {
+            super(type, deplacement, name);
             this.nom_apres_end = nom_apres_end;
             this.parameters = parameters;
-        }
-    
-        public String getNom() {
-            return nom;
-        }
-    
-        public void setNom(String nom) {
-            this.nom = nom;
         }
 
         public String getNom_apres_end() {
@@ -58,6 +45,6 @@ public class ProcedureSymbol extends Symbol {
 
     @Override
     public String toString() {
-        return super.toString() + " " + nom + " - " + nom_apres_end +  "\n parameters: " + parameters;
-    }
+        return "PROCEDURE - closing name " + nom_apres_end + "<br>Parameters: " + parameters ;
+        }
 }

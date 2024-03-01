@@ -1,6 +1,10 @@
 package org.pcl.structure.tds;
 
+import de.vandermeer.asciitable.AT_Cell;
 import de.vandermeer.asciitable.AsciiTable;
+import de.vandermeer.asciitable.CWC_LongestLine;
+import de.vandermeer.asciitable.CWC_LongestWordMin;
+import de.vandermeer.asciithemes.a7.A7_Grids;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 
 import java.util.ArrayList;
@@ -132,16 +136,24 @@ public class Tds {
         System.out.println("\n");
         AsciiTable asciiTable = new AsciiTable();
         asciiTable.addRule();
-        asciiTable.addRow("TDS - Région:" + region + " Imbrication:" + imbrication, " Déplacement");
+        System.out.println(" TDS - Région:" + region + " Imbrication:" + imbrication);
+        asciiTable.addRow("Nom", "Contenu");
         asciiTable.addRule();
 
         for (Symbol symbol : symbols) {
-            asciiTable.addRow(symbol, symbol.getDeplacement());
-        }
-        if (!symbols.isEmpty())
+            AT_Cell cell = asciiTable.addRow(symbol.getName(), symbol).getCells().get(1);
+            cell.getContext().setPadding(1);
+            cell.getContext().setTextAlignment(TextAlignment.LEFT);
             asciiTable.addRule();
-
-        asciiTable.setTextAlignment(TextAlignment.CENTER);
+        }
+        asciiTable.getRenderer().setCWC(new CWC_LongestWordMin(new int[]{-1,120}));
         return asciiTable.render();
+    }
+
+    public void displayWithChild() {
+        System.out.println(this);
+        for (Tds tds : child) {
+            tds.displayWithChild();
+        }
     }
 }

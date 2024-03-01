@@ -74,7 +74,8 @@ public class App {
             }
 
             Semantic semantic = new Semantic(tree);
-            System.out.println(semantic.getGlobalTds().toString());
+
+            semantic.getGlobalTds().displayWithChild();
 
             // Tds tds = new Tds("TDS");
             // tds.addSymbol(new Symbol(SymbolType.TYPE, "main", 0));
