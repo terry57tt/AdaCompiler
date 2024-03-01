@@ -495,7 +495,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
             }
         }
 
-        test_condition_booleene(condition);
+        test_condition_booleene(condition, this.GlobalTds);
 
     }
 
@@ -526,15 +526,18 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
         List<Node> children = affectation.getChildren();
         Node variable = children.get(0);
         Node valeur = children.get(1);
-        Symbol symbol = tds.getSymbol(variable.getValue());
+        Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
         if (symbol == null){
             System.out.println("La variable " + variable.getValue() + " n'a pas été déclaré");
         }
         else {
             String type_valeur = type_valeur(valeur, tds);
-
+            if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
+                System.out.println("La valeur affecté à " + variable.getValue() + " n'est pas du bon type");
+            }
         }
     }
+
 
     public void test_return_present(Node node){
         List<Node> children = node.getChildren();
@@ -598,7 +601,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
         System.out.println("Le type " + type + " n'est pas un type valide");
     }
 
-    public void test_condition_booleene(Node condition){
+    public void test_condition_booleene(Node condition, Tds tds){
         //On a une condition booléenne si on voit un opérateur de comparaison ou un opérateur logique (mais à ce moment là, on a déjà vérifié que les deux opérandes étaient des booléens)
         
         if (condition.getValue().equalsIgnoreCase("True") || condition.getValue().equalsIgnoreCase("False")){
@@ -608,30 +611,66 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
         if (condition.getValue().equalsIgnoreCase("AND") || condition.getValue().equalsIgnoreCase("OR")){
             List<Node> children = condition.getChildren();
             for (Node child : children) {
-                test_condition_booleene(child);
+                test_condition_booleene(child, tds);
             }
         }
         else if (condition.getValue().equalsIgnoreCase("NOT")){
             List<Node> children = condition.getChildren();
             for (Node child : children) {
-                test_condition_booleene(child);
+                test_condition_booleene(child, tds);
             }
         }
-        else if (condition.getValue().equalsIgnoreCase("<=") || condition.getValue().equalsIgnoreCase(">=") || condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("<") || condition.getValue().equalsIgnoreCase(">") || condition.getValue().equalsIgnoreCase("!=")){
+        else if (condition.getValue().equalsIgnoreCase("<=") || condition.getValue().equalsIgnoreCase(">=") || condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("<") || condition.getValue().equalsIgnoreCase(">") || condition.getValue().equalsIgnoreCase("!=") || condition.getValue().equalsIgnoreCase("/=")){
             List<Node> children = condition.getChildren();
             Node left = children.get(0);
             Node right = children.get(1);
-            if (left.getType() == NodeType.INTEGER || right.getType() == NodeType.INTEGER){
+            if (type_valeur(left, tds) == "integer"){
+                return;
+            }
+            else if (test_expression_arithmetique(right, tds)) {
                 return;
             }
             else {
-                System.out.println("La condition n'est pas une condition booléenne car les opérandes ne sont pas des entiers");
+                System.out.println("La condition n'est pas une condition booléenne car les opérandes des deux cotés du comparateur ne sont pas des entiers");
             }
         }
-        
         else {
             System.out.println("La condition n'est pas une condition booléenne");
         }
+    }
+
+    public boolean test_expression_arithmetique(Node node, Tds tds){
+        if (node.getType() == NodeType.ADDITION || node.getType() == NodeType.SUBSTRACTION || node.getType() == NodeType.MULTIPLY || node.getType() == NodeType.DIVIDE || node.getType() == NodeType.REM){
+            List<Node> children = node.getChildren();
+            Node left = children.get(0);
+            Node right = children.get(1);
+            if (left.getType() == NodeType.ADDITION || left.getType() == NodeType.SUBSTRACTION || left.getType() == NodeType.MULTIPLY || left.getType() == NodeType.DIVIDE || left.getType() == NodeType.REM){
+                boolean a = test_expression_arithmetique(left, tds);
+                boolean b = test_expression_arithmetique(right, tds);
+                if (a==false || b==false){
+                    return false;
+                }
+            }
+            else if (right.getType() == NodeType.ADDITION || right.getType() == NodeType.SUBSTRACTION || right.getType() == NodeType.MULTIPLY || right.getType() == NodeType.DIVIDE || right.getType() == NodeType.REM){
+                boolean a = test_expression_arithmetique(left, tds);
+                boolean b = test_expression_arithmetique(right, tds);
+                if (a==false || b==false){
+                    return false;
+                }
+            }
+            else {
+                String type_left = type_valeur(left, tds);
+                String type_right = type_valeur(right, tds);
+                if (type_left.equalsIgnoreCase("integer") && type_right.equalsIgnoreCase("integer")){
+                    return true;
+                }
+                else {
+                    System.out.println("L'opération n'est pas valide car les opérandes ne sont pas des entiers");
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
     public String type_valeur(Node valeur, Tds tds){

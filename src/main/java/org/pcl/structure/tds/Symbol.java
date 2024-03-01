@@ -1,7 +1,9 @@
 package org.pcl.structure.tds;
 
+import java.util.List;
+
 /** Represent the Symbol in the TDS. */
-public class Symbol {
+public abstract class Symbol {
 
     private SymbolType type;
 
@@ -30,4 +32,6 @@ public class Symbol {
     public void setName(String name) {
         this.name = name;
     }
+
+
 }

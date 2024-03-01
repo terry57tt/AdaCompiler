@@ -116,15 +116,14 @@ public class Tds {
         return false;
     }
 
-    public Symbol getSymbol(String SymbolName) {
+    public Symbol getSymbol(String SymbolName, SymbolType type) {
         for (Symbol symbol : symbols) {
-            if (symbol.getName().equals(SymbolName)) {
+            if (symbol.getName().equals(SymbolName) && symbol.getType() == type) {
                 return symbol;
             }
         }
         if (parent != null)
-            return parent.getSymbol(SymbolName);
-        
+            return parent.getSymbol(SymbolName, type);
         return null;
     }
 
