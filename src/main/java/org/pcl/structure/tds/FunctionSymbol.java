@@ -45,4 +45,8 @@ public class FunctionSymbol extends Symbol {
         this.parameters = parameters;
     }
 
+    public String toString() {
+        return  super.toString() + " " + nom + " return " + returnType + "\n parameters: " + parameters;
+    }
+
 }

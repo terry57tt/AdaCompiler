@@ -33,5 +33,8 @@ public abstract class Symbol {
         this.name = name;
     }
 
-
+    @Override
+    public String toString() {
+        return getName() + " -  " + getType();
+    }
 }

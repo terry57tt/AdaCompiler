@@ -55,4 +55,9 @@ public class ProcedureSymbol extends Symbol {
         public void setParameters(List<ParamSymbol> parameters) {
             this.parameters = parameters;
         }
+
+    @Override
+    public String toString() {
+        return super.toString() + " " + nom + " - " + nom_apres_end +  "\n parameters: " + parameters;
+    }
 }

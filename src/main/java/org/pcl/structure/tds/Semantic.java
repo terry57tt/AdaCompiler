@@ -11,10 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static org.pcl.structure.tds.SemanticControls.controleSemantiqueFile;
+
 
 public class Semantic {
 
-    private Tds GlobalTds = new Tds("root");
+    private final Tds GlobalTds = new Tds("root");
 
     /*
      * 
@@ -120,585 +122,177 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
         //Il doit y avoir un if pour chaque type de l'enum NodeType
 
         System.out.println(node.getType() + " " +  node.getValue());
+        if (node.getChildren() == null) return;
 
-        if (node.getChildren() == null) {
-            return;
-        }
+        switch (node.getType()) {
+            case FILE, DECLARATION, AFFECTATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, RETURN, BEGIN,
+                    AND, OR, NOT, IN, INOUT, MODE, ADDITION, SUBSTRACTION, MULTIPLY, REM, DIVIDE,
+                    RECORD, ACCESS, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE, NULL, INITIALIZATION, FIELD, IS,
+                    EQUAL, SLASH_EQUAL, INFERIOR, INFERIOR_EQUAL, SUPERIOR, SUPERIOR_EQUAL -> fillTDsChild(node, tds);
 
-
-        if (node.getType() == NodeType.FILE) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child,  tds);
+            case PROGRAM -> {
             }
-        }
 
-        if (node.getType() == NodeType.DECLARATION) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child,  tds);
+            case TYPE -> {
             }
-        }
-
-        if (node.getType() == NodeType.DECL_FUNC) {
-            List<Node> children = node.getChildren();
-            String nom_fonction = children.get(0).getValue();
-            Node valeur_retour = children.get(1);
-            Node body = children.get(2);
-            if (children.get(0).getChildren().size() != 0) {
-                List<Node> param = new ArrayList<>();
-                for (Node child : children.get(0).getChildren()) {
-                    param.add(child);
-                }
-
-                List<ParamSymbol> paramSymbols = new ArrayList<>();
-                for (Node p : param) {
-                    int children_number = p.getChildren().size();
-                    if (p.getChildren().get(children_number -2).getValue().equalsIgnoreCase("out")) {
-                        for (int i = 0; i < children_number - 2; i++) {
-                        String nom = p.getChildren().get(i).getValue();
-                        String type = p.getChildren().get(children_number - 1).getValue();
-                        String mode = "in out";
-                        ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type, mode);
-                        paramSymbols.add(paramSymbol);
+            case DECL_VAR -> {
+                List<Node> children = node.getChildren();
+                String nom = children.get(0).getValue();
+                String type = children.get(1).getValue();
+                VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
+                tds.addSymbol(variableSymbol);
+            }
+            case DECL_PROC -> {
+                List<Node> children = node.getChildren();
+                String nom_procedure = children.get(0).getValue();
+                Node body = children.get(1);
+                if (children.get(0).getChildren().size() != 0) {
+                    List<Node> param = new ArrayList<>();
+                    for (Node child : children.get(0).getChildren()) {
+                        param.add(child);
                     }
-                    } else {
-                        for (int i = 0; i < children_number; i++) {
-                            String nom = p.getChildren().get(i).getValue();
-                            String type = p.getChildren().get(children_number - 1).getValue();
-                            ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
-                            paramSymbols.add(paramSymbol);
+
+                    List<ParamSymbol> paramSymbols = new ArrayList<>();
+                    for (Node p : param) {
+                        int children_number = p.getChildren().size();
+                        if (p.getChildren().get(children_number -2).getValue().equalsIgnoreCase("out")) {
+                            for (int i = 0; i < children_number - 2; i++) {
+                                String nom = p.getChildren().get(i).getValue();
+                                String type = p.getChildren().get(children_number - 1).getValue();
+                                String mode = "in out";
+                                ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type, mode);
+                                paramSymbols.add(paramSymbol);
+                            }
+                        } else {
+                            for (int i = 0; i < children_number; i++) {
+                                String nom = p.getChildren().get(i).getValue();
+                                String type = p.getChildren().get(children_number - 1).getValue();
+                                ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
+                                paramSymbols.add(paramSymbol);
+                            }
                         }
+                        ProcedureSymbol procedureSymbol = new ProcedureSymbol(SymbolType.PROCEDURE, 0, nom_procedure, paramSymbols);
+                        tds.addSymbol(procedureSymbol);
                     }
                 }
-                FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, nom_fonction, valeur_retour.getValue(), paramSymbols);
-                tds.addSymbol(functionSymbol);
-            }
-            else {
-                FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, nom_fonction, valeur_retour.getValue());
-                tds.addSymbol(functionSymbol);
-            }
-
-            Tds tds_function = new Tds(nom_fonction);
-
-            tds.addChild(tds_function);
-            
-            constructorTDS(body, tds_function);
-        }
-
-        if (node.getType() == NodeType.DECL_PROC) {
-            List<Node> children = node.getChildren();
-            String nom_procedure = children.get(0).getValue();
-            Node body = children.get(1);
-            if (children.get(0).getChildren().size() != 0) {
-                List<Node> param = new ArrayList<>();
-                for (Node child : children.get(0).getChildren()) {
-                    param.add(child);
-                }
-
-                List<ParamSymbol> paramSymbols = new ArrayList<>();
-                for (Node p : param) {
-                    int children_number = p.getChildren().size();
-                    if (p.getChildren().get(children_number -2).getValue().equalsIgnoreCase("out")) {
-                        for (int i = 0; i < children_number - 2; i++) {
-                        String nom = p.getChildren().get(i).getValue();
-                        String type = p.getChildren().get(children_number - 1).getValue();
-                        String mode = "in out";
-                        ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type, mode);
-                        paramSymbols.add(paramSymbol);
-                    }
-                    } else {
-                        for (int i = 0; i < children_number; i++) {
-                            String nom = p.getChildren().get(i).getValue();
-                            String type = p.getChildren().get(children_number - 1).getValue();
-                            ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
-                            paramSymbols.add(paramSymbol);
-                        }
-                    }
-                    ProcedureSymbol procedureSymbol = new ProcedureSymbol(SymbolType.PROCEDURE, 0, nom_procedure, paramSymbols);
+                else {
+                    ProcedureSymbol procedureSymbol = new ProcedureSymbol(SymbolType.PROCEDURE, 0, nom_procedure);
                     tds.addSymbol(procedureSymbol);
                 }
+                Tds tds_procedure = new Tds(nom_procedure);
+                tds.addChild(tds_procedure);
+                constructorTDS(body, tds_procedure);
             }
-            else {
-                ProcedureSymbol procedureSymbol = new ProcedureSymbol(SymbolType.PROCEDURE, 0, nom_procedure);
-                tds.addSymbol(procedureSymbol);
-            }
-            Tds tds_procedure = new Tds(nom_procedure);
-            tds.addChild(tds_procedure);
-            constructorTDS(body, tds_procedure);
-        }
+            case DECL_FUNC -> {
+                List<Node> children = node.getChildren();
+                String nom_fonction = children.get(0).getValue();
+                Node valeur_retour = children.get(1);
+                Node body = children.get(2);
+                if (children.get(0).getChildren().size() != 0) {
+                    List<Node> param = new ArrayList<>();
+                    for (Node child : children.get(0).getChildren()) {
+                        param.add(child);
+                    }
 
-        if (node.getType() == NodeType.BODY) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.FOR) {
-            List<Node> children = node.getChildren();
-            String variable_compteur = children.get(0).getValue();
-            String direction = children.get(1).getValue();
-            String borne_inf = children.get(2).getValue();
-            String borne_sup = children.get(3).getValue();
-            Node loop = children.get(4);
-            constructorTDS(loop, tds);
-        }
-
-        if (node.getType() == NodeType.IF) {
-            List<Node> children = node.getChildren();
-            Node condition = children.get(0);
-            Node then = children.get(1);
-            List<Node> elsif = new ArrayList<>();
-            Node else_node = null;
-            for (int i = 2; i < children.size(); i++) {
-                if (children.get(i).getType() == NodeType.ELSIF) {
-                    elsif.add(children.get(i));
+                    List<ParamSymbol> paramSymbols = new ArrayList<>();
+                    for (Node p : param) {
+                        int children_number = p.getChildren().size();
+                        if (p.getChildren().get(children_number -2).getValue().equalsIgnoreCase("out")) {
+                            for (int i = 0; i < children_number - 2; i++) {
+                                String nom = p.getChildren().get(i).getValue();
+                                String type = p.getChildren().get(children_number - 1).getValue();
+                                String mode = "in out";
+                                ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type, mode);
+                                paramSymbols.add(paramSymbol);
+                            }
+                        } else {
+                            for (int i = 0; i < children_number; i++) {
+                                String nom = p.getChildren().get(i).getValue();
+                                String type = p.getChildren().get(children_number - 1).getValue();
+                                ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
+                                paramSymbols.add(paramSymbol);
+                            }
+                        }
+                    }
+                    FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, nom_fonction, valeur_retour.getValue(), paramSymbols);
+                    tds.addSymbol(functionSymbol);
                 }
                 else {
-                    else_node = children.get(i);
+                    FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, nom_fonction, valeur_retour.getValue());
+                    tds.addSymbol(functionSymbol);
+                }
+
+                Tds tds_function = new Tds(nom_fonction);
+
+                tds.addChild(tds_function);
+
+                constructorTDS(body, tds_function);
+            }
+
+            case ELSE -> {
+            }
+
+            case THEN -> {
+            }
+            case NEGATIVE_SIGN -> {
+            }
+            case POINT -> {
+            }
+            case IF -> {
+                List<Node> children = node.getChildren();
+                Node condition = children.get(0);
+                Node then = children.get(1);
+                List<Node> elsif = new ArrayList<>();
+                Node else_node = null;
+                for (int i = 2; i < children.size(); i++) {
+                    if (children.get(i).getType() == NodeType.ELSIF) {
+                        elsif.add(children.get(i));
+                    }
+                    else {
+                        else_node = children.get(i);
+                    }
+                }
+                constructorTDS(then, tds);
+                for (Node n : elsif) {
+                    constructorTDS(n, tds);
+                }
+                if (else_node != null) {
+                    constructorTDS(else_node, tds);
                 }
             }
-            constructorTDS(then, tds);
-            for (Node n : elsif) {
-                constructorTDS(n, tds);
+            case FOR -> {
+                List<Node> children = node.getChildren();
+                String variable_compteur = children.get(0).getValue();
+                String direction = children.get(1).getValue();
+                String borne_inf = children.get(2).getValue();
+                String borne_sup = children.get(3).getValue();
+                Node loop = children.get(4);
+                constructorTDS(loop, tds);
             }
-            if (else_node != null) {
-                constructorTDS(else_node, tds);
+            case WHILE -> {
+                List<Node> children = node.getChildren();
+                Node condition = children.get(0);
+                Node loop = children.get(1);
+                constructorTDS(loop, tds);
             }
-        }
-
-        if (node.getType() == NodeType.WHILE) {
-            List<Node> children = node.getChildren();
-            Node condition = children.get(0);
-            Node loop = children.get(1);
-            constructorTDS(loop, tds);
-        }
-
-        if (node.getType() == NodeType.DECL_VAR) {
-            List<Node> children = node.getChildren();
-            String nom = children.get(0).getValue();
-            String type = children.get(1).getValue();
-            VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
-            tds.addSymbol(variableSymbol);
-        }
-
-        if (node.getType() == NodeType.AFFECTATION) { 
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
+            case REVERSE -> {
             }
-        }
-
-        if (node.getType() == NodeType.ADDITION || node.getType() == NodeType.SUBSTRACTION || node.getType() == NodeType.MULTIPLY || node.getType() == NodeType.DIVIDE || node.getType() == NodeType.REM) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
+            case ELSIF -> {
             }
-        }
-
-        if (node.getType() == NodeType.COMPARATOR) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
+            case EXPRESSION -> {
             }
-        }
 
-        if (node.getType() == NodeType.IDENTIFIER) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.INTEGER) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.CHARACTER) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.TRUE || node.getType() == NodeType.FALSE || node.getType() == NodeType.NULL) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.NEW) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.CHAR_VAL) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.RETURN) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.BEGIN) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.AND || node.getType() == NodeType.OR) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.NOT) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.EQUAL || node.getType() == NodeType.SLASH_EQUAL || node.getType() == NodeType.INFERIOR || node.getType() == NodeType.INFERIOR_EQUAL || node.getType() == NodeType.SUPERIOR || node.getType() == NodeType.SUPERIOR_EQUAL) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.IN) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.INOUT) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.MODE) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.PARAMETERS) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.MULTIPLE_PARAM) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.INITIALIZATION) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.FIELD) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.TYPE) {
-        }
-
-        if (node.getType() == NodeType.IS) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.ACCESS) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.RECORD) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-
-        if (node.getType() == NodeType.VIRGULE) {
-            List<Node> children = node.getChildren();
-            for (Node child : children) {
-                constructorTDS(child, tds);
-            }
-        }
-    }
-
-    public void controleSemantiqueFile(Node file){
-        test_egalite_nom_debut_fin(file);
-    }
-
-    public void controleSemantiqueFor(Node for_node){
-        List<Node> children = for_node.getChildren();
-        String variable_compteur = children.get(0).getValue();
-        String direction = children.get(1).getValue();
-        String borne_inf = children.get(2).getValue();
-        String borne_sup = children.get(3).getValue();
-
-        test_borne_suf_inf(borne_inf, borne_sup);
-        
-    }
-
-    public void controleSemantiqueIf(Node if_node){
-        List<Node> children = if_node.getChildren();
-        Node condition = children.get(0);
-        Node then = children.get(1);
-        List<Node> elsif = new ArrayList<>();
-        Node else_node = null;
-        for (int i = 2; i < children.size(); i++) {
-            if (children.get(i).getType() == NodeType.ELSIF) {
-                elsif.add(children.get(i));
-            }
-            else {
-                else_node = children.get(i);
-                if (i != children.size() - 1) {
-                    System.out.println("Il y a quelque chose après le else");
-                }
-            }
-        }
-
-        test_condition_booleene(condition, this.GlobalTds);
-
-    }
-
-    //Controle semantique declaration de variable, fonction, procédure
-
-    public void controleSemantiqueDeclVariable(Node decl_var, Tds tds){
-        test_double_declaration(decl_var, tds);
-    }
-
-    public void controleSemantiqueDeclFonction(Node decl_func, Tds tds){
-        List<Node> children = decl_func.getChildren();
-        Node valeur_retour = children.get(1);
-        Node body = children.get(2);
-
-        test_return_present(body);
-        test_existence_type(valeur_retour.getValue(), tds);
-        test_double_declaration(decl_func, tds);
-    }
-
-    public void controleSemantiqueDeclProcedure(Node decl_proc, Tds tds){
-        List<Node> children = decl_proc.getChildren();
-        Node body = children.get(1);
-
-        test_double_declaration(decl_proc, tds);
-    }
-
-    public void controleSemantiqueAffectation(Node affectation, Tds tds){
-        List<Node> children = affectation.getChildren();
-        Node variable = children.get(0);
-        Node valeur = children.get(1);
-        Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
-        if (symbol == null){
-            System.out.println("La variable " + variable.getValue() + " n'a pas été déclaré");
-        }
-        else {
-            String type_valeur = type_valeur(valeur, tds);
-            if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
-                System.out.println("La valeur affecté à " + variable.getValue() + " n'est pas du bon type");
-            }
         }
     }
 
 
-    public void test_return_present(Node node){
+    /** fill the tds of the child of the node */
+    public void fillTDsChild(Node node, Tds tds){
         List<Node> children = node.getChildren();
         for (Node child : children) {
-            if (child.getType() == NodeType.RETURN){
-                return;
-            }
-        }
-
-        System.out.println("Il n'y a pas de return dans le body de la fonction");
-    }
-
-
-
-
-
-    public void test_egalite_nom_debut_fin(Node file){
-        List<Node> children = file.getChildren();
-        int nombre_enfants = children.size();
-        String nom_debut = children.get(0).getValue();
-        String nom_fin = children.get(nombre_enfants - 1).getValue();
-        if (!nom_debut.equals(nom_fin)){
-            System.out.println("Les noms donnée au début et à la fin du programme ne sont pas les mêmes : " + nom_debut + " et " + nom_fin);
+            constructorTDS(child, tds);
         }
     }
-
-    public void test_double_declaration(Node node, Tds tds){
-        boolean a = tds.containsSymbol(node.getValue());
-        if (a){
-            System.out.println("Double déclaration de " + node.getValue());
-        }
-    }
-
-    public void test_borne_suf_inf(String borne_inf, String borne_sup){
-        try {
-            int inf = Integer.parseInt(borne_inf);
-            int sup = Integer.parseInt(borne_sup);
-
-            if (sup < inf) {
-                System.out.println("La borne sup est inférieur à la borne inf");
-            }
-
-
-        } catch (NumberFormatException e) {
-            System.out.println("La borne inf ou sup n'est pas un entier");
-        }
-    }
-
-    public void test_existence_type(String type, Tds tds){
-        List<String> typesValide = new ArrayList<>();
-        typesValide.add("integer");
-        typesValide.add("boolean");
-        typesValide.add("char");
-        
-        for (String t : typesValide) {
-            if (type.equalsIgnoreCase(t)){
-                return;
-            }
-        }
-
-        System.out.println("Le type " + type + " n'est pas un type valide");
-    }
-
-    public void test_condition_booleene(Node condition, Tds tds){
-        //On a une condition booléenne si on voit un opérateur de comparaison ou un opérateur logique (mais à ce moment là, on a déjà vérifié que les deux opérandes étaient des booléens)
-        
-        if (condition.getValue().equalsIgnoreCase("True") || condition.getValue().equalsIgnoreCase("False")){
-            return;
-        }
-
-        if (condition.getValue().equalsIgnoreCase("AND") || condition.getValue().equalsIgnoreCase("OR")){
-            List<Node> children = condition.getChildren();
-            for (Node child : children) {
-                test_condition_booleene(child, tds);
-            }
-        }
-        else if (condition.getValue().equalsIgnoreCase("NOT")){
-            List<Node> children = condition.getChildren();
-            for (Node child : children) {
-                test_condition_booleene(child, tds);
-            }
-        }
-        else if (condition.getValue().equalsIgnoreCase("<=") || condition.getValue().equalsIgnoreCase(">=") || condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("<") || condition.getValue().equalsIgnoreCase(">") || condition.getValue().equalsIgnoreCase("!=") || condition.getValue().equalsIgnoreCase("/=")){
-            List<Node> children = condition.getChildren();
-            Node left = children.get(0);
-            Node right = children.get(1);
-            if (type_valeur(left, tds) == "integer"){
-                return;
-            }
-            else if (test_expression_arithmetique(right, tds)) {
-                return;
-            }
-            else {
-                System.out.println("La condition n'est pas une condition booléenne car les opérandes des deux cotés du comparateur ne sont pas des entiers");
-            }
-        }
-        else {
-            System.out.println("La condition n'est pas une condition booléenne");
-        }
-    }
-
-    public boolean test_expression_arithmetique(Node node, Tds tds){
-        if (node.getType() == NodeType.ADDITION || node.getType() == NodeType.SUBSTRACTION || node.getType() == NodeType.MULTIPLY || node.getType() == NodeType.DIVIDE || node.getType() == NodeType.REM){
-            List<Node> children = node.getChildren();
-            Node left = children.get(0);
-            Node right = children.get(1);
-            if (left.getType() == NodeType.ADDITION || left.getType() == NodeType.SUBSTRACTION || left.getType() == NodeType.MULTIPLY || left.getType() == NodeType.DIVIDE || left.getType() == NodeType.REM){
-                boolean a = test_expression_arithmetique(left, tds);
-                boolean b = test_expression_arithmetique(right, tds);
-                if (a==false || b==false){
-                    return false;
-                }
-            }
-            else if (right.getType() == NodeType.ADDITION || right.getType() == NodeType.SUBSTRACTION || right.getType() == NodeType.MULTIPLY || right.getType() == NodeType.DIVIDE || right.getType() == NodeType.REM){
-                boolean a = test_expression_arithmetique(left, tds);
-                boolean b = test_expression_arithmetique(right, tds);
-                if (a==false || b==false){
-                    return false;
-                }
-            }
-            else {
-                String type_left = type_valeur(left, tds);
-                String type_right = type_valeur(right, tds);
-                if (type_left.equalsIgnoreCase("integer") && type_right.equalsIgnoreCase("integer")){
-                    return true;
-                }
-                else {
-                    System.out.println("L'opération n'est pas valide car les opérandes ne sont pas des entiers");
-                    return false;
-                }
-            }
-        }
-        return false;
-    }
-
-    public String type_valeur(Node valeur, Tds tds){
-        //Vérifier si valeur.getValue() 
-        try {
-            int a = Integer.parseInt(valeur.getValue());
-            return "integer";
-        } catch (Exception e) {
-            try {
-                boolean b = Boolean.parseBoolean(valeur.getValue());
-                return "boolean";
-            } catch (Exception e2) {
-                if (valeur.getValue().length() == 1){
-                    return "char";
-                }
-                else {
-                    // Symbol symbol = tds.getSymbol(valeur.getValue());
-                    // if (symbol != null){
-                    //     return symbol.getType();
-                    // }
-                    System.out.println("Le type de " + valeur.getValue() + " n'existe pas");
-                    return null;
-                }
-            }
-        }
-    }
-
-
 
 
 }
