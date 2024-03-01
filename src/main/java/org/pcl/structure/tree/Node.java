@@ -197,6 +197,9 @@ public class Node {
     }
 
     public void defineName() {
+        if (this.children.size() == 0){
+            return;
+        }
         switch (this.value) {
             case "declaration":
                 this.type = NodeType.DECLARATION;
@@ -318,6 +321,8 @@ public class Node {
             case "elsif":
                 this.type = NodeType.ELSIF;
                 break;
+            case "nodeDecl":
+                this.type = NodeType.DECL_VAR;
             default:
                 break;
         }

@@ -23,9 +23,7 @@ public class Tds {
 
     private String name;
 
-    private String chainage; 
-
-    public Tds(List<Symbol> symbols, String name, String chainage) {
+    public Tds(List<Symbol> symbols, String name) {
         this.symbols = symbols;
         this.parent = null;
         this.child = new ArrayList<>();
@@ -41,8 +39,8 @@ public class Tds {
         child.add(tds);
     }
 
-    public Tds(String name, String chainage) {
-        this(new ArrayList<>(), name, chainage);
+    public Tds(String name) {
+        this(new ArrayList<>(), name);
     }
 
     public List<Symbol> getSymbols() {
@@ -111,17 +109,28 @@ public class Tds {
                 return true;
             }
         }
-        if (chainage.equals("true") || parent.getName().equals("root")) {
-            boolean a = parent.containsSymbol(SymbolName);
-            if (a) {
-                return true;
-            }
+        boolean a = parent.containsSymbol(SymbolName);
+        if (a) {
+            return true;
         }
         return false;
     }
 
+    public Symbol getSymbol(String SymbolName) {
+        for (Symbol symbol : symbols) {
+            if (symbol.getName().equals(SymbolName)) {
+                return symbol;
+            }
+        }
+        if (parent != null)
+            return parent.getSymbol(SymbolName);
+        
+        return null;
+    }
+
     @Override
     public String toString() {
+        System.out.println("\n");
         // AsciiTable asciiTable = new AsciiTable();
         // asciiTable.addRule();
         // asciiTable.addRow("TDS - Région:" + region + " Imbrication:" + imbrication, " Déplacement");
@@ -140,21 +149,16 @@ public class Tds {
         asciiTable.addRule();
         asciiTable.addRow("TDS" + this.name, " nom du symbole", " type du symbole", " déplacement");
 
-        System.out.println(symbols.size());
-        System.out.println(symbols);
         for (Symbol symbol : symbols) {
             asciiTable.addRule();
             asciiTable.addRow("Symbol", symbol.getName(), symbol.getType(), symbol.getDeplacement());
         }
-        
-        if (parent != null) {
-            System.out.println(parent.toString());
-        }
 
         for (Tds tds : this.child) {
-            asciiTable.addRule();
-            asciiTable.addRow("TDS" + tds.name, " nom du symbole", " type du symbole", " déplacement");
+            System.out.println(tds.toString());
         }
+
+        System.out.println("\n");
 
         return asciiTable.render(); 
     }

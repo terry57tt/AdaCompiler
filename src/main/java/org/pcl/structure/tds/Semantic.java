@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
 
 public class Semantic {
 
-    private Tds GlobalTds = new Tds("root", "True");
+    private Tds GlobalTds = new Tds("root");
 
     /*
      * 
@@ -119,7 +119,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
     public void constructorTDS(Node node, Tds tds) {
         //Il doit y avoir un if pour chaque type de l'enum NodeType
 
-        System.out.println(node.getType());
+        System.out.println(node.getType() + " " +  node.getValue());
 
         if (node.getChildren() == null) {
             return;
@@ -179,7 +179,9 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
                 tds.addSymbol(functionSymbol);
             }
 
-            Tds tds_function = new Tds(nom_fonction, "false");
+            Tds tds_function = new Tds(nom_fonction);
+
+            tds.addChild(tds_function);
             
             constructorTDS(body, tds_function);
         }
@@ -221,8 +223,8 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
                 ProcedureSymbol procedureSymbol = new ProcedureSymbol(SymbolType.PROCEDURE, 0, nom_procedure);
                 tds.addSymbol(procedureSymbol);
             }
-            Tds tds_procedure = new Tds(nom_procedure, "false");
-            
+            Tds tds_procedure = new Tds(nom_procedure);
+            tds.addChild(tds_procedure);
             constructorTDS(body, tds_procedure);
         }
 
@@ -240,9 +242,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
             String borne_inf = children.get(2).getValue();
             String borne_sup = children.get(3).getValue();
             Node loop = children.get(4);
-            Tds tds_for = new Tds("for", "True");
-            tds.addChild(tds_for);
-            constructorTDS(loop, tds_for);
+            constructorTDS(loop, tds);
         }
 
         if (node.getType() == NodeType.IF) {
@@ -259,16 +259,12 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
                     else_node = children.get(i);
                 }
             }
-            Tds tds_if = new Tds("if", "True");
-            tds.addChild(tds_if);
-            constructorTDS(then, tds_if);
+            constructorTDS(then, tds);
             for (Node n : elsif) {
-                Tds tds_elsif = new Tds("elsif", "True");
-                constructorTDS(n, tds_elsif);
+                constructorTDS(n, tds);
             }
             if (else_node != null) {
-                Tds tds_else = new Tds("else", "True");
-                constructorTDS(else_node, tds_else);
+                constructorTDS(else_node, tds);
             }
         }
 
@@ -276,9 +272,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
             List<Node> children = node.getChildren();
             Node condition = children.get(0);
             Node loop = children.get(1);
-            Tds tds_while = new Tds("while", "True");
-            tds.addChild(tds_while);
-            constructorTDS(loop, tds_while);
+            constructorTDS(loop, tds);
         }
 
         if (node.getType() == NodeType.DECL_VAR) {
@@ -517,6 +511,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
         Node body = children.get(2);
 
         test_return_present(body);
+        test_existence_type(valeur_retour.getValue(), tds);
         test_double_declaration(decl_func, tds);
     }
 
@@ -525,6 +520,20 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
         Node body = children.get(1);
 
         test_double_declaration(decl_proc, tds);
+    }
+
+    public void controleSemantiqueAffectation(Node affectation, Tds tds){
+        List<Node> children = affectation.getChildren();
+        Node variable = children.get(0);
+        Node valeur = children.get(1);
+        Symbol symbol = tds.getSymbol(variable.getValue());
+        if (symbol == null){
+            System.out.println("La variable " + variable.getValue() + " n'a pas été déclaré");
+        }
+        else {
+            String type_valeur = type_valeur(valeur, tds);
+
+        }
     }
 
     public void test_return_present(Node node){
@@ -622,6 +631,31 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
         
         else {
             System.out.println("La condition n'est pas une condition booléenne");
+        }
+    }
+
+    public String type_valeur(Node valeur, Tds tds){
+        //Vérifier si valeur.getValue() 
+        try {
+            int a = Integer.parseInt(valeur.getValue());
+            return "integer";
+        } catch (Exception e) {
+            try {
+                boolean b = Boolean.parseBoolean(valeur.getValue());
+                return "boolean";
+            } catch (Exception e2) {
+                if (valeur.getValue().length() == 1){
+                    return "char";
+                }
+                else {
+                    // Symbol symbol = tds.getSymbol(valeur.getValue());
+                    // if (symbol != null){
+                    //     return symbol.getType();
+                    // }
+                    System.out.println("Le type de " + valeur.getValue() + " n'existe pas");
+                    return null;
+                }
+            }
         }
     }
 
