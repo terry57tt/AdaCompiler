@@ -36,6 +36,8 @@ public class SemanticControls {
      */
     public static void controleSemantiqueDeclVariable(Node decl_var, Tds tds){
         test_double_declaration(decl_var, tds);
+        List<Node> children = decl_var.getChildren();
+        test_existence_type(children.get(1).getValue(), tds);
     }
 
 
@@ -236,6 +238,11 @@ public class SemanticControls {
         typesValide.add("integer");
         typesValide.add("boolean");
         typesValide.add("char");
+
+        Symbol createdType = tds.getSymbol(type,SymbolType.TYPE);
+        if (createdType != null){
+            return;
+        }
 
         for (String t : typesValide) {
             if (type.equalsIgnoreCase(t)){
