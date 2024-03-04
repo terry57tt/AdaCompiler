@@ -1487,9 +1487,12 @@ public class Grammar {
         // create AST from parse tree
         if(this.syntaxTree == null){
             System.out.println("Il n'y a pas encore de parse tree.");
+            error = true;
             return;
         }
         this.ast = this.syntaxTree;
+
+        if (error) return;
 
         meaningfulNode();
         reduceChains();

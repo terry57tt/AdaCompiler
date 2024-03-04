@@ -9,6 +9,11 @@ import java.util.List;
 /** List all the semantic controls. */
 public class SemanticControls {
 
+    private final  static List<String> errors = new ArrayList<>();
+
+
+
+
     public static void controleSemantiqueFile(Node file){
         test_egalite_nom_debut_fin(file);
     }
@@ -247,5 +252,18 @@ public class SemanticControls {
     }
 
 
+
+    public static List<String> getErrors() {
+        return errors;
+    }
+
+    public static void clearErrors() {
+        errors.clear();
+    }
+
+    private static void printError(String error) {
+        System.out.println(error);
+        errors.add(error);
+    }
 
 }

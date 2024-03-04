@@ -50,10 +50,10 @@ public class App {
 
             Grammar grammar = new Grammar(tokens, FileHandler.getFileName(file));
             SyntaxTree tree = grammar.getSyntaxTree();
-            //new PCLWindows(tokens, tree,!grammar.error).start();
             grammar.createAST();
-            grammar.nameNodes();
-
+            if (!grammar.error) {
+                grammar.nameNodes();
+            }
             tree = grammar.ast;
 
             //if (!grammar.error)
@@ -73,15 +73,13 @@ public class App {
                         ANSI_RESET);
             }
 
+            if (grammar.error || lexeur.getNumber_errors() != 0) {
+                return;
+            }
+
             Semantic semantic = new Semantic(tree);
 
             semantic.getGlobalTds().displayWithChild();
-
-            // Tds tds = new Tds("TDS");
-            // tds.addSymbol(new Symbol(SymbolType.TYPE, "main", 0));
-            // tds.addSymbol(new Symbol(SymbolType.KEYWORD, "value", 4));
-            // System.out.println(tds + "\n");
-
         }
     }
 
