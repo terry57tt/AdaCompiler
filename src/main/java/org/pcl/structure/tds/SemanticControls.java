@@ -1,5 +1,6 @@
 package org.pcl.structure.tds;
 
+import org.pcl.ColorAnsiCode;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 
@@ -9,7 +10,15 @@ import java.util.List;
 /** List all the semantic controls. */
 public class SemanticControls {
 
+    private static String name_file;
+
     private final  static List<String> errors = new ArrayList<>();
+
+    private static void printError(String error) {
+        System.out.println(name_file + ": " + ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + error);
+        errors.add(error);
+    }
+
 
 
 
@@ -18,11 +27,28 @@ public class SemanticControls {
         test_egalite_nom_debut_fin(file);
     }
 
+    /**
+     * nom
+     * Type
+     * Controles sémantiques :
+     * Vérifier que le nom n’est pas déjà pris (double déclaration)
+     * Vérifier que le type est bien défini
+     */
     public static void controleSemantiqueDeclVariable(Node decl_var, Tds tds){
         test_double_declaration(decl_var, tds);
     }
 
 
+    /**
+     * variable compteur
+     * noeud in (dans le bon sens) ou noeud reverse (va dans l’autre sens)
+     * borne inf
+     * borne sup
+     * un noeud body qui s’appelle loop
+     * Controles sémantiques :
+     * Vérifier que la borne sup et la borne inf sont bien défini et que ce sont des entiers (surtout si ce sont des variables)
+     * Normalement la variable compteur n’a pas besoin d’avoir été défini et on sait déjà qu’il s’agit d’un ident donc pas besoin de le vérifier
+     */
     public static void controleSemantiqueFor(Node for_node){
         List<Node> children = for_node.getChildren();
         String variable_compteur = children.get(0).getValue();
@@ -34,6 +60,16 @@ public class SemanticControls {
 
     }
 
+    /**
+     * If :
+     * Condition booleene
+     * bloc then servant de body
+     * eventuellement une succession indéfini de elsif
+     * un else à la fin
+     * Controles sémantiques :
+     * Vérifier qu’il n’y rien après le else, pas d’autres elsif, et qu’il n’y pas rien d’autres sinon il y a un probleme
+     * Vérifier que le premier paramètre est bien une condition booleene
+     */
     public static void controleSemantiqueIf(Node if_node, Tds globalTds){
         List<Node> children = if_node.getChildren();
         Node condition = children.get(0);
@@ -46,9 +82,6 @@ public class SemanticControls {
             }
             else {
                 else_node = children.get(i);
-                if (i != children.size() - 1) {
-                    System.out.println("Il y a quelque chose après le else");
-                }
             }
         }
 
@@ -57,6 +90,16 @@ public class SemanticControls {
     }
 
 
+    /**
+     * Teste la sémantique d'une déclaration de fonction
+     * nom de fonction qui a comme enfants des noeuds de type param qui ont chacun comme enfant (un ou plusieurs nom de variable et un type)
+     * valeur de retour
+     * body de la fonction présence d'un return
+     * Controles sémantiques :
+     * Vérifier qu’il n’y a aucune double déclaration
+     * Vérifier que les paramètres ont des types bien défini
+     * Vérifier que la valeur de retour est un type bien défini
+     */
     public static void controleSemantiqueDeclFonction(Node decl_func, Tds tds){
         List<Node> children = decl_func.getChildren();
         Node valeur_retour = children.get(1);
@@ -67,11 +110,34 @@ public class SemanticControls {
         test_double_declaration(decl_func, tds);
     }
 
+    /**
+     * Appel de fonction :
+     * Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a déclaré dans la TDS
+     * type renvoyé par la fonction correspond au type de la variable qui va stocker
+     */
+    public static void controleSemantiqueAppelFonction(Node call_func, Tds tds) {
+        //TODO
+    }
+
+
+    /**
+     * Déclaration de procédure : pareil mais sans la valeur de retour
+     * Attention à vérifier que si il y a un enfant en plus, ce soit bien le nom de la procédure
+     * vérifier pas de return
+     */
     public static void controleSemantiqueDeclProcedure(Node decl_proc, Tds tds){
         List<Node> children = decl_proc.getChildren();
         Node body = children.get(1);
 
         test_double_declaration(decl_proc, tds);
+    }
+
+    /**
+     * Appel de procédure : pareil que pour la fonction
+     * nombre param match et type (pas de return)
+     */
+    public static void controleSemantiqueAppelProcedure(Node call_proc, Tds tds){
+        //TODO
     }
 
     public static void controleSemantiqueAffectation(Node affectation, Tds tds){
@@ -80,19 +146,46 @@ public class SemanticControls {
         Node valeur = children.get(1);
         Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
         if (symbol == null){
-            System.out.println("La variable " + variable.getValue() + " n'a pas été déclaré");
+            printError("The variable " + variable.getValue() + " has not been declared");
         }
         else {
             String type_valeur = type_valeur(valeur, tds);
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
-                System.out.println("La valeur affecté à " + variable.getValue() + " n'est pas du bon type");
+                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur);
             }
         }
     }
 
+    /**
+     *Opérateur +, *, / :
+     * ca peut etre n’importe quel entier ou opérateur en dehors du =, du AND bien entendu, on ne peut pas avoir 2+3=5=6
+     *
+     * Opérateur - :
+     * peut avoir un ou deux paramètres selon si c’est le moins normal ou le moins unaire mais dans tout les cas, il ne doit y avoir que des entiers
+     *
+     * Opérateur de comparaison de booleen : AND, OR :
+     * expression booleene à gauche et à droite
+     *
+     * Opérateur de comparaison d’entier (<=, =) :
+     * Entier à gauche et droite
+     */
+    public static void controleSemantiqueOperateur(Node operateur, Tds tds){
+        //TODO
+    }
 
+    /**
+     * Vérifier condition bien booléenne
+     */
+    public static void controleSemantiqueWhile(Node while_node, Tds tds){
+        //TODO
+    }
 
-
+    /**
+     * Vérifier que la variable a bien été déclaré qu'on y a accès
+     */
+    public static void controleSemantiqueAccessVariable(Node access_var, Tds tds){
+        //TODO
+    }
 
     // Utility function
 
@@ -102,14 +195,14 @@ public class SemanticControls {
         String nom_debut = children.get(0).getValue();
         String nom_fin = children.get(nombre_enfants - 1).getValue();
         if (!nom_debut.equals(nom_fin)){
-            System.out.println("Les noms donnée au début et à la fin du programme ne sont pas les mêmes : " + nom_debut + " et " + nom_fin);
-        }
+            printError("The file name at the beginning and at the end of the program don't match : " + nom_debut + " != " + nom_fin);
+         }
     }
 
     private static void test_double_declaration(Node node, Tds tds){
         boolean a = tds.containsSymbol(node.getValue());
         if (a){
-            System.out.println("Double déclaration de " + node.getValue());
+            printError(node.getValue() + " has already been declared in the current scope");
         }
     }
 
@@ -120,8 +213,7 @@ public class SemanticControls {
                 return;
             }
         }
-
-        System.out.println("Il n'y a pas de return dans le body de la fonction");
+        printError("Missing return statement in the function");
     }
 
     private static void test_borne_suf_inf(String borne_inf, String borne_sup){
@@ -130,12 +222,12 @@ public class SemanticControls {
             int sup = Integer.parseInt(borne_sup);
 
             if (sup < inf) {
-                System.out.println("La borne sup est inférieur à la borne inf");
+                printError("The upper bound is less than the lower bound");
             }
 
 
         } catch (NumberFormatException e) {
-            System.out.println("La borne inf ou sup n'est pas un entier");
+            printError("The lower or upper bound is not an integer");
         }
     }
 
@@ -151,7 +243,7 @@ public class SemanticControls {
             }
         }
 
-        System.out.println("Le type " + type + " n'est pas un type valide");
+        printError("The type " + type + " is not a valid type");
     }
 
     private static void test_condition_booleene(Node condition, Tds tds){
@@ -184,11 +276,11 @@ public class SemanticControls {
                 return;
             }
             else {
-                System.out.println("La condition n'est pas une condition booléenne car les opérandes des deux cotés du comparateur ne sont pas des entiers");
-            }
+                printError("The condition is not a valid boolean expression because the operands are not integers");
+          }
         }
         else {
-            System.out.println("La condition n'est pas une condition booléenne");
+            printError("The condition is not a valid boolean expression");
         }
     }
 
@@ -218,7 +310,7 @@ public class SemanticControls {
                     return true;
                 }
                 else {
-                    System.out.println("L'opération n'est pas valide car les opérandes ne sont pas des entiers");
+                    printError("Mismatch type for the operands of the arithmetic expression : " + type_left + " and " + type_right);
                     return false;
                 }
             }
@@ -227,7 +319,6 @@ public class SemanticControls {
     }
 
     private static String type_valeur(Node valeur, Tds tds){
-        //Vérifier si valeur.getValue()
         try {
             int a = Integer.parseInt(valeur.getValue());
             return "integer";
@@ -244,7 +335,7 @@ public class SemanticControls {
                     // if (symbol != null){
                     //     return symbol.getType();
                     // }
-                    System.out.println("Le type de " + valeur.getValue() + " n'existe pas");
+                    printError("The value " + valeur.getValue() + " is not a valid value");
                     return null;
                 }
             }
@@ -261,9 +352,11 @@ public class SemanticControls {
         errors.clear();
     }
 
-    private static void printError(String error) {
-        System.out.println(error);
-        errors.add(error);
+    public static String getName_file() {
+        return name_file;
     }
 
+    public static void setName_file(String name_file) {
+        SemanticControls.name_file = name_file;
+    }
 }

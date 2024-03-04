@@ -34,48 +34,10 @@ Declaration (DECLARATION) :
 nombre d’enfant indéterminée : ce sont successivement des blocs pouvant être de type declaration fonction ou déclaration de procédure, ou déclaration de type 
 Controles sémantiques : il y en a pas sur ce noeud
 
-Déclaration de fonction : 
-nom de fonction qui a comme enfants des noeuds de type param qui ont chacun comme enfant (un ou plusieurs nom de variable et un type) 
-valeur de retour 
-body de la fonction
-Controles sémantiques : 
-Si la valeur de retour n’est pas void, vérifier que le body contient bien un noeud return. En fait il doit toujours y avoir un return. 
-Vérifier qu’il n’y a aucune double déclaration
-Vérifier que les paramètres ont des types bien défini
-Vérifier que la valeur de retour est un type bien défini 
-
-Déclaration de procédure : pareil mais sans la valeur de retour
-Attention à vérifier que si il y a un enfant en plus, ce soit bien le nom de la procédure
-
 Body : 
 Suite d’instructions 
 Controles sémantiques : aucun de spécifique 
 
-For : 
-variable compteur 
-noeud in (dans le bon sens) ou noeud reverse (va dans l’autre sens)
-borne inf
-borne sup 
-un noeud body qui s’appelle loop
-Controles sémantiques : 
-Vérifier que la borne sup et la borne inf sont bien défini et que ce sont des entiers (surtout si ce sont des variables)
-Normalement la variable compteur n’a pas besoin d’avoir été défini et on sait déjà qu’il s’agit d’un ident donc pas besoin de le vérifier
-
-If : 
-Condition booleene
-bloc then servant de body 
-eventuellement une succession indéfini de elsif 
-un else à la fin
-Controles sémantiques : 
-Vérifier qu’il n’y rien après le else, pas d’autres elsif, et qu’il n’y pas rien d’autres sinon il y a un probleme
-Vérifier que le premier paramètre est bien une condition booleene 
-
-Déclaration de variable : 
-nom
-Type 
-Controles sémantiques : 
-Vérifier que le nom n’est pas déjà pris (double déclaration)
-Vérifier que le type est bien défini
 
 Affectation de variable : 
 nom de la variable 
@@ -83,25 +45,6 @@ Valeur affecté
 Controles sémantiques : 
 Attention à ce que la déclaration se fasse bien de gauche à droite et pas le contraire.
 vérifier que la valeur affecté correspond au type de déclaration
-
-Opérateur +, *, / :
-ca peut etre n’importe quel entier ou opérateur en dehors du =, du AND bien entendu, on ne peut pas avoir 2+3=5=6
-
-Opérateur - : 
-peut avoir un ou deux paramètres selon si c’est le moins normal ou le moins unaire mais dans tout les cas, il ne doit y avoir que des entiers
-
-Opérateur de comparaison de booleen : AND, OR : 
-expression booleene à gauche et à droite
-
-Opérateur de comparaison d’entier (<=, =) : 
-Entier à gauche et droite
-
-Appel de fonction :
-nom fonction ou procédure
-Succession de param
-Controles sémantiques : 
-Si la fonction a un type de retour, vérifier que le parent est bien un noeud d’affectation
-Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a déclaré dans la TDS 
 
 */
     public Semantic(SyntaxTree ast) {
@@ -121,7 +64,7 @@ Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a 
     public void constructorTDS(Node node, Tds tds) {
         //Il doit y avoir un if pour chaque type de l'enum NodeType
 
-        System.out.println(node.getType() + " " +  node.getValue());
+
         if (node.getChildren() == null) return;
         if (node.getType() == null) return;
 

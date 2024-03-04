@@ -3,10 +3,7 @@ package org.pcl;
 
 import org.pcl.grammaire.Grammar;
 import org.pcl.structure.automaton.Graph;
-import org.pcl.structure.tds.Symbol;
-import org.pcl.structure.tds.SymbolType;
-import org.pcl.structure.tds.Tds;
-import org.pcl.structure.tds.Semantic;
+import org.pcl.structure.tds.*;
 import org.pcl.structure.tree.SyntaxTree;
 import org.pcl.ig.PClWindows;
 
@@ -51,13 +48,14 @@ public class App {
             Grammar grammar = new Grammar(tokens, FileHandler.getFileName(file));
             SyntaxTree tree = grammar.getSyntaxTree();
             grammar.createAST();
+            SemanticControls.setName_file(FileHandler.getFileName(file));
             if (!grammar.error) {
                 grammar.nameNodes();
             }
             tree = grammar.ast;
 
-            //if (!grammar.error)
-            //new PCLWindows(tokens, tree,!grammar.error).start();
+            if (!grammar.error)
+                new PClWindows(tokens, tree,!grammar.error).start();
 
             if (grammar.error) {
                 System.out.println(ANSI_RED + "Analysis Syntax failed, no tree to display" + ANSI_RESET);
