@@ -56,4 +56,5 @@ public enum NodeType {
     EXPRESSION,
     DECLARATION,
     COMPARATOR,
+    CALL,
 }
