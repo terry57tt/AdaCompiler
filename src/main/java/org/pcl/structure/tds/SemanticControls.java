@@ -55,6 +55,7 @@ public class SemanticControls {
         List<Node> children = for_node.getChildren();
         String variable_compteur = children.get(0).getValue();
         String direction = children.get(1).getValue();
+
         String borne_inf = children.get(2).getValue();
         String borne_sup = children.get(3).getValue();
 
@@ -115,10 +116,41 @@ public class SemanticControls {
     /**
      * Appel de fonction :
      * Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a déclaré dans la TDS
-     * type renvoyé par la fonction correspond au type de la variable qui va stocker
+     * TODO : TDS renvoie le mauvais nombre de paramètres et ajouter Put() dans la TDS par défaut et ajouter log d'erreur pour tests
      */
     public static void controleSemantiqueAppelFonction(Node call_func, Tds tds) {
-        //TODO
+        List<Node> children = call_func.getChildren();
+        Node call_name = children.get(0);
+
+        int nb_params = children.size() - 1;
+
+        // call do not precise if it's a function or a procedure
+        Symbol function_symbol = tds.getSymbol(call_name.getValue(), SymbolType.FUNCTION);
+        Symbol procedure_symbol = tds.getSymbol(call_name.getValue(), SymbolType.PROCEDURE);
+        boolean is_function = function_symbol != null;
+        Symbol symbol = function_symbol != null ? function_symbol : procedure_symbol;
+
+        // function has already been declared
+        if (symbol == null){
+            printError("The call name " + call_name.getValue() + " has not been declared");
+        } // number of parameters match
+        else if(is_function && nb_params != ((FunctionSymbol) symbol).getNbParameters()){
+            printError("The number of parameters in the function \""+ call_name.getValue() +"\" doesn't match the number of parameters in the function declaration. Expected " + ((FunctionSymbol) symbol).getNbParameters() + " but got " + nb_params);
+        } else if(!is_function && nb_params != ((ProcedureSymbol) symbol).getNbParameters()){
+            printError("The number of parameters in the procedure \""+ call_name.getValue() +"\" call doesn't match the number of parameters in the procedure declaration. Expected " + ((ProcedureSymbol) symbol).getNbParameters() + " but got " + nb_params);
+        } else { // types match
+            for (int i = 1; i < children.size(); i++) {
+                String value_type = type_valeur(children.get(i), tds);
+                String expected_type;
+                if(is_function) {
+                    expected_type = ((FunctionSymbol) symbol).getParameters().get(i - 1).getType_variable();
+                } else expected_type = ((ProcedureSymbol) symbol).getParameters().get(i - 1).getType_variable();
+                if (!value_type.equals(expected_type)) {
+                    printError("The type of the parameter \"" + i + "\" in the call \"" + call_name.getValue() +"\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type);
+                }
+            }
+        }
+
     }
 
 

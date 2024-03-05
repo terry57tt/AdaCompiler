@@ -32,6 +32,10 @@ public class FunctionSymbol extends Symbol {
         return parameters;
     }
 
+    public int getNbParameters() {
+        return parameters.size();
+    }
+
     public void setParameters(List<ParamSymbol> parameters) {
         this.parameters = parameters;
     }

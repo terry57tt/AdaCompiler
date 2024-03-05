@@ -225,6 +225,10 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
             case EXPRESSION -> {
             }
+            case CALL -> {
+                System.out.println("CALL");
+                SemanticControls.controleSemantiqueAppelFonction(node, tds);
+            }
 
         }
     }
