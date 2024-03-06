@@ -2081,6 +2081,13 @@ public class Grammar {
                 currentNode.getParent().getChildren().remove(indexPapa);
             }
 
+            //variable declaration (ex :    N: Integer)
+            if(currentNode.getValue().equals("nodeIdentstar") && currentNode.getParent().getValue().equals("nodeDecl")){
+                int indexCurrentNode = currentNode.indexInBrothers();
+                currentNode.deleteFromParent();
+                currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
+            }
+
             //Fichier (root node)
             if (currentNode.getValue().equals("Fichier")) {
                 for (int i = 0; i < 9; i++) {
