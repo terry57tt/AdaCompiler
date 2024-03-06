@@ -146,7 +146,7 @@ public class Tds {
             cell.getContext().setTextAlignment(TextAlignment.LEFT);
             asciiTable.addRule();
         }
-        asciiTable.getRenderer().setCWC(new CWC_LongestWordMin(new int[]{-1,120}));
+        asciiTable.getRenderer().setCWC(new CWC_LongestWordMin(new int[]{-1,90}));
         return asciiTable.render();
     }
 

@@ -14,8 +14,13 @@ public class SemanticControls {
 
     private final  static List<String> errors = new ArrayList<>();
 
-    private static void printError(String error) {
-        System.out.println(name_file + ": " + ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + error);
+    private static void printError(String error, Node node) {
+        String numberLine;
+        if (node.getToken() != null)
+             numberLine = node.getToken().getLineNumber() + ": ";
+        else
+            numberLine = " ";
+        System.out.println(name_file + ":" + numberLine + ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + error);
         errors.add(error);
     }
 
@@ -37,7 +42,7 @@ public class SemanticControls {
     public static void controleSemantiqueDeclVariable(Node decl_var, Tds tds){
         test_double_declaration(decl_var, tds);
         List<Node> children = decl_var.getChildren();
-        test_existence_type(children.get(1).getValue(), tds);
+        test_existence_type(children.get(1).getValue(), tds, children.get(1));
     }
 
 
@@ -59,7 +64,7 @@ public class SemanticControls {
         String borne_inf = children.get(2).getValue();
         String borne_sup = children.get(3).getValue();
 
-        test_borne_suf_inf(borne_inf, borne_sup);
+        test_borne_suf_inf(borne_inf, borne_sup, for_node);
 
     }
 
@@ -109,7 +114,7 @@ public class SemanticControls {
         Node body = children.get(2);
 
         test_return_present(body);
-        test_existence_type(valeur_retour.getValue(), tds);
+        test_existence_type(valeur_retour.getValue(), tds, valeur_retour);
         test_double_declaration(decl_func, tds);
     }
 
@@ -132,12 +137,12 @@ public class SemanticControls {
 
         // function has already been declared
         if (symbol == null){
-            printError("The call name " + call_name.getValue() + " has not been declared");
+            printError("The call name " + call_name.getValue() + " has not been declared", call_name);
         } // number of parameters match
         else if(is_function && nb_params != ((FunctionSymbol) symbol).getNbParameters()){
-            printError("The number of parameters in the function \""+ call_name.getValue() +"\" doesn't match the number of parameters in the function declaration. Expected " + ((FunctionSymbol) symbol).getNbParameters() + " but got " + nb_params);
+            printError("The number of parameters in the function \""+ call_name.getValue() +"\" doesn't match the number of parameters in the function declaration. Expected " + ((FunctionSymbol) symbol).getNbParameters() + " but got " + nb_params, call_func);
         } else if(!is_function && nb_params != ((ProcedureSymbol) symbol).getNbParameters()){
-            printError("The number of parameters in the procedure \""+ call_name.getValue() +"\" call doesn't match the number of parameters in the procedure declaration. Expected " + ((ProcedureSymbol) symbol).getNbParameters() + " but got " + nb_params);
+            printError("The number of parameters in the procedure \""+ call_name.getValue() +"\" call doesn't match the number of parameters in the procedure declaration. Expected " + ((ProcedureSymbol) symbol).getNbParameters() + " but got " + nb_params, call_func);
         } else { // types match
             for (int i = 1; i < children.size(); i++) {
                 String value_type = type_valeur(children.get(i), tds);
@@ -146,7 +151,7 @@ public class SemanticControls {
                     expected_type = ((FunctionSymbol) symbol).getParameters().get(i - 1).getType_variable();
                 } else expected_type = ((ProcedureSymbol) symbol).getParameters().get(i - 1).getType_variable();
                 if (!value_type.equalsIgnoreCase(expected_type)) {
-                    printError("The type of the parameter \"" + i + "\" in the call \"" + call_name.getValue() +"\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type);
+                    printError("The type of the parameter \"" + children.get(i) + "\" in the call \"" + call_name.getValue() +"\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_name);
                 }
             }
         }
@@ -180,12 +185,12 @@ public class SemanticControls {
         Node valeur = children.get(1);
         Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
         if (symbol == null){
-            printError("The variable " + variable.getValue() + " has not been declared");
+            printError("The variable " + variable.getValue() + " has not been declared", variable);
         }
         else {
             String type_valeur = type_valeur(valeur, tds);
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
-                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur);
+                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
             }
         }
     }
@@ -229,14 +234,14 @@ public class SemanticControls {
         String nom_debut = children.get(0).getValue();
         String nom_fin = children.get(nombre_enfants - 1).getValue();
         if (!nom_debut.equalsIgnoreCase(nom_fin)){
-            printError("The file name at the beginning and at the end of the program don't match : " + nom_debut + " != " + nom_fin);
+            printError("The file name at the beginning and at the end of the program don't match : " + nom_debut + " != " + nom_fin, children.get(nombre_enfants - 1));
          }
     }
 
     private static void test_double_declaration(Node node, Tds tds){
         boolean a = tds.containsSymbol(node.getValue());
         if (a){
-            printError(node.getValue() + " has already been declared in the current scope");
+            printError(node.getValue() + " has already been declared in the current scope", node);
         }
     }
 
@@ -247,25 +252,25 @@ public class SemanticControls {
                 return;
             }
         }
-        printError("Missing return statement in the function");
+        printError("Missing return statement in the function", node);
     }
 
-    private static void test_borne_suf_inf(String borne_inf, String borne_sup){
+    private static void test_borne_suf_inf(String borne_inf, String borne_sup, Node node){
         try {
             int inf = Integer.parseInt(borne_inf);
             int sup = Integer.parseInt(borne_sup);
 
             if (sup < inf) {
-                printError("The upper bound is less than the lower bound");
+                printError("The upper bound is less than the lower bound", node);
             }
 
 
         } catch (NumberFormatException e) {
-            printError("The lower or upper bound is not an integer");
+            printError("The lower or upper bound is not an integer", node);
         }
     }
 
-    private static void test_existence_type(String type, Tds tds){
+    private static void test_existence_type(String type, Tds tds, Node node){
         List<String> typesValide = new ArrayList<>();
         typesValide.add("integer");
         typesValide.add("boolean");
@@ -289,7 +294,7 @@ public class SemanticControls {
             }
         }
 
-        printError("The type " + type + " is not a valid type");
+        printError("The type " + type + " is not a valid type", node);
     }
 
     private static void test_condition_booleene(Node condition, Tds tds){
@@ -322,11 +327,11 @@ public class SemanticControls {
                 return;
             }
             else {
-                printError("The condition is not a valid boolean expression because the operands are not integers");
+                printError("The condition is not a valid boolean expression because the operands are not integers", left);
           }
         }
         else {
-            printError("The condition is not a valid boolean expression");
+            printError("The condition is not a valid boolean expression", condition);
         }
     }
 
@@ -356,7 +361,7 @@ public class SemanticControls {
                     return true;
                 }
                 else {
-                    printError("Mismatch type for the operands of the arithmetic expression : " + type_left + " and " + type_right);
+                    printError("Mismatch type for the operands of the arithmetic expression : " + type_left + " and " + type_right, left);
                     return false;
                 }
             }
@@ -386,7 +391,7 @@ public class SemanticControls {
                 }
                 else {
                     // Affiche une erreur si la valeur n'est pas valide
-                    printError("The value " + valeur.getValue() + " is not a valid value");
+                    printError("The value " + valeur.getValue() + " is not a valid value", valeur);
                     return " ";
                 }
             }
