@@ -20,7 +20,7 @@ public class SemanticControls {
              numberLine = node.getToken().getLineNumber() + ": ";
         else
             numberLine = " ";
-        System.out.println(name_file + ":" + numberLine + ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + error);
+        System.out.println(name_file + ":" + numberLine + ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + error + "\n");
         errors.add(error);
     }
 
