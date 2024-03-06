@@ -240,7 +240,21 @@ public class SemanticControls {
     }
 
     private static void test_double_declaration(Node node, Tds tds){
-        boolean a = tds.containsSymbol(node.getValue());
+        SymbolType type;
+        if (node.getType() == NodeType.DECL_VAR){
+            type = SymbolType.VARIABLE;
+        }
+        else if (node.getType() == NodeType.DECL_FUNC){
+            type = SymbolType.FUNCTION;
+        }
+        else if (node.getType() == NodeType.DECL_PROC){
+            type = SymbolType.PROCEDURE;
+        }
+        else {
+            return;
+        }
+
+        boolean a = tds.containsSymbol(node.getChildren().get(0).getValue(), type);
         if (a){
             printError(node.getValue() + " has already been declared in the current scope", node);
         }

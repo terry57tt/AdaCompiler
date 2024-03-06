@@ -107,13 +107,16 @@ public class Tds {
         this.symbols.addAll(tds.getSymbols());
     }
 
-    public boolean containsSymbol(String SymbolName) {
+    public boolean containsSymbol(String SymbolName, SymbolType type) {
         for (Symbol symbol : symbols) {
-            if (symbol.getName().equals(SymbolName)) {
+            if (symbol.getName().equals(SymbolName) && symbol.getType() == type) {
                 return true;
             }
         }
-        boolean a = parent.containsSymbol(SymbolName);
+        if (parent == null) {
+            return false;
+        }
+        boolean a = parent.containsSymbol(SymbolName, type);
         if (a) {
             return true;
         }
@@ -126,8 +129,10 @@ public class Tds {
                 return symbol;
             }
         }
-        if (parent != null)
+        if (parent != null) {
+            System.out.println(parent.getName());
             return parent.getSymbol(SymbolName, type);
+        }
         return null;
     }
 
