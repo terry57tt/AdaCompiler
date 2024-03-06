@@ -145,7 +145,7 @@ public class SemanticControls {
                 if(is_function) {
                     expected_type = ((FunctionSymbol) symbol).getParameters().get(i - 1).getType_variable();
                 } else expected_type = ((ProcedureSymbol) symbol).getParameters().get(i - 1).getType_variable();
-                if (!value_type.equals(expected_type)) {
+                if (!value_type.equalsIgnoreCase(expected_type)) {
                     printError("The type of the parameter \"" + i + "\" in the call \"" + call_name.getValue() +"\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type);
                 }
             }
@@ -228,7 +228,7 @@ public class SemanticControls {
         int nombre_enfants = children.size();
         String nom_debut = children.get(0).getValue();
         String nom_fin = children.get(nombre_enfants - 1).getValue();
-        if (!nom_debut.equals(nom_fin)){
+        if (!nom_debut.equalsIgnoreCase(nom_fin)){
             printError("The file name at the beginning and at the end of the program don't match : " + nom_debut + " != " + nom_fin);
          }
     }
@@ -271,10 +271,17 @@ public class SemanticControls {
         typesValide.add("boolean");
         typesValide.add("char");
 
-        Symbol createdType = tds.getSymbol(type,SymbolType.TYPE);
-        if (createdType != null){
+        //Symbol createdType = tds.getSymbol(type,SymbolType.TYPE);
+        //if (createdType != null){
+        //    return;
+        // }
+
+        Symbol symbol = tds.getSymbol(type, SymbolType.TYPE_ACCESS);
+        Symbol symbol2 = tds.getSymbol(type, SymbolType.TYPE_RECORD);
+        if (symbol != null || symbol2 != null){
             return;
         }
+
 
         for (String t : typesValide) {
             if (type.equalsIgnoreCase(t)){
@@ -308,7 +315,7 @@ public class SemanticControls {
             List<Node> children = condition.getChildren();
             Node left = children.get(0);
             Node right = children.get(1);
-            if (type_valeur(left, tds) == "integer"){
+            if (type_valeur(left, tds).equalsIgnoreCase("integer")){
                 return;
             }
             else if (test_expression_arithmetique(right, tds)) {
@@ -359,23 +366,28 @@ public class SemanticControls {
 
     private static String type_valeur(Node valeur, Tds tds){
         try {
-            int a = Integer.parseInt(valeur.getValue());
+            // Essaie de parser la valeur en entier
+            Integer.parseInt(valeur.getValue());
             return "integer";
-        } catch (Exception e) {
-            try {
-                boolean b = Boolean.parseBoolean(valeur.getValue());
+        } catch (NumberFormatException e) {
+            String valueStr = valeur.getValue().toLowerCase();
+            if (valueStr.equalsIgnoreCase("true") || valueStr.equalsIgnoreCase("false")) {
                 return "boolean";
-            } catch (Exception e2) {
-                if (valeur.getValue().length() == 1){
-                    return "char";
+            } else if (valeur.getValue().length() == 1) {
+                System.out.println(" " + valeur.getValue() + " " + valeur.getType());
+                return "char";
+            } else {
+                Symbol symbol = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_ACCESS);
+                Symbol symbol2 = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_RECORD);
+                if (symbol != null) {
+                    return ((TypeAccessSymbol) symbol).getNom();
+                } else if (symbol2 != null) {
+                    return ((TypeRecordSymbol) symbol2).getNom();
                 }
                 else {
-                    // Symbol symbol = tds.getSymbol(valeur.getValue());
-                    // if (symbol != null){
-                    //     return symbol.getType();
-                    // }
+                    // Affiche une erreur si la valeur n'est pas valide
                     printError("The value " + valeur.getValue() + " is not a valid value");
-                    return null;
+                    return " ";
                 }
             }
         }
