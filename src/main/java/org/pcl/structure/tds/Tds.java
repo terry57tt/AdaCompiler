@@ -136,7 +136,7 @@ public class Tds {
         System.out.println("\n");
         AsciiTable asciiTable = new AsciiTable();
         asciiTable.addRule();
-        System.out.println(" TDS - Région:" + region + " Imbrication:" + imbrication);
+        System.out.println(" TDS - Région:" + region + " Imbrication:" + imbrication + " Nom : " + name);
         asciiTable.addRow("Nom", "Contenu");
         asciiTable.addRule();
 

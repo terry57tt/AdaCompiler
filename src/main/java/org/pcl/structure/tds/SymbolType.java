@@ -8,7 +8,9 @@ public enum SymbolType {
     FUNCTION,
     PROCEDURE,
     VARIABLE,
-    PARAM
+    PARAM,
+    TYPE_RECORD,
+    TYPE_ACCESS
 
 
 
