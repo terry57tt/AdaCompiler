@@ -124,7 +124,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 tds.addSymbol(variableSymbol);
             }
             case DECL_PROC -> {
-                controleSemantiqueDeclProcedure(node, tds);
+
                 List<Node> children = node.getChildren();
                 String nom_procedure = children.get(0).getValue();
                 Node body = children.get(1);
@@ -178,9 +178,9 @@ vérifier que la valeur affecté correspond au type de déclaration
                     );
                 }
                 constructorTDS(body, tds_procedure);
+                controleSemantiqueDeclProcedure(node, tds_procedure);
             }
             case DECL_FUNC -> {
-                controleSemantiqueDeclFonction(node, tds);
                 List<Node> children = node.getChildren();
                 String nom_fonction = children.get(0).getValue();
                 String valeur_retour = children.get(1).getChildren().get(0).getValue();
@@ -252,6 +252,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                         constructorTDS(body, tds_function);
                     }
                 }
+                controleSemantiqueDeclFonction(node, tds_function);
             }
 
             case ELSE -> {
@@ -292,7 +293,6 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
             }
             case FOR -> {
-                controleSemantiqueFor(node);
                 List<Node> children = node.getChildren();
                 String variable_compteur = children.get(0).getValue();
                 String direction = children.get(1).getValue();
@@ -304,6 +304,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, variable_compteur, "INTEGER");
                 tds_for.addSymbol(variableSymbol);
                 constructorTDS(loop, tds_for);
+                controleSemantiqueFor(node, tds_for);
             }
             case WHILE -> {
                 List<Node> children = node.getChildren();

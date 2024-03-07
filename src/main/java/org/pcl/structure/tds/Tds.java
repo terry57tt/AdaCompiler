@@ -135,6 +135,18 @@ public class Tds {
         return null;
     }
 
+
+    public Symbol getSymbol(String SymbolName) {
+        for (Symbol symbol : symbols) {
+            if (symbol.getName().equals(SymbolName)) {
+                return symbol;
+            }
+        }
+        if (parent != null) {
+            return parent.getSymbol(SymbolName);
+        }
+        return null;
+    }
     @Override
     public String toString() {
         System.out.println("\n");

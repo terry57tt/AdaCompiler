@@ -57,7 +57,7 @@ public class SemanticControls {
      * Vérifier que la borne sup et la borne inf sont bien défini et que ce sont des entiers (surtout si ce sont des variables)
      * Normalement la variable compteur n’a pas besoin d’avoir été défini et on sait déjà qu’il s’agit d’un ident donc pas besoin de le vérifier
      */
-    public static void controleSemantiqueFor(Node for_node){
+    public static void controleSemantiqueFor(Node for_node, Tds tds){
         List<Node> children = for_node.getChildren();
         String variable_compteur = children.get(0).getValue();
         String direction = children.get(1).getValue();
@@ -452,8 +452,9 @@ public class SemanticControls {
                 } else if (symbol2 != null) {
                     return ((TypeRecordSymbol) symbol2).getNom();
                 }
+                if (tds.getSymbol(valeur.getValue()) != null)
+                    return tds.getSymbol(valeur.getValue()).getName();
                 else {
-                    // Affiche une erreur si la valeur n'est pas valide
                     printError("The value " + valeur.getValue() + " is not a valid value", valeur);
                     return " ";
                 }
