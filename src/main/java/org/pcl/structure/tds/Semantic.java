@@ -54,6 +54,7 @@ vérifier que la valeur affecté correspond au type de déclaration
     public Semantic(SyntaxTree ast) {
         buildTds(ast);
         controleSemantiqueFile(ast.getRootNode());
+
     }
 
     public Tds getGlobalTds() {
@@ -74,9 +75,14 @@ vérifier que la valeur affecté correspond au type de déclaration
 
         switch (node.getType()) {
             case FILE, DECLARATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, RETURN, BEGIN,
-                    AND, OR, NOT, IN, INOUT, MODE, ADDITION, SUBSTRACTION, MULTIPLY, REM, DIVIDE,
-                    RECORD, ACCESS, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE, NULL, INITIALIZATION, FIELD, IS,
-                    EQUAL, SLASH_EQUAL, INFERIOR, INFERIOR_EQUAL, SUPERIOR, SUPERIOR_EQUAL -> fillTDsChild(node, tds);
+                    NOT, IN, INOUT, MODE, RECORD, ACCESS, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE,
+                    NULL, INITIALIZATION, FIELD, IS-> fillTDsChild(node, tds);
+
+            case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, OR, AND,
+                    EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR -> {
+                fillTDsChild(node, tds);
+                controleSemantiqueOperateur(node, tds);
+            }
 
             case PROGRAM -> {
             }
