@@ -114,6 +114,8 @@ public class SemanticControls {
         List<Node> children = decl_func.getChildren();
         Node valeur_retour = children.get(1);
         Node body = children.get(2);
+        if (children.get(2).getType() == NodeType.DECLARATION)
+            body = children.get(3);
         valeur_retour = valeur_retour.getChild(0);
         test_return_present(body);
         test_existence_type(valeur_retour.getValue(), tds, valeur_retour);
@@ -196,6 +198,24 @@ public class SemanticControls {
             String type_valeur = type_valeur(valeur, tds);
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
                     printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
+            }
+        }
+    }
+
+    public static void controleSemantiqueAffectationDecl(Node affectation, Tds tds){
+        List<Node> children = affectation.getChildren();
+        Node variable = children.get(0);
+        Node valeur = children.get(1);
+        Symbol symbol = tds.getSymbol(variable.getChildren().get(0).getValue(), SymbolType.VARIABLE);
+        if (symbol == null){
+            printError("The variable " + variable.getValue() + " has not been declared", variable);
+        } else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
+                && type_valeur(valeur, tds).equalsIgnoreCase("operator")) {
+            test_expression_arithmetique(valeur, tds);
+        } else {
+            String type_valeur = type_valeur(valeur, tds);
+            if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
+                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
             }
         }
     }

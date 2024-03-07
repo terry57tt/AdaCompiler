@@ -24,6 +24,10 @@ public class VariableSymbol extends Symbol {
             return value;
         }
 
+        public void setValue(String value) {
+            this.value = value;
+        }
+
     @Override
     public String toString() {
         return "VARIABLE - Type: " + type_variable + " with value: " + value;

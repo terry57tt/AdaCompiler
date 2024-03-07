@@ -87,6 +87,16 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
 
             case AFFECTATION -> {
+                if (node.getChildren().get(0).getType() == NodeType.DECL_VAR) {
+                    List<Node> children = node.getChildren();
+                    String nom = children.get(0).getChildren().get(0).getValue();
+                    VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom , children.get(0).getChildren().get(1).getValue());
+
+                    controleSemantiqueDeclVariable(node, tds);
+                    tds.addSymbol(variableSymbol);
+                    controleSemantiqueAffectationDecl(node, tds);
+                    return;
+                }
                 controleSemantiqueAffectation(node, tds);
             }
 
@@ -125,8 +135,8 @@ vérifier que la valeur affecté correspond au type de déclaration
                 String nom = children.get(0).getValue();
                 String type = children.get(1).getValue();
                 VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
-                tds.addSymbol(variableSymbol);
                 controleSemantiqueDeclVariable(node, tds);
+                tds.addSymbol(variableSymbol);
             }
             case DECL_PROC -> {
 
