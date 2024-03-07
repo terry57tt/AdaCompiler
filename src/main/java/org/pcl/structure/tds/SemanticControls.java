@@ -311,7 +311,7 @@ public class SemanticControls {
         }
         Symbol symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_ACCESS);
         if(symbolField == null) symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_RECORD);
-        if(symbolField == null) printError("The field" + field.getValue() + "doesn't exist for structure" + structure.getType().toString(), field);
+        if(symbolField == null) printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue() , field);
     }
 
 
