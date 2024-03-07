@@ -274,7 +274,8 @@ public class Node {
                 this.type = NodeType.ADDITION;
                 break;
             case "-":
-                this.type = NodeType.SUBSTRACTION;
+                if(this.children.size()==1) this.type = NodeType.NEGATIVE_SIGN;
+                else this.type = NodeType.SUBSTRACTION;
                 break;
             case "*":
                 this.type = NodeType.MULTIPLY;

@@ -69,7 +69,6 @@ vérifier que la valeur affecté correspond au type de déclaration
     public void constructorTDS(Node node, Tds tds) {
         //Il doit y avoir un if pour chaque type de l'enum NodeType
 
-
         if (node.getChildren() == null) return;
         if (node.getType() == null) return;
 
