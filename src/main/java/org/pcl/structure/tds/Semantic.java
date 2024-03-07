@@ -242,6 +242,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                             for (int i = 0; i < children_number - 1; i++) {
                                 String nom = p.getChildren().get(i).getValue();
                                 String type = p.getChildren().get(children_number -1).getValue();
+                                System.out.println(type);
                                 ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
                                 paramSymbols.add(paramSymbol);
                             }

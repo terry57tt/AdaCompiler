@@ -434,6 +434,7 @@ public class SemanticControls {
 
                 String type_left = type_valeur(left, tds);
                 String type_right = type_valeur(right, tds);
+
                 if (type_left.equalsIgnoreCase("integer") && type_right.equalsIgnoreCase("integer")){
                     return true;
                 }
@@ -460,10 +461,9 @@ public class SemanticControls {
             } else if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
                 return "char";
             } else if (operators.contains(valeur.getType())) {
+                if(test_expression_arithmetique(valeur, tds)) return "integer";
                 return "operator";
-            } else if (valeur.getType()== NodeType.NEGATIVE_SIGN) {
-                return type_valeur(valeur.firstChild(), tds);
-            } else {
+            }  else {
                 Symbol symbol = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_ACCESS);
                 Symbol symbol2 = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_RECORD);
                 if (symbol != null) {
@@ -472,7 +472,7 @@ public class SemanticControls {
                     return ((TypeRecordSymbol) symbol2).getNom();
                 }
                 if (tds.getSymbol(valeur.getValue()) != null)
-                    return tds.getSymbol(valeur.getValue()).getName();
+                    return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
                 else {
                     printError("The value " + valeur.getValue() + " is not a valid value", valeur);
                     return " ";
