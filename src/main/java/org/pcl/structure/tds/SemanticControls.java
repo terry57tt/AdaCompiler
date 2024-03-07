@@ -450,8 +450,9 @@ public class SemanticControls {
                 return "char";
             } else if (operators.contains(valeur.getType())) {
                 return "operator";
-            }
-            else {
+            } else if (valeur.getType()== NodeType.NEGATIVE_SIGN) {
+                return type_valeur(valeur.firstChild(), tds);
+            } else {
                 Symbol symbol = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_ACCESS);
                 Symbol symbol2 = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_RECORD);
                 if (symbol != null) {
