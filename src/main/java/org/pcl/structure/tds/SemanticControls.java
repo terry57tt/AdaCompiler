@@ -6,6 +6,7 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /** List all the semantic controls. */
@@ -190,11 +191,13 @@ public class SemanticControls {
         Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
         if (symbol == null){
             printError("The variable " + variable.getValue() + " has not been declared", variable);
-        }
-        else {
+        } else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
+                && type_valeur(valeur, tds).equalsIgnoreCase("operator")) {
+            test_expression_arithmetique(valeur, tds);
+        } else {
             String type_valeur = type_valeur(valeur, tds);
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
-                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
+                    printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
             }
         }
     }
@@ -216,7 +219,7 @@ public class SemanticControls {
         switch (operateur.getType()){
             case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR:
                 if(!test_expression_arithmetique(operateur, tds)){
-                    printError("The operator " + operateur.getValue() + " is not a valid arithmetic expression", operateur);
+                    printError("The operation " + operateur.getValue() + " is not a valid arithmetic expression", operateur);
                 }
                 break;
             case AND, OR:
@@ -424,7 +427,7 @@ public class SemanticControls {
                     return true;
                 }
                 else {
-                    printError("Mismatch type for the operands of the arithmetic expression : " + type_left + " and " + type_right, left);
+                    printError("Operation \'" + node.getValue() + "\' between two different types : " + type_left + " and " + type_right, node);
                     return false;
                 }
             }
@@ -433,6 +436,7 @@ public class SemanticControls {
     }
 
     private static String type_valeur(Node valeur, Tds tds){
+        List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
         try {
             ;
             // Essaie de parser la valeur en entier
@@ -444,7 +448,10 @@ public class SemanticControls {
                 return "boolean";
             } else if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
                 return "char";
-            } else {
+            } else if (operators.contains(valeur.getType())) {
+                return "operator";
+            }
+            else {
                 Symbol symbol = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_ACCESS);
                 Symbol symbol2 = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_RECORD);
                 if (symbol != null) {
