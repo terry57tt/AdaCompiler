@@ -11,8 +11,9 @@ public abstract class Symbol {
 
     private String name;
 
-    public Symbol(SymbolType type, int deplacement) {
+    public Symbol(SymbolType type, int deplacement, String name) {
         this.type = type;
+        this.name = name;
         this.deplacement = deplacement;
     }
 
@@ -32,6 +33,5 @@ public abstract class Symbol {
     public void setName(String name) {
         this.name = name;
     }
-
 
 }

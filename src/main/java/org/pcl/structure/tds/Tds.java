@@ -1,6 +1,10 @@
 package org.pcl.structure.tds;
 
+import de.vandermeer.asciitable.AT_Cell;
 import de.vandermeer.asciitable.AsciiTable;
+import de.vandermeer.asciitable.CWC_LongestLine;
+import de.vandermeer.asciitable.CWC_LongestWordMin;
+import de.vandermeer.asciithemes.a7.A7_Grids;
 import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 
 import java.util.ArrayList;
@@ -103,13 +107,16 @@ public class Tds {
         this.symbols.addAll(tds.getSymbols());
     }
 
-    public boolean containsSymbol(String SymbolName) {
+    public boolean containsSymbol(String SymbolName, SymbolType type) {
         for (Symbol symbol : symbols) {
-            if (symbol.getName().equals(SymbolName)) {
+            if (symbol.getName().equals(SymbolName) && symbol.getType() == type) {
                 return true;
             }
         }
-        boolean a = parent.containsSymbol(SymbolName);
+        if (parent == null) {
+            return false;
+        }
+        boolean a = parent.containsSymbol(SymbolName, type);
         if (a) {
             return true;
         }
@@ -122,43 +129,36 @@ public class Tds {
                 return symbol;
             }
         }
-        if (parent != null)
+        if (parent != null) {
+            System.out.println(parent.getName());
             return parent.getSymbol(SymbolName, type);
+        }
         return null;
     }
 
     @Override
     public String toString() {
         System.out.println("\n");
-        // AsciiTable asciiTable = new AsciiTable();
-        // asciiTable.addRule();
-        // asciiTable.addRow("TDS - Région:" + region + " Imbrication:" + imbrication, " Déplacement");
-        // asciiTable.addRule();
-
-        // for (Symbol symbol : symbols) {
-        //     asciiTable.addRow(symbol, symbol.getDeplacement());
-        // }
-        // if (!symbols.isEmpty())
-        //     asciiTable.addRule();
-
-        // asciiTable.setTextAlignment(TextAlignment.CENTER);
-        // return asciiTable.render();
-
         AsciiTable asciiTable = new AsciiTable();
         asciiTable.addRule();
-        asciiTable.addRow("TDS" + this.name, " nom du symbole", " type du symbole", " déplacement");
+        System.out.println(" TDS - Région:" + region + " Imbrication:" + imbrication + " Nom : " + name);
+        asciiTable.addRow("Nom", "Contenu");
+        asciiTable.addRule();
 
         for (Symbol symbol : symbols) {
+            AT_Cell cell = asciiTable.addRow(symbol.getName(), symbol).getCells().get(1);
+            cell.getContext().setPadding(1);
+            cell.getContext().setTextAlignment(TextAlignment.LEFT);
             asciiTable.addRule();
-            asciiTable.addRow("Symbol", symbol.getName(), symbol.getType(), symbol.getDeplacement());
         }
+        asciiTable.getRenderer().setCWC(new CWC_LongestWordMin(new int[]{-1,90}));
+        return asciiTable.render();
+    }
 
-        for (Tds tds : this.child) {
-            System.out.println(tds.toString());
+    public void displayWithChild() {
+        System.out.println(this);
+        for (Tds tds : child) {
+            tds.displayWithChild();
         }
-
-        System.out.println("\n");
-
-        return asciiTable.render(); 
     }
 }

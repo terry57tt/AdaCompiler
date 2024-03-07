@@ -1487,9 +1487,12 @@ public class Grammar {
         // create AST from parse tree
         if(this.syntaxTree == null){
             System.out.println("Il n'y a pas encore de parse tree.");
+            error = true;
             return;
         }
         this.ast = this.syntaxTree;
+
+        if (error) return;
 
         meaningfulNode();
         reduceChains();
@@ -1754,6 +1757,13 @@ public class Grammar {
             if(currentNode.getValue().equalsIgnoreCase("moinsUnaire") && !currentNode.isFinal()){
                 currentNode.setValue("-");
             }
+            if(currentNode.getValue().equals("nodeDecl")
+                    && (currentNode.getParent().getValue().equals("declaration")
+                            || currentNode.getParent().getValue().equals("function")
+                            || currentNode.getParent().getValue().equals("procedure")
+                            )){
+                currentNode.setValue("variable");
+            }
 
 
             //ajout des enfants du noeud courant au début de la liste des noeuds à visiter
@@ -1837,11 +1847,17 @@ public class Grammar {
             //then
             if (currentNode.getValue().contains("nodeIntr1")
                     && (currentNode.getParent().getValue().equals("nodeIntr1If") || currentNode.getParent().getValue().equals("nodeIntr1Elsif"))) {
-                if (currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("then")
+                if (currentNode.indexInBrothers()!=0 && currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("then")
                         && currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).isFinal()) {
                     currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).deleteFromParentTransferringChildTokenTo(currentNode); //delete node then
                     currentNode.setValue("nodeIntr1Then");
                     currentNode.setMeaningful(true);
+                }
+                if (currentNode.indexInBrothers()!=0 && currentNode.getParent().getChild(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("nodeIntr1Then")
+                        && !currentNode.getValue().contains("Elsif") && !currentNode.getValue().contains("Else")) {
+                    int indexCurrentNode = currentNode.indexInBrothers();
+                    currentNode.deleteFromParent();
+                    currentNode.getParent().getChild(indexCurrentNode - 1).addChild(currentNode);
                 }
             }
             //loop
@@ -1896,6 +1912,26 @@ public class Grammar {
                 currentNode.setValue(currentNode.getToken().getValue());
                 currentNode.setMeaningful(true);
             }
+
+
+            /*//access in function block, return type
+            if(currentNode.getValue().equalsIgnoreCase("nodeType") && currentNode.firstChild().getValue().equalsIgnoreCase("access")
+                    && currentNode.getParent().getValue().equals("function")){
+                if (isNodePreviousToken(currentNode.firstChild(), "return")) {
+                    int indexCurrent = currentNode.indexInBrothers();
+                    currentNode.deleteFromParent();
+                    currentNode.getParent().getChild(indexCurrent - 1).addChild(currentNode);
+                }
+            }*/
+
+            //access without type block
+            if(currentNode.getValue().equalsIgnoreCase("access") && currentNode.getToken().getType() == TokenType.KEYWORD
+                    && currentNode.getParent().getValue().equals("nodeType")){
+                currentNode.deleteFromParentTransferringChildTokenToParent();
+                currentNode.getParent().setValue(currentNode.getToken().getValue());
+                currentNode.getParent().setMeaningful(true);
+            }
+
             //record in type block
             if (currentNode.getValue().equals("nodeDecl3") && currentNode.getParent().getValue().equals("declaration")
                     && currentNode.firstChild().getValue().equalsIgnoreCase("record")) {
@@ -1954,7 +1990,8 @@ public class Grammar {
             if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getToken().getType() == TokenType.KEYWORD
                     && currentNode.getParent().getValue().equalsIgnoreCase("function")) {
                 int indexCurrentNode = currentNode.indexInBrothers();
-                if (currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken().getType() == TokenType.IDENTIFIER
+                if (currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken() != null
+                        && currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken().getType() == TokenType.IDENTIFIER
                         && currentNode.getParent().getChildren().get(indexCurrentNode + 1).isFinal()) {
                     Node nextBrother = currentNode.getParent().getChildren().get(indexCurrentNode + 1);
                     currentNode.getParent().getChildren().get(indexCurrentNode + 1).deleteFromParent();
@@ -1962,6 +1999,9 @@ public class Grammar {
                 }
                 currentNode.setMeaningful(true);
             }
+
+
+
             //is in function block and procedure block and fichier
             if (currentNode.getValue().equalsIgnoreCase("is") && currentNode.getToken().getType() == TokenType.KEYWORD
                     && (currentNode.getParent().getValue().equalsIgnoreCase("function") || currentNode.getParent().getValue().equalsIgnoreCase("procedure") || currentNode.getParent().getValue().equalsIgnoreCase("Fichier"))) {
@@ -1983,8 +2023,9 @@ public class Grammar {
                 currentNode.setMeaningful(true);
             }
             //final return in function block
-            if (currentNode.getValue().equals("nodeIntr1") && currentNode.getParent().getValue().equals("body")
-                    && currentNode.firstChild().getValue().equalsIgnoreCase("return")) {
+            if (currentNode.getValue().equals("nodeIntr1")
+                    && currentNode.firstChild().getValue().equalsIgnoreCase("return")
+                    && !currentNode.getValue().equals("nodeIntr1Then")) {
                 currentNode.setValue("nodeIntr1Return");
                 currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
                 currentNode.setMeaningful(true);
@@ -1997,6 +2038,19 @@ public class Grammar {
                     && isNodeNextToken(currentNode.firstChild(), "(")) {
                 currentNode.setValue("call");
             }
+            if(currentNode.getValue().contains("nodeIntr")
+                    && !currentNode.getValue().equals("nodeIntr1")
+                    && currentNode.firstChild().isFinal()
+                    && currentNode.firstChild().getToken().getType() == TokenType.IDENTIFIER
+                    && isNodeNextToken(currentNode.firstChild(), "(")){
+                    Node newNode = new Node();
+                    newNode.setValue("call");
+                    newNode.addChildren(currentNode.getChildren());
+                    currentNode.deleteChildren();
+                    currentNode.addChild(newNode);
+            }
+
+
             //function call parameters
             if (currentNode.getValue().contains("nodeIntr") && currentNode.getParent().getValue().equals("call")) {
                 int indexCurrentNode = currentNode.indexInBrothers();
@@ -2053,6 +2107,13 @@ public class Grammar {
                 currentNode.getParent().getChildren().remove(indexPapa);
             }
 
+            //variable declaration (ex :    N: Integer)
+            if(currentNode.getValue().equals("nodeIdentstar") && currentNode.getParent().getValue().equals("nodeDecl")){
+                int indexCurrentNode = currentNode.indexInBrothers();
+                currentNode.deleteFromParent();
+                currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
+            }
+
             //Fichier (root node)
             if (currentNode.getValue().equals("Fichier")) {
                 for (int i = 0; i < 9; i++) {
@@ -2060,6 +2121,54 @@ public class Grammar {
                 }
                 currentNode.setMeaningful(true);
             }
+
+            //Character'Val
+            if (currentNode.getValue().equals("nodeFacteur") && currentNode.firstChild().getValue().equalsIgnoreCase("character")
+                    && currentNode.getChild(1).getValue().equals("'")
+                    && currentNode.getChild(2).getValue().equalsIgnoreCase("val")){
+                currentNode.firstChild().deleteFromParent();
+                currentNode.firstChild().deleteFromParent();
+                currentNode.firstChild().deleteFromParent();
+                currentNode.setValue("Character'Val");
+                currentNode.setMeaningful(true);
+            }
+
+            //coma
+            if (currentNode.getValue().equals(",") && currentNode.getToken().getType() == TokenType.SEPARATOR){
+                currentNode.deleteFromParent();
+            }
+
+
+            //in out
+            if(currentNode.getValue().equals("nodeMode") && currentNode.getChildren().size()==2
+                    && currentNode.firstChild().getValue().equals("in") && currentNode.getChild(1).getValue().equals("out")){
+                currentNode.setValue("in out");
+                currentNode.firstChild().deleteFromParent();
+                currentNode.firstChild().deleteFromParent();
+                currentNode.setMeaningful(true);
+            }
+
+
+            // if return is under then with child after return
+            if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getToken().getType() == TokenType.KEYWORD
+                    && currentNode.getParent().getValue().equals("nodeIntr1Then")) {
+                ArrayList<Node> brothers = currentNode.getParent().getChildren();
+                currentNode.getParent().deleteChildren();
+                brothers.remove(currentNode);
+                currentNode.addChildren(brothers);
+                currentNode.getParent().addChild(currentNode);
+            }
+
+            //if return is under then with nothing to return
+            if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getToken().getType() == TokenType.KEYWORD
+                    && isNodePreviousToken(currentNode, "then") && isNodeNextToken(currentNode, ";")
+                    && currentNode.getParent().getChildren().size() >= 2) {
+                System.out.println(currentNode);
+                int index = currentNode.indexInBrothers();
+                currentNode.deleteFromParent();
+                currentNode.getParent().getChildren().get(index - 1).addChild(currentNode);
+            }
+
 
 
             //ajout des enfants du noeud courant au début de la liste des noeuds à visiter

@@ -323,6 +323,8 @@ public class Node {
                 break;
             case "nodeDecl":
                 this.type = NodeType.DECL_VAR;
+            case "call":
+                this.type = NodeType.CALL;
             default:
                 break;
         }

@@ -1,20 +1,18 @@
 import org.junit.jupiter.api.Test;
-import org.pcl.structure.tds.Symbol;
-import org.pcl.structure.tds.SymbolType;
-import org.pcl.structure.tds.Tds;
+import org.pcl.structure.tds.*;
 
 public class TdsTest {
 /*
     @Test
     public void testTds() {
-        Tds tds = new Tds();
-        Symbol symbol = new Symbol(SymbolType.IDENTIFIER, "a", 0);
+        Tds tds = new Tds("");
+        Symbol symbol = new ParamSymbol(SymbolType.IDENTIFIER, 0, "", "");
         tds.addSymbol(symbol);
         assert tds.getSymbols().size() == 1;
         assert tds.getSymbols().get(0).equals(symbol);
         assert tds.getParent() == null;
         assert tds.getImbrication() == 0;
-        Tds child = new Tds();
+        Tds child = new Tds("");
         tds.addChild(child);
         assert tds.getSymbols().size() == 1;
         assert tds.getSymbols().get(0).equals(symbol);
