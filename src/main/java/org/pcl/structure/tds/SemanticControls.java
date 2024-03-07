@@ -229,7 +229,6 @@ public class SemanticControls {
             test_expression_arithmetique(valeur, tds);
         } else {
             String type_valeur = type_valeur(valeur, tds);
-            System.out.println(valeur.getChildren().size());
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
                     printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + valeur, variable);
             }

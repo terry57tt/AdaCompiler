@@ -17,7 +17,7 @@ procedure Pascal is
    begin
       ai1 := 0;
       if I = 0 then return L.Value; end if;
-      return Get(L.next, I - 1);
+      return Get(L, I - 1);
    end;
 
    procedure Set(L: List; I, V: Integer) is
@@ -26,7 +26,7 @@ procedure Pascal is
       if I = 0 then
          L.Value := v;
       else
-         Set(L.next, I - 1, V);
+         Set(L, I - 1, V);
       end if;
    end;
 
