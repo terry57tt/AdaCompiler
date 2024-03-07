@@ -1911,6 +1911,18 @@ public class Grammar {
                 currentNode.setValue(currentNode.getToken().getValue());
                 currentNode.setMeaningful(true);
             }
+
+
+            //access in function block, return type
+            if(currentNode.getValue().equalsIgnoreCase("nodeType") && currentNode.firstChild().getValue().equalsIgnoreCase("access")
+                    && currentNode.getParent().getValue().equals("function")){
+                if (isNodePreviousToken(currentNode.firstChild(), "return")) {
+                    int indexCurrent = currentNode.indexInBrothers();
+                    currentNode.deleteFromParent();
+                    currentNode.getParent().getChild(indexCurrent - 1).addChild(currentNode);
+                }
+            }
+
             //access without type block
             if(currentNode.getValue().equalsIgnoreCase("access") && currentNode.getToken().getType() == TokenType.KEYWORD
                     && currentNode.getParent().getValue().equals("nodeType")){
