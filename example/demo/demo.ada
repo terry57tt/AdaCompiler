@@ -25,7 +25,7 @@ procedure Pascal is
 
 begin
    for i in 0 .. N-1 loop
-      Set(R, I, 0);
+      Set('R', I, 0);
       compute_row(i);
       print_row(i);
    end loop;

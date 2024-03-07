@@ -130,7 +130,6 @@ public class Tds {
             }
         }
         if (parent != null) {
-            System.out.println(parent.getName());
             return parent.getSymbol(SymbolName, type);
         }
         return null;

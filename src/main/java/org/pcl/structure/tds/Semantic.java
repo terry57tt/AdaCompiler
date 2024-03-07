@@ -134,13 +134,14 @@ vérifier que la valeur affecté correspond au type de déclaration
                 List<Node> children = node.getChildren();
                 String nom_procedure = children.get(0).getValue();
                 Node body = children.get(1);
+                List<ParamSymbol> paramSymbols = new ArrayList<>();
                 if (children.get(0).getChildren().size() != 0) {
                     List<Node> param = new ArrayList<>();
                     for (Node child : children.get(0).getChildren()) {
                         param.add(child);
                     }
 
-                    List<ParamSymbol> paramSymbols = new ArrayList<>();
+
                     for (Node p : param) {
                         int children_number = p.getChildren().size();
                         if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("out")) {
@@ -177,6 +178,11 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
                 Tds tds_procedure = new Tds(nom_procedure);
                 tds.addChild(tds_procedure);
+                for (ParamSymbol paramSymbol: paramSymbols) {
+                    tds_procedure.addSymbol(
+                            new VariableSymbol(SymbolType.VARIABLE, 0, paramSymbol.getName(), paramSymbol.getType_variable())
+                    );
+                }
                 constructorTDS(body, tds_procedure);
             }
             case DECL_FUNC -> {
@@ -184,13 +190,13 @@ vérifier que la valeur affecté correspond au type de déclaration
                 List<Node> children = node.getChildren();
                 String nom_fonction = children.get(0).getValue();
                 String valeur_retour = children.get(1).getChildren().get(0).getValue();
+                List<ParamSymbol> paramSymbols = new ArrayList<>();
                 if (children.get(0).getChildren().size() != 0) {
                     List<Node> param = new ArrayList<>();
                     for (Node child : children.get(0).getChildren()) {
                         param.add(child);
                     }
 
-                    List<ParamSymbol> paramSymbols = new ArrayList<>();
                     for (Node p : param) {
                         int children_number = p.getChildren().size();
                         if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("out")) {
@@ -227,6 +233,11 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
 
                 Tds tds_function = new Tds(nom_fonction);
+                for (ParamSymbol paramSymbol: paramSymbols) {
+                    tds_function.addSymbol(
+                            new VariableSymbol(SymbolType.VARIABLE, 0, paramSymbol.getName(), paramSymbol.getType_variable())
+                    );
+                }
 
                 tds.addChild(tds_function);
 
