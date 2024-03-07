@@ -181,23 +181,59 @@ public class SemanticControls {
      * nombre param match et type (pas de return)
      */
     public static void controleSemantiqueAppelProcedure(Node call_proc, Tds tds){
-        //TODO
+        int nb_params = call_proc.getChildren().size() - 1;
+        // number of parameters match
+        Symbol procedure_symbol = tds.getSymbol(call_proc.getChildren().get(0).getValue(), SymbolType.PROCEDURE);
+        if( nb_params != ((ProcedureSymbol) procedure_symbol).getNbParameters()){
+            printError("The number of parameters in the function \""+ call_proc.getChildren().get(0).getValue() +"\" doesn't match the number of parameters in the function declaration. Expected "
+                    + ((ProcedureSymbol) procedure_symbol).getNbParameters() + " but got " + nb_params, call_proc.getChildren().get(0));
+        } else {
+            for (int i = 1; i < call_proc.getChildren().size(); i++) {
+
+                String value_type = type_valeur(call_proc.getChildren().get(i), tds);
+                if (value_type.equals(" ")) continue;
+                String expected_type;
+                expected_type = ((ProcedureSymbol) procedure_symbol).getParameters().get(i - 1).getType_variable();
+                if (!value_type.equalsIgnoreCase(expected_type)) {
+                    printError("The type of the parameter \"" + call_proc.getChildren().get(i) + "\" in the call \""
+                            + call_proc.getChildren().get(0).getValue() +"\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_proc.getChildren().get(0));
+                }
+            }
+        }
+
     }
 
     public static void controleSemantiqueAffectation(Node affectation, Tds tds){
         List<Node> children = affectation.getChildren();
         Node variable = children.get(0);
         Node valeur = children.get(1);
-        Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
+        VariableSymbol symbol = (VariableSymbol) tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
+
         if (symbol == null){
             printError("The variable " + variable.getValue() + " has not been declared", variable);
-        } else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
+        }
+
+        else if (valeur.getType() == NodeType.CALL){
+            if (tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.PROCEDURE) != null){
+                printError("The procedure " + valeur.getChildren().get(0).getValue() + " can't be used in an affectation", variable);
+                return;
+            }
+            controleSemantiqueAppelFonction(valeur, tds);
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue());
+            if (!symbol.getType_variable().equalsIgnoreCase(functionSymbol.getReturnType())) {
+                printError("Mismatch type for variable " + symbol.getName() + " : " + symbol.getType_variable() + " and " +  functionSymbol.getReturnType() , variable);
+            }
+            return;
+        }
+
+        else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
                 && type_valeur(valeur, tds).equalsIgnoreCase("operator")) {
             test_expression_arithmetique(valeur, tds);
         } else {
             String type_valeur = type_valeur(valeur, tds);
+            System.out.println(valeur.getChildren().size());
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
-                    printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
+                    printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + valeur, variable);
             }
         }
     }
@@ -215,7 +251,7 @@ public class SemanticControls {
         } else {
             String type_valeur = type_valeur(valeur, tds);
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
-                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
+                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + valeur, variable);
             }
         }
     }

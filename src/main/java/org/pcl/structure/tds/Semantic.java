@@ -92,7 +92,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                     String nom = children.get(0).getChildren().get(0).getValue();
                     VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom , children.get(0).getChildren().get(1).getValue());
 
-                    controleSemantiqueDeclVariable(node, tds);
+                    controleSemantiqueDeclVariable(node.getChildren().get(0), tds);
                     tds.addSymbol(variableSymbol);
                     controleSemantiqueAffectationDecl(node, tds);
                     return;
@@ -242,7 +242,6 @@ vérifier que la valeur affecté correspond au type de déclaration
                             for (int i = 0; i < children_number - 1; i++) {
                                 String nom = p.getChildren().get(i).getValue();
                                 String type = p.getChildren().get(children_number -1).getValue();
-                                System.out.println(type);
                                 ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
                                 paramSymbols.add(paramSymbol);
                             }

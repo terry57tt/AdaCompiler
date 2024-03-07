@@ -1,8 +1,9 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Pascal is
-   index: integer := 1;
-   index2: integer;
+   N: integer := 4;
+   index: Integer := 0;
+   car: char;
    type Node;
    type List is access Node;
    type Node is record
@@ -31,9 +32,9 @@ procedure Pascal is
 
 begin
    for i in 0 .. N-1 loop
-      Set(R, i, 0);
+      car := Set(R, i, 'z');
+      car := Get(R, i);
       compute_row(i);
-      print_row(i);
    end loop;
    while index < 10 loop
       index := index + 1;
