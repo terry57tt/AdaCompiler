@@ -209,14 +209,24 @@ public class SemanticControls {
      * Entier à gauche et droite
      */
     public static void controleSemantiqueOperateur(Node operateur, Tds tds){
-        //TODO
+        switch (operateur.getType()){
+            case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR:
+                if(!test_expression_arithmetique(operateur, tds)){
+                    printError("The operator " + operateur.getValue() + " is not a valid arithmetic expression", operateur);
+                }
+                break;
+            case AND, OR:
+                test_condition_booleene(operateur, tds);
+                break;
+        }
     }
 
     /**
      * Vérifier condition bien booléenne
      */
     public static void controleSemantiqueWhile(Node while_node, Tds tds){
-        //TODO
+        Node condition = while_node.getChild(0);
+        test_condition_booleene(condition, tds);
     }
 
     /**
@@ -355,6 +365,21 @@ public class SemanticControls {
                 }
             }
             else {
+                if(left.getType() == NodeType.NEGATIVE_SIGN){
+                    if(!left.getChild(0).getChildren().isEmpty()){
+                        printError("The negative sign can only be applied to a single value", left);
+                        return false;
+                    }
+                    left = left.getChild(0);
+                }
+                if(right.getType() == NodeType.NEGATIVE_SIGN){
+                    if(!right.getChild(0).getChildren().isEmpty()){
+                        printError("The negative sign can only be applied to a single value", right);
+                        return false;
+                    }
+                    right = right.getChild(0);
+                }
+
                 String type_left = type_valeur(left, tds);
                 String type_right = type_valeur(right, tds);
                 if (type_left.equalsIgnoreCase("integer") && type_right.equalsIgnoreCase("integer")){
