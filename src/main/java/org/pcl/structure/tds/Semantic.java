@@ -87,6 +87,16 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
 
             case AFFECTATION -> {
+                if (node.getChildren().get(0).getType() == NodeType.DECL_VAR) {
+                    List<Node> children = node.getChildren();
+                    String nom = children.get(0).getChildren().get(0).getValue();
+                    VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom , children.get(0).getChildren().get(1).getValue());
+
+                    controleSemantiqueDeclVariable(node.getChildren().get(0), tds);
+                    tds.addSymbol(variableSymbol);
+                    controleSemantiqueAffectationDecl(node, tds);
+                    return;
+                }
                 controleSemantiqueAffectation(node, tds);
             }
 
@@ -125,8 +135,8 @@ vérifier que la valeur affecté correspond au type de déclaration
                 String nom = children.get(0).getValue();
                 String type = children.get(1).getValue();
                 VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
-                tds.addSymbol(variableSymbol);
                 controleSemantiqueDeclVariable(node, tds);
+                tds.addSymbol(variableSymbol);
             }
             case DECL_PROC -> {
 
@@ -199,6 +209,10 @@ vérifier que la valeur affecté correspond au type de déclaration
                     return;
                 }
                 String valeur_retour = children.get(1).getChildren().get(0).getValue();
+                if (valeur_retour.equalsIgnoreCase("access")) {
+                    valeur_retour = children.get(1).getChildren().get(0)
+                            .getChildren().get(0).getValue();
+                }
                 List<ParamSymbol> paramSymbols = new ArrayList<>();
                 if (children.get(0).getChildren().size() != 0) {
                     List<Node> param = new ArrayList<>();
@@ -228,7 +242,6 @@ vérifier que la valeur affecté correspond au type de déclaration
                             for (int i = 0; i < children_number - 1; i++) {
                                 String nom = p.getChildren().get(i).getValue();
                                 String type = p.getChildren().get(children_number -1).getValue();
-                                System.out.println(type);
                                 ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
                                 paramSymbols.add(paramSymbol);
                             }
@@ -260,10 +273,9 @@ vérifier que la valeur affecté correspond au type de déclaration
                         for (Node declaration : children.get(2).getChildren()) {
                             constructorTDS(declaration, tds_function);
                         }
+                        constructorTDS(body, tds_function);
                     } else {
-                        Node declaration = children.get(2);
-                        constructorTDS(declaration, tds_function);
-                        Node body = children.get(3);
+                        Node body = children.get(2);
                         constructorTDS(body, tds_function);
                     }
                 }
@@ -329,6 +341,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 Node condition = children.get(0);
                 Node loop = children.get(1);
                 constructorTDS(loop, tds);
+                controleSemantiqueWhile(node, tds);
             }
             case REVERSE -> {
             }
