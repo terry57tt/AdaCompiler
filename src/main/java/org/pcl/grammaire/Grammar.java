@@ -1760,7 +1760,8 @@ public class Grammar {
             if(currentNode.getValue().equals("nodeDecl")
                     && (currentNode.getParent().getValue().equals("declaration")
                             || currentNode.getParent().getValue().equals("function")
-                            || currentNode.getParent().getValue().equals("procedure"))){
+                            || currentNode.getParent().getValue().equals("procedure")
+                            )){
                 currentNode.setValue("variable");
             }
 
@@ -1913,7 +1914,7 @@ public class Grammar {
             }
 
 
-            //access in function block, return type
+            /*//access in function block, return type
             if(currentNode.getValue().equalsIgnoreCase("nodeType") && currentNode.firstChild().getValue().equalsIgnoreCase("access")
                     && currentNode.getParent().getValue().equals("function")){
                 if (isNodePreviousToken(currentNode.firstChild(), "return")) {
@@ -1921,7 +1922,7 @@ public class Grammar {
                     currentNode.deleteFromParent();
                     currentNode.getParent().getChild(indexCurrent - 1).addChild(currentNode);
                 }
-            }
+            }*/
 
             //access without type block
             if(currentNode.getValue().equalsIgnoreCase("access") && currentNode.getToken().getType() == TokenType.KEYWORD
@@ -1989,7 +1990,7 @@ public class Grammar {
             if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getToken().getType() == TokenType.KEYWORD
                     && currentNode.getParent().getValue().equalsIgnoreCase("function")) {
                 int indexCurrentNode = currentNode.indexInBrothers();
-                if (currentNode.getParent().getChildren().get(indexCurrentNode + 1).getType() != null
+                if (currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken() != null
                         && currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken().getType() == TokenType.IDENTIFIER
                         && currentNode.getParent().getChildren().get(indexCurrentNode + 1).isFinal()) {
                     Node nextBrother = currentNode.getParent().getChildren().get(indexCurrentNode + 1);
