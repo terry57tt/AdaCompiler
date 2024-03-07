@@ -1,6 +1,7 @@
 package org.pcl.structure.tds;
 
 import org.pcl.ColorAnsiCode;
+import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 
@@ -112,7 +113,7 @@ public class SemanticControls {
         List<Node> children = decl_func.getChildren();
         Node valeur_retour = children.get(1);
         Node body = children.get(2);
-
+        valeur_retour = valeur_retour.getChild(0);
         test_return_present(body);
         test_existence_type(valeur_retour.getValue(), tds, valeur_retour);
         test_double_declaration(decl_func, tds);
@@ -138,19 +139,21 @@ public class SemanticControls {
         // function has already been declared
         if (symbol == null){
             printError("The call name " + call_name.getValue() + " has not been declared", call_name);
-        } // number of parameters match
+        }
+        // number of parameters match
         else if(is_function && nb_params != ((FunctionSymbol) symbol).getNbParameters()){
             printError("The number of parameters in the function \""+ call_name.getValue() +"\" doesn't match the number of parameters in the function declaration. Expected " + ((FunctionSymbol) symbol).getNbParameters() + " but got " + nb_params, call_name);
         } else if(!is_function && nb_params != ((ProcedureSymbol) symbol).getNbParameters()){
             printError("The number of parameters in the procedure \""+ call_name.getValue() +"\" call doesn't match the number of parameters in the procedure declaration. Expected " + ((ProcedureSymbol) symbol).getNbParameters() + " but got " + nb_params, call_name);
         } else { // types match
             for (int i = 1; i < children.size(); i++) {
+
                 String value_type = type_valeur(children.get(i), tds);
+                if (value_type.equals(" ")) continue;
                 String expected_type;
                 if(is_function) {
                     expected_type = ((FunctionSymbol) symbol).getParameters().get(i - 1).getType_variable();
                 } else expected_type = ((ProcedureSymbol) symbol).getParameters().get(i - 1).getType_variable();
-                //TODO fix type doesn't work
                 if (!value_type.equalsIgnoreCase(expected_type)) {
                     printError("The type of the parameter \"" + children.get(i) + "\" in the call \"" + call_name.getValue() +"\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_name);
                 }
@@ -300,6 +303,7 @@ public class SemanticControls {
         typesValide.add("integer");
         typesValide.add("boolean");
         typesValide.add("char");
+        typesValide.add("access");
 
         //Symbol createdType = tds.getSymbol(type,SymbolType.TYPE);
         //if (createdType != null){
@@ -351,9 +355,28 @@ public class SemanticControls {
             else if (test_expression_arithmetique(right, tds)) {
                 return;
             }
+            else if (tds.getSymbol(left.getValue(), SymbolType.VARIABLE) != null) {
+                Symbol symbol = tds.getSymbol(left.getValue(), SymbolType.VARIABLE);
+                if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")){
+                    return;
+                }
+                else {
+                    printError("The condition is not a valid boolean expression because the variable is not a integer: " + left.getValue(), left);
+                }
+            }
+            else if (tds.getSymbol(right.getValue(), SymbolType.VARIABLE) != null) {
+                Symbol symbol = tds.getSymbol(right.getValue(), SymbolType.VARIABLE);
+                if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")){
+                    return;
+                }
+                else {
+                    printError("The condition is not a valid boolean expression because the variable is not a integer: " + right.getValue(), right);
+                }
+            }
             else {
-                printError("The condition is not a valid boolean expression because the operands are not integers", left);
-          }
+
+                printError("The condition is not a valid boolean expression because the operands are not integers: " + left.getValue() + " " + right.getValue(), left);
+            }
         }
         else {
             printError("The condition is not a valid boolean expression", condition);
@@ -411,6 +434,7 @@ public class SemanticControls {
 
     private static String type_valeur(Node valeur, Tds tds){
         try {
+            ;
             // Essaie de parser la valeur en entier
             Integer.parseInt(valeur.getValue());
             return "integer";
@@ -418,8 +442,7 @@ public class SemanticControls {
             String valueStr = valeur.getValue().toLowerCase();
             if (valueStr.equalsIgnoreCase("true") || valueStr.equalsIgnoreCase("false")) {
                 return "boolean";
-            } else if (valeur.getValue().length() == 1) {
-                System.out.println(" " + valeur.getValue() + " " + valeur.getType());
+            } else if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
                 return "char";
             } else {
                 Symbol symbol = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_ACCESS);

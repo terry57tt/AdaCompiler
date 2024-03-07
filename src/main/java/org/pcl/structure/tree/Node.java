@@ -300,7 +300,7 @@ public class Node {
             case "CHAR_VAL":
                 this.type = NodeType.CHAR_VAL;
                 break;
-            case "RETURN": // two types of return
+            case "RETURN", "return": // two types of return
                 this.type = NodeType.RETURN;
                 break;
             case "if":
