@@ -63,10 +63,8 @@ public class SemanticControls {
         String variable_compteur = children.get(0).getValue();
         String direction = children.get(1).getValue();
 
-        String borne_inf = children.get(2).getValue();
-        String borne_sup = children.get(3).getValue();
 
-        test_borne_suf_inf(borne_inf, borne_sup, for_node);
+        test_borne_suf_inf(children.get(2), children.get(3), for_node, tds);
 
     }
 
@@ -290,6 +288,16 @@ public class SemanticControls {
         test_condition_booleene(condition, tds);
     }
 
+    /**
+     * Vérifier que la variable a bien été déclaré qu'on y a accès
+     */
+    public static void controleSemantiqueAccessVariable(Node access_var, Tds tds){
+        Symbol symbol = tds.getSymbol(access_var.getValue(), SymbolType.VARIABLE);
+        if (symbol == null){
+            printError("The variable " + access_var.getValue() + " has not been declared", access_var);
+        }
+    }
+
     // Utility function
 
     private static void test_egalite_nom_debut_fin(Node file){
@@ -333,18 +341,27 @@ public class SemanticControls {
         printError("Missing return statement in the function", node);
     }
 
-    private static void test_borne_suf_inf(String borne_inf, String borne_sup, Node node){
-        try {
-            int inf = Integer.parseInt(borne_inf);
-            int sup = Integer.parseInt(borne_sup);
+    private static void test_borne_suf_inf(Node borne_inf, Node borne_sup, Node node, Tds tds){
+        List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
 
-            if (sup < inf) {
-                printError("The upper bound is less than the lower bound", node);
+
+        if (borne_inf.getToken()!=null && borne_inf.getToken().getType() == TokenType.NUMBER){
+            if (borne_sup.getToken()!=null && borne_sup.getToken().getType() == TokenType.NUMBER){
+                return;
             }
-
-
-        } catch (NumberFormatException e) {
-            printError("The lower or upper bound is not an integer", node);
+            if(operators.contains(borne_sup.getType())){
+                test_expression_arithmetique(borne_sup,tds);
+                return;
+            }
+        }
+        if (borne_sup.getToken()!=null && borne_sup.getToken().getType() == TokenType.NUMBER){
+            if(operators.contains(borne_inf.getType())){
+                if(test_expression_arithmetique(borne_inf,tds)) return;
+            }
+        }
+        if(operators.contains(borne_inf.getType()) && operators.contains(borne_sup.getType())){
+            test_expression_arithmetique(borne_inf, tds);
+            test_expression_arithmetique(borne_sup, tds);
         }
     }
 
@@ -445,7 +462,7 @@ public class SemanticControls {
                     return false;
                 }
             }
-            else if (right.getType() == NodeType.ADDITION || right.getType() == NodeType.SUBSTRACTION || right.getType() == NodeType.MULTIPLY || right.getType() == NodeType.DIVIDE || right.getType() == NodeType.REM){
+            if (right.getType() == NodeType.ADDITION || right.getType() == NodeType.SUBSTRACTION || right.getType() == NodeType.MULTIPLY || right.getType() == NodeType.DIVIDE || right.getType() == NodeType.REM){
                 boolean a = test_expression_arithmetique(left, tds);
                 boolean b = test_expression_arithmetique(right, tds);
                 if (a==false || b==false){
@@ -468,6 +485,7 @@ public class SemanticControls {
                     right = right.getChild(0);
                 }
 
+
                 String type_left = type_valeur(left, tds);
                 String type_right = type_valeur(right, tds);
 
@@ -475,7 +493,9 @@ public class SemanticControls {
                     return true;
                 }
                 else {
-                    printError("Operation \'" + node.getValue() + "\' between two different types : " + type_left + " and " + type_right, node);
+                    if(!type_left.equals(" ") && !type_right.equals(" ")){
+                        printError("Operation \'" + node.getValue() + "\' between two different types : " + type_left + " and " + type_right, node);
+                    }
                     return false;
                 }
             }
@@ -507,10 +527,11 @@ public class SemanticControls {
                 } else if (symbol2 != null) {
                     return ((TypeRecordSymbol) symbol2).getNom();
                 }
-                if (tds.getSymbol(valeur.getValue()) != null)
+                if (tds.getSymbol(valeur.getValue()) != null){
                     return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
+                }
                 else {
-                    printError("The value " + valeur.getValue() + " is not a valid value", valeur);
+                    controleSemantiqueAccessVariable(valeur, tds);
                     return " ";
                 }
             }
