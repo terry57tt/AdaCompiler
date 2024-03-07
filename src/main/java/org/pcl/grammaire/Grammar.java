@@ -2115,7 +2115,8 @@ public class Grammar {
             }
 
             //variable declaration in main procedure (fichier)
-            if(currentNode.getValue().equals("nodeDecl") && currentNode.getParent().getValue().equals("Fichier")
+            if(currentNode.getValue().equals("nodeDecl")
+                    && (currentNode.getParent().getValue().equals("Fichier") || currentNode.getParent().getValue().equalsIgnoreCase("procedure") || currentNode.getParent().getValue().equalsIgnoreCase("function"))
                     && currentNode.getChildren().size() >= 2) {
                 boolean declaration = false;
                 for(Node node : currentNode.getParent().getChildren()){
