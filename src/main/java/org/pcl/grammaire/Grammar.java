@@ -2114,6 +2114,27 @@ public class Grammar {
                 currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
             }
 
+            //variable declaration in main procedure (fichier)
+            if(currentNode.getValue().equals("nodeDecl") && currentNode.getParent().getValue().equals("Fichier")
+                    && currentNode.getChildren().size() >= 2) {
+                boolean declaration = false;
+                for(Node node : currentNode.getParent().getChildren()){
+                    if (node.getValue().equals("declaration")) {
+                        declaration = true;
+                        break;
+                    }
+                }
+                if(!declaration){
+                    Node newNode = new Node("declaration");
+                    newNode.setMeaningful(true);
+                    int indexCurrent = currentNode.indexInBrothers();
+                    currentNode.getParent().addChild(indexCurrent, newNode);
+                    currentNode.deleteFromParent();
+                    newNode.addChild(currentNode);
+                    currentNode.setMeaningful(true);
+                }
+            }
+
             //Fichier (root node)
             if (currentNode.getValue().equals("Fichier")) {
                 for (int i = 0; i < 9; i++) {
