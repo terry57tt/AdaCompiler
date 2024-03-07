@@ -29,7 +29,7 @@ begin
       compute_row(i);
       print_row(i);
    end loop;
-end Pascalito;
+end Pascal;
 
 --  Local Variables:
 --  compile-command: "gnatmake pascal.adb && ./pascal"

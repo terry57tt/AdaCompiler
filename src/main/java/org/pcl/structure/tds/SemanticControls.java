@@ -21,12 +21,9 @@ public class SemanticControls {
         else
             numberLine = " ";
         System.out.println(name_file + ":" + numberLine + ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + error + "\n");
-        errors.add(error);
+        String identifier = (node.getType() != null) ? node.getType().name() : "";
+        errors.add(identifier);
     }
-
-
-
-
 
     public static void controleSemantiqueFile(Node file){
         test_egalite_nom_debut_fin(file);
@@ -213,6 +210,7 @@ public class SemanticControls {
         switch (operateur.getType()){
             case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR:
                 if(!test_expression_arithmetique(operateur, tds)){
+                    errors.add("OPERATOR");
                     printError("The operator " + operateur.getValue() + " is not a valid arithmetic expression", operateur);
                 }
                 break;
