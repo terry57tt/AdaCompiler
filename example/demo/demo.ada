@@ -1,7 +1,7 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Pascal is
-
+   index: integer := 0;
    type Node;
    type List is access Node;
    type Node is record
@@ -10,6 +10,7 @@ procedure Pascal is
    end record;
 
    function Get(L: List; I: Integer) return Integer is
+
    begin
       if I = 0 then return L.Value; end if;
       return Get(L.next, I - 1);
@@ -28,6 +29,9 @@ begin
       Set(R, i, 0);
       compute_row(i);
       print_row(i);
+   end loop;
+   while index < 10 loop
+      index := index + 1;
    end loop;
 end Pascalito;
 

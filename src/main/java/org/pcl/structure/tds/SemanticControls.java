@@ -234,13 +234,6 @@ public class SemanticControls {
         test_condition_booleene(condition, tds);
     }
 
-    /**
-     * Vérifier que la variable a bien été déclaré qu'on y a accès
-     */
-    public static void controleSemantiqueAccessVariable(Node access_var, Tds tds){
-        //TODO
-    }
-
     // Utility function
 
     private static void test_egalite_nom_debut_fin(Node file){

@@ -199,6 +199,10 @@ vérifier que la valeur affecté correspond au type de déclaration
                     return;
                 }
                 String valeur_retour = children.get(1).getChildren().get(0).getValue();
+                if (valeur_retour.equalsIgnoreCase("access")) {
+                    valeur_retour = children.get(1).getChildren().get(0)
+                            .getChildren().get(0).getValue();
+                }
                 List<ParamSymbol> paramSymbols = new ArrayList<>();
                 if (children.get(0).getChildren().size() != 0) {
                     List<Node> param = new ArrayList<>();
@@ -259,10 +263,9 @@ vérifier que la valeur affecté correspond au type de déclaration
                         for (Node declaration : children.get(2).getChildren()) {
                             constructorTDS(declaration, tds_function);
                         }
+                        constructorTDS(body, tds_function);
                     } else {
-                        Node declaration = children.get(2);
-                        constructorTDS(declaration, tds_function);
-                        Node body = children.get(3);
+                        Node body = children.get(2);
                         constructorTDS(body, tds_function);
                     }
                 }
@@ -327,6 +330,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 Node condition = children.get(0);
                 Node loop = children.get(1);
                 constructorTDS(loop, tds);
+                controleSemantiqueWhile(node, tds);
             }
             case REVERSE -> {
             }
