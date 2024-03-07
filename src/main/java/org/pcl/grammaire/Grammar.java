@@ -1977,7 +1977,8 @@ public class Grammar {
             if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getToken().getType() == TokenType.KEYWORD
                     && currentNode.getParent().getValue().equalsIgnoreCase("function")) {
                 int indexCurrentNode = currentNode.indexInBrothers();
-                if (currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken().getType() == TokenType.IDENTIFIER
+                if (currentNode.getParent().getChildren().get(indexCurrentNode + 1).getType() != null
+                        && currentNode.getParent().getChildren().get(indexCurrentNode + 1).getToken().getType() == TokenType.IDENTIFIER
                         && currentNode.getParent().getChildren().get(indexCurrentNode + 1).isFinal()) {
                     Node nextBrother = currentNode.getParent().getChildren().get(indexCurrentNode + 1);
                     currentNode.getParent().getChildren().get(indexCurrentNode + 1).deleteFromParent();
