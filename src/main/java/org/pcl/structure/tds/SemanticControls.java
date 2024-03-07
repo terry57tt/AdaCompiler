@@ -15,7 +15,7 @@ public class SemanticControls {
 
     private final  static List<String> errors = new ArrayList<>();
 
-    private static void printError(String error, Node node) {
+    public static void printError(String error, Node node) {
         String numberLine;
         if (node.getToken() != null)
              numberLine = node.getToken().getLineNumber() + ": ";
@@ -116,7 +116,6 @@ public class SemanticControls {
         valeur_retour = valeur_retour.getChild(0);
         test_return_present(body);
         test_existence_type(valeur_retour.getValue(), tds, valeur_retour);
-        test_double_declaration(decl_func, tds);
     }
 
     /**
@@ -131,29 +130,29 @@ public class SemanticControls {
         int nb_params = children.size() - 1;
 
         // call do not precise if it's a function or a procedure
+
         Symbol function_symbol = tds.getSymbol(call_name.getValue(), SymbolType.FUNCTION);
         Symbol procedure_symbol = tds.getSymbol(call_name.getValue(), SymbolType.PROCEDURE);
         boolean is_function = function_symbol != null;
-        Symbol symbol = function_symbol != null ? function_symbol : procedure_symbol;
-
-        // function has already been declared
-        if (symbol == null){
+        if (function_symbol == null && procedure_symbol == null){
             printError("The call name " + call_name.getValue() + " has not been declared", call_name);
+            return;
         }
+        if (!is_function) {
+            controleSemantiqueAppelProcedure(call_func, tds);
+            return;
+        }
+
         // number of parameters match
-        else if(is_function && nb_params != ((FunctionSymbol) symbol).getNbParameters()){
-            printError("The number of parameters in the function \""+ call_name.getValue() +"\" doesn't match the number of parameters in the function declaration. Expected " + ((FunctionSymbol) symbol).getNbParameters() + " but got " + nb_params, call_name);
-        } else if(!is_function && nb_params != ((ProcedureSymbol) symbol).getNbParameters()){
-            printError("The number of parameters in the procedure \""+ call_name.getValue() +"\" call doesn't match the number of parameters in the procedure declaration. Expected " + ((ProcedureSymbol) symbol).getNbParameters() + " but got " + nb_params, call_name);
-        } else { // types match
+        if( nb_params != ((FunctionSymbol) function_symbol).getNbParameters()){
+            printError("The number of parameters in the function \""+ call_name.getValue() +"\" doesn't match the number of parameters in the function declaration. Expected " + ((FunctionSymbol) function_symbol).getNbParameters() + " but got " + nb_params, call_name);
+        } else {
             for (int i = 1; i < children.size(); i++) {
 
                 String value_type = type_valeur(children.get(i), tds);
                 if (value_type.equals(" ")) continue;
                 String expected_type;
-                if(is_function) {
-                    expected_type = ((FunctionSymbol) symbol).getParameters().get(i - 1).getType_variable();
-                } else expected_type = ((ProcedureSymbol) symbol).getParameters().get(i - 1).getType_variable();
+                expected_type = ((FunctionSymbol) function_symbol).getParameters().get(i - 1).getType_variable();
                 if (!value_type.equalsIgnoreCase(expected_type)) {
                     printError("The type of the parameter \"" + children.get(i) + "\" in the call \"" + call_name.getValue() +"\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_name);
                 }
@@ -172,7 +171,6 @@ public class SemanticControls {
         List<Node> children = decl_proc.getChildren();
         Node body = children.get(1);
 
-        test_double_declaration(decl_proc, tds);
     }
 
     /**
