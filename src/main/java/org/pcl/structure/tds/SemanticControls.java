@@ -244,7 +244,7 @@ public class SemanticControls {
         int nombre_enfants = children.size();
         String nom_debut = children.get(0).getValue();
         String nom_fin = children.get(nombre_enfants - 1).getValue();
-        if (!nom_debut.equalsIgnoreCase(nom_fin)){
+        if (!nom_debut.equalsIgnoreCase(nom_fin) && !nom_fin.equalsIgnoreCase("body")){
             printError("The file name at the beginning and at the end of the program don't match : " + nom_debut + " != " + nom_fin, children.get(nombre_enfants - 1));
          }
     }
