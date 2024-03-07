@@ -297,6 +297,23 @@ public class SemanticControls {
         }
     }
 
+    /**
+     *Vérifier que le noeud à gauche existe, si existe récupérer tous les champs, regarder si celui de droite est dedans
+     */
+    public static void controleSemantiquePoint(Node point, Tds tds){
+        Node structure = point.firstChild();
+        Node field = point.getChild(1);
+        Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
+        if (symbolStructure == null) {
+            printError(structure.getValue() + " is not a declared structure", structure);
+            return;
+        }
+        Symbol symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_ACCESS);
+        if(symbolField == null) symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_RECORD);
+        if(symbolField == null) printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue() , field);
+    }
+
+
     // Utility function
 
     private static void test_egalite_nom_debut_fin(Node file){
