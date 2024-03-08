@@ -47,6 +47,69 @@ public class SemanticControls {
         test_existence_type(children.get(1).getValue(), tds, children.get(1));
     }
 
+    public static void controleSemantiqueTypeAccess(String nom, String type_pointe, Tds tds){
+        //Test la double déclaration
+        Node node = new Node();
+        boolean a = tds.containsSymbol(nom, SymbolType.TYPE_ACCESS);
+        if (a){
+            printError(nom + " has already been declared in the current scope", node);
+        }
+
+        boolean b = tds.containsSymbol(nom, SymbolType.TYPE_RECORD);
+        if (b){
+            printError(node.getValue() + " has already been declared in the current scope", node);
+        }
+
+        //Test l'existence du type pointé
+        test_existence_type(type_pointe, tds, node);
+    }
+
+    public static void controleSemantiqueTypeRecord(String nom, List<VariableSymbol> fields, Tds tds){
+        //Test la double déclaration
+        Node node = new Node();
+        boolean a = tds.containsSymbol(nom, SymbolType.TYPE_ACCESS);
+        if (a){
+            printError(nom + " has already been declared in the current scope", node);
+        }
+
+        boolean b = tds.containsSymbol(nom, SymbolType.TYPE_RECORD);
+        if (b){
+            printError(node.getValue() + " has already been declared in the current scope", node);
+        }
+
+        //Test l'existence des types des champs
+        for (VariableSymbol field1 : fields) {
+            for (VariableSymbol field2 : fields) {
+                if (field1.getName().equalsIgnoreCase(field2.getName())){
+                    printError("The field " + field1.getName() + " has already been declared", node);
+                }
+            }
+            test_existence_type(field1.getType_variable(), tds, node);
+        }
+    }
+
+    public static void controleSemantiquePoint(Node point, Tds tds){
+        if (point.getChildren().get(0).getType() == NodeType.CALL){
+            controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
+            String typeRetour = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+            return;
+        }
+        Node structure = point.getChildren().get(0);
+        Node field = point.getChildren().get(1);
+        Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.TYPE_RECORD);
+        if (symbolStructure == null) {
+            printError(structure.getValue() + " is not a declared structure", structure);
+            return;
+        }
+        List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
+        for (VariableSymbol field1 : fields) {
+            if (field1.getName().equalsIgnoreCase(field.getValue())){
+                return ;
+            }
+        }
+        printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue() , field);
+    }
+
 
     /**
      * variable compteur
@@ -299,18 +362,18 @@ public class SemanticControls {
     /**
      *Vérifier que le noeud à gauche existe, si existe récupérer tous les champs, regarder si celui de droite est dedans
      */
-    public static void controleSemantiquePoint(Node point, Tds tds){
-        Node structure = point.firstChild();
-        Node field = point.getChild(1);
-        Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
-        if (symbolStructure == null) {
-            printError(structure.getValue() + " is not a declared structure", structure);
-            return;
-        }
-        Symbol symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_ACCESS);
-        if(symbolField == null) symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_RECORD);
-        if(symbolField == null) printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue() , field);
-    }
+    // public static void controleSemantiquePoint(Node point, Tds tds){
+    //     Node structure = point.firstChild();
+    //     Node field = point.getChild(1);
+    //     Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
+    //     if (symbolStructure == null) {
+    //         printError(structure.getValue() + " is not a declared structure", structure);
+    //         return;
+    //     }
+    //     Symbol symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_ACCESS);
+    //     if(symbolField == null) symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_RECORD);
+    //     if(symbolField == null) printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue() , field);
+    // }
 
 
     // Utility function
@@ -339,7 +402,6 @@ public class SemanticControls {
         else {
             return;
         }
-
         boolean a = tds.containsSymbol(node.getChildren().get(0).getValue(), type);
         if (a){
             printError(node.getValue() + " has already been declared in the current scope", node);
@@ -431,8 +493,23 @@ public class SemanticControls {
             List<Node> children = condition.getChildren();
             Node left = children.get(0);
             Node right = children.get(1);
-            if (type_valeur(left, tds).equalsIgnoreCase("integer")){
+            if (type_valeur(left, tds).equalsIgnoreCase("integer")) {
                 return;
+            }else if (left.getType()==NodeType.CALL){
+                List<Node> children_call = left.getChildren();
+                Node name_function = children_call.get(0);
+
+                if(tds.getSymbol(name_function.getValue(), SymbolType.FUNCTION) != null){
+                    Symbol symbol = tds.getSymbol(name_function.getValue(), SymbolType.FUNCTION);
+                    if (((FunctionSymbol) symbol).getReturnType().equalsIgnoreCase("integer")){
+                        return;
+                    }
+                    else {
+                        printError("The condition is not a valid boolean expression because the function return type is not an integer: " + left.getValue(), left);
+                    }
+                } else {
+                    printError("The condition is not a valid boolean expression because " + name_function.getValue() + " is a procedure", left);
+                }
             }
             else if (test_expression_arithmetique(right, tds)) {
                 return;
