@@ -206,6 +206,8 @@ public class SemanticControls {
         Node variable = children.get(0);
         Node valeur = children.get(1);
         VariableSymbol symbol = (VariableSymbol) tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
+        List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
+
 
         if (symbol == null){
             printError("The variable " + variable.getValue() + " has not been declared", variable);
@@ -225,9 +227,10 @@ public class SemanticControls {
         }
 
         else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
-                && type_valeur(valeur, tds).equalsIgnoreCase("operator")) {
+                && operators.contains(valeur.getType())) {
             test_expression_arithmetique(valeur, tds);
-        } else {
+        }
+        else {
             String type_valeur = type_valeur(valeur, tds);
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
                     printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + valeur, variable);
@@ -360,7 +363,6 @@ public class SemanticControls {
     private static void test_borne_suf_inf(Node borne_inf, Node borne_sup, Node node, Tds tds){
         List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
 
-
         if (borne_inf.getToken()!=null && borne_inf.getToken().getType() == TokenType.NUMBER){
             if (borne_sup.getToken()!=null && borne_sup.getToken().getType() == TokenType.NUMBER){
                 return;
@@ -467,25 +469,26 @@ public class SemanticControls {
     }
 
     private static boolean test_expression_arithmetique(Node node, Tds tds){
+
         if (node.getType() == NodeType.ADDITION || node.getType() == NodeType.SUBSTRACTION || node.getType() == NodeType.MULTIPLY || node.getType() == NodeType.DIVIDE || node.getType() == NodeType.REM){
             List<Node> children = node.getChildren();
             Node left = children.get(0);
             Node right = children.get(1);
             if (left.getType() == NodeType.ADDITION || left.getType() == NodeType.SUBSTRACTION || left.getType() == NodeType.MULTIPLY || left.getType() == NodeType.DIVIDE || left.getType() == NodeType.REM){
                 boolean a = test_expression_arithmetique(left, tds);
-                boolean b = test_expression_arithmetique(right, tds);
-                if (a==false || b==false){
+                if (!a){
                     return false;
                 }
             }
             if (right.getType() == NodeType.ADDITION || right.getType() == NodeType.SUBSTRACTION || right.getType() == NodeType.MULTIPLY || right.getType() == NodeType.DIVIDE || right.getType() == NodeType.REM){
-                boolean a = test_expression_arithmetique(left, tds);
+
                 boolean b = test_expression_arithmetique(right, tds);
-                if (a==false || b==false){
+                if (!b){
                     return false;
                 }
             }
             else {
+
                 if(left.getType() == NodeType.NEGATIVE_SIGN){
                     if(!left.getChild(0).getChildren().isEmpty()){
                         printError("The negative sign can only be applied to a single value", left);
