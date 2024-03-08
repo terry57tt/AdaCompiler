@@ -283,6 +283,7 @@ public class SemanticControls {
      * Vérifier condition bien booléenne
      */
     public static void controleSemantiqueWhile(Node while_node, Tds tds){
+        List<Node> children = while_node.getChildren();
         Node condition = while_node.getChild(0);
         test_condition_booleene(condition, tds);
     }
@@ -422,16 +423,29 @@ public class SemanticControls {
                 test_condition_booleene(child, tds);
             }
         }
-        else if (condition.getValue().equalsIgnoreCase("NOT")){
+        else if (condition.getValue().equalsIgnoreCase("NOT")) {
             List<Node> children = condition.getChildren();
             for (Node child : children) {
                 test_condition_booleene(child, tds);
             }
         }
-        else if (condition.getValue().equalsIgnoreCase("<=") || condition.getValue().equalsIgnoreCase(">=") || condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("<") || condition.getValue().equalsIgnoreCase(">") || condition.getValue().equalsIgnoreCase("!=") || condition.getValue().equalsIgnoreCase("/=")){
+        else if (condition.getValue().equalsIgnoreCase("<=") || condition.getValue().equalsIgnoreCase(">=") || condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("<") || condition.getValue().equalsIgnoreCase(">") || condition.getValue().equalsIgnoreCase("/=")){
             List<Node> children = condition.getChildren();
             Node left = children.get(0);
             Node right = children.get(1);
+            // in a while or if condition
+            if (condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("/=")){
+//                SymbolType type = left.getType();
+//                Symbol right_value = tds.getSymbol(right.getValue(), SymbolType.VARIABLE);
+//
+
+//                if (left_value.getType() == right_value.getType()){
+                    return;
+//                }
+//                else {
+//                    printError("The condition is not a valid boolean expression because the operands are not of the same type: " + left.getValue() + " " + right.getValue(), left);
+//                }
+            }
             if (type_valeur(left, tds).equalsIgnoreCase("integer")) {
                 return;
             }else if (left.getType()==NodeType.CALL){
