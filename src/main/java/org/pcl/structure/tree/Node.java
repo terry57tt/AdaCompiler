@@ -274,7 +274,8 @@ public class Node {
                 this.type = NodeType.ADDITION;
                 break;
             case "-":
-                this.type = NodeType.SUBSTRACTION;
+                if(this.children.size()==1) this.type = NodeType.NEGATIVE_SIGN;
+                else this.type = NodeType.SUBSTRACTION;
                 break;
             case "*":
                 this.type = NodeType.MULTIPLY;
@@ -300,7 +301,7 @@ public class Node {
             case "CHAR_VAL":
                 this.type = NodeType.CHAR_VAL;
                 break;
-            case "RETURN": // two types of return
+            case "RETURN", "return": // two types of return
                 this.type = NodeType.RETURN;
                 break;
             case "if":

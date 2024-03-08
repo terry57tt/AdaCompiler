@@ -54,6 +54,7 @@ vérifier que la valeur affecté correspond au type de déclaration
     public Semantic(SyntaxTree ast) {
         buildTds(ast);
         controleSemantiqueFile(ast.getRootNode());
+
     }
 
     public Tds getGlobalTds() {
@@ -68,20 +69,34 @@ vérifier que la valeur affecté correspond au type de déclaration
     public void constructorTDS(Node node, Tds tds) {
         //Il doit y avoir un if pour chaque type de l'enum NodeType
 
-
         if (node.getChildren() == null) return;
         if (node.getType() == null) return;
 
         switch (node.getType()) {
             case FILE, DECLARATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, RETURN, BEGIN,
-                    AND, OR, NOT, IN, INOUT, MODE, ADDITION, SUBSTRACTION, MULTIPLY, REM, DIVIDE,
-                    RECORD, ACCESS, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE, NULL, INITIALIZATION, FIELD, IS,
-                    EQUAL, SLASH_EQUAL, INFERIOR, INFERIOR_EQUAL, SUPERIOR, SUPERIOR_EQUAL -> fillTDsChild(node, tds);
+                    NOT, IN, INOUT, MODE, RECORD, ACCESS, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE,
+                    NULL, INITIALIZATION, FIELD, IS-> fillTDsChild(node, tds);
+
+            case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, OR, AND,
+                    EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR -> {
+                fillTDsChild(node, tds);
+                controleSemantiqueOperateur(node, tds);
+            }
 
             case PROGRAM -> {
             }
 
             case AFFECTATION -> {
+                if (node.getChildren().get(0).getType() == NodeType.DECL_VAR) {
+                    List<Node> children = node.getChildren();
+                    String nom = children.get(0).getChildren().get(0).getValue();
+                    VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom , children.get(0).getChildren().get(1).getValue());
+
+                    controleSemantiqueDeclVariable(node.getChildren().get(0), tds);
+                    tds.addSymbol(variableSymbol);
+                    controleSemantiqueAffectationDecl(node, tds);
+                    return;
+                }
                 controleSemantiqueAffectation(node, tds);
             }
 
@@ -116,25 +131,30 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
             }
             case DECL_VAR -> {
-                controleSemantiqueDeclVariable(node, tds);
                 List<Node> children = node.getChildren();
                 String nom = children.get(0).getValue();
                 String type = children.get(1).getValue();
                 VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
+                controleSemantiqueDeclVariable(node, tds);
                 tds.addSymbol(variableSymbol);
             }
             case DECL_PROC -> {
-                controleSemantiqueDeclProcedure(node, tds);
+
                 List<Node> children = node.getChildren();
                 String nom_procedure = children.get(0).getValue();
+                if (tds.containsSymbol(nom_procedure, SymbolType.PROCEDURE)) {
+                    SemanticControls.printError("The procedure " + nom_procedure + " is already declared", node);
+                    return;
+                }
                 Node body = children.get(1);
+                List<ParamSymbol> paramSymbols = new ArrayList<>();
                 if (children.get(0).getChildren().size() != 0) {
                     List<Node> param = new ArrayList<>();
                     for (Node child : children.get(0).getChildren()) {
                         param.add(child);
                     }
 
-                    List<ParamSymbol> paramSymbols = new ArrayList<>();
+
                     for (Node p : param) {
                         int children_number = p.getChildren().size();
                         if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("out")) {
@@ -171,20 +191,35 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
                 Tds tds_procedure = new Tds(nom_procedure);
                 tds.addChild(tds_procedure);
+                for (ParamSymbol paramSymbol: paramSymbols) {
+                    tds_procedure.addSymbol(
+                            new VariableSymbol(SymbolType.VARIABLE, 0, paramSymbol.getName(), paramSymbol.getType_variable())
+                    );
+                }
                 constructorTDS(body, tds_procedure);
+
+                controleSemantiqueDeclProcedure(node, tds_procedure);
             }
             case DECL_FUNC -> {
-                controleSemantiqueDeclFonction(node, tds);
                 List<Node> children = node.getChildren();
+
                 String nom_fonction = children.get(0).getValue();
+                if (tds.containsSymbol(nom_fonction, SymbolType.FUNCTION)) {
+                    SemanticControls.printError("The function " + nom_fonction + " is already declared", node);
+                    return;
+                }
                 String valeur_retour = children.get(1).getChildren().get(0).getValue();
+                if (valeur_retour.equalsIgnoreCase("access")) {
+                    valeur_retour = children.get(1).getChildren().get(0)
+                            .getChildren().get(0).getValue();
+                }
+                List<ParamSymbol> paramSymbols = new ArrayList<>();
                 if (children.get(0).getChildren().size() != 0) {
                     List<Node> param = new ArrayList<>();
                     for (Node child : children.get(0).getChildren()) {
                         param.add(child);
                     }
 
-                    List<ParamSymbol> paramSymbols = new ArrayList<>();
                     for (Node p : param) {
                         int children_number = p.getChildren().size();
                         if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("out")) {
@@ -221,8 +256,12 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
 
                 Tds tds_function = new Tds(nom_fonction);
-
                 tds.addChild(tds_function);
+                for (ParamSymbol paramSymbol: paramSymbols) {
+                    tds_function.addSymbol(
+                            new VariableSymbol(SymbolType.VARIABLE, 0, paramSymbol.getName(), paramSymbol.getType_variable())
+                    );
+                }
 
                 if (children.get(2).getType() == NodeType.BODY) {
                     Node body = children.get(2);
@@ -234,13 +273,15 @@ vérifier que la valeur affecté correspond au type de déclaration
                         for (Node declaration : children.get(2).getChildren()) {
                             constructorTDS(declaration, tds_function);
                         }
+                        constructorTDS(body, tds_function);
                     } else {
-                        Node declaration = children.get(2);
-                        constructorTDS(declaration, tds_function);
-                        Node body = children.get(3);
+                        Node body = children.get(2);
                         constructorTDS(body, tds_function);
                     }
                 }
+
+
+                controleSemantiqueDeclFonction(node, tds_function);
             }
 
             case ELSE -> {
@@ -256,9 +297,9 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
             case POINT -> {
                 fillTDsChild(node, tds);
+                controleSemantiquePoint(node, tds);
             }
             case IF -> {
-                controleSemantiqueIf(node, tds);
                 List<Node> children = node.getChildren();
                 Node condition = children.get(0);
                 Node then = children.get(1);
@@ -279,9 +320,9 @@ vérifier que la valeur affecté correspond au type de déclaration
                 if (else_node != null) {
                     constructorTDS(else_node, tds);
                 }
+                controleSemantiqueIf(node, tds);
             }
             case FOR -> {
-                controleSemantiqueFor(node);
                 List<Node> children = node.getChildren();
                 String variable_compteur = children.get(0).getValue();
                 String direction = children.get(1).getValue();
@@ -293,12 +334,14 @@ vérifier que la valeur affecté correspond au type de déclaration
                 VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, variable_compteur, "INTEGER");
                 tds_for.addSymbol(variableSymbol);
                 constructorTDS(loop, tds_for);
+                controleSemantiqueFor(node, tds_for);
             }
             case WHILE -> {
                 List<Node> children = node.getChildren();
                 Node condition = children.get(0);
                 Node loop = children.get(1);
                 constructorTDS(loop, tds);
+                controleSemantiqueWhile(node, tds);
             }
             case REVERSE -> {
             }
