@@ -40,6 +40,16 @@ public class SemanticTest {
     }
 
     @Test
+    public void testFileErrorControl() throws IOException {
+        SyntaxTree ast = createAST("example/SemanticDemo/error_file_naming.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("error_file_naming.ada"));
+        Semantic semantic = new Semantic(ast);
+        List<String> errors = SemanticControls.getErrors();
+        assert errors.stream().anyMatch(s -> s.contains("controleSemantiqueFile"));
+        errors.clear();
+    }
+
+    @Test
     public void testDeclVarControl() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
         SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
