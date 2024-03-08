@@ -437,12 +437,17 @@ public class SemanticControls {
             }else if (left.getType()==NodeType.CALL){
                 List<Node> children_call = left.getChildren();
                 Node name_function = children_call.get(0);
-                Symbol symbol = tds.getSymbol(name_function.getValue(), SymbolType.FUNCTION);
-                if (((FunctionSymbol) symbol).getReturnType().equalsIgnoreCase("integer")){
-                    return;
-                }
-                else {
-                    printError("The condition is not a valid boolean expression because the function return type is not an integer: " + left.getValue(), left);
+
+                if(tds.getSymbol(name_function.getValue(), SymbolType.FUNCTION) != null){
+                    Symbol symbol = tds.getSymbol(name_function.getValue(), SymbolType.FUNCTION);
+                    if (((FunctionSymbol) symbol).getReturnType().equalsIgnoreCase("integer")){
+                        return;
+                    }
+                    else {
+                        printError("The condition is not a valid boolean expression because the function return type is not an integer: " + left.getValue(), left);
+                    }
+                } else {
+                    printError("The condition is not a valid boolean expression because " + name_function.getValue() + " is a procedure", left);
                 }
             }
             else if (test_expression_arithmetique(right, tds)) {
