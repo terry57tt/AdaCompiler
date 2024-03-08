@@ -11,12 +11,15 @@ procedure Pascal is
       Next: List;
    end record;
 
+
    function Get(L: List; I: Integer) return Integer is
-       ai1: Integer;
        ai2: Integer;
+       c : char;
    begin
       ai1 := 0;
-      if I = 0 then return L.Value; end if;
+      c := 'c';
+
+      if I = 0 then return L.val; end if;
       return Get(L, I - 1);
    end;
 
@@ -33,10 +36,10 @@ procedure Pascal is
 begin
    for i in 0 .. N-1 loop
       car := Set(R, i, 'z');
-      car := Get(R, i);
+      car := Get(R);
       compute_row(i);
    end loop;
-   while index < 10 loop
+   while index < N loop
       index := index + 1;
    end loop;
 end Pascalito;

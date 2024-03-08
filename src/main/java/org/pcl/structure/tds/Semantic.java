@@ -193,7 +193,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 tds.addChild(tds_procedure);
                 for (ParamSymbol paramSymbol: paramSymbols) {
                     tds_procedure.addSymbol(
-                            new VariableSymbol(SymbolType.VARIABLE, 0, paramSymbol.getName(), paramSymbol.getType_variable())
+                            new ParamSymbol(SymbolType.PARAM, 0, paramSymbol.getName(), paramSymbol.getType_variable())
                     );
                 }
                 constructorTDS(body, tds_procedure);
@@ -259,7 +259,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 tds.addChild(tds_function);
                 for (ParamSymbol paramSymbol: paramSymbols) {
                     tds_function.addSymbol(
-                            new VariableSymbol(SymbolType.VARIABLE, 0, paramSymbol.getName(), paramSymbol.getType_variable())
+                            new ParamSymbol(SymbolType.PARAM, 0, paramSymbol.getName(), paramSymbol.getType_variable())
                     );
                 }
 
