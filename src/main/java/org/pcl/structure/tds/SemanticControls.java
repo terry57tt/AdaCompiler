@@ -122,7 +122,6 @@ public class SemanticControls {
     /**
      * Appel de fonction :
      * Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a déclaré dans la TDS
-     * TODO : TDS renvoie le mauvais nombre de paramètres et ajouter Put() dans la TDS par défaut et ajouter log d'erreur pour tests
      */
     public static void controleSemantiqueAppelFonction(Node call_func, Tds tds) {
         List<Node> children = call_func.getChildren();
