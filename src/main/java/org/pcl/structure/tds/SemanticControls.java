@@ -432,8 +432,18 @@ public class SemanticControls {
             List<Node> children = condition.getChildren();
             Node left = children.get(0);
             Node right = children.get(1);
-            if (type_valeur(left, tds).equalsIgnoreCase("integer")){
+            if (type_valeur(left, tds).equalsIgnoreCase("integer")) {
                 return;
+            }else if (left.getType()==NodeType.CALL){
+                List<Node> children_call = left.getChildren();
+                Node name_function = children_call.get(0);
+                Symbol symbol = tds.getSymbol(name_function.getValue(), SymbolType.FUNCTION);
+                if (((FunctionSymbol) symbol).getReturnType().equalsIgnoreCase("integer")){
+                    return;
+                }
+                else {
+                    printError("The condition is not a valid boolean expression because the function return type is not an integer: " + left.getValue(), left);
+                }
             }
             else if (test_expression_arithmetique(right, tds)) {
                 return;
