@@ -32,91 +32,140 @@ public class SemanticTest {
     @Test
     public void testFileControl() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        errors.forEach(System.out::println);
-        assert errors.stream().noneMatch(s -> s.contains("BODY"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueFile"));
         errors.clear();
     }
 
     @Test
     public void testDeclVarControl() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("DECL_VAR"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueDeclVariable"));
         errors.clear();
     }
 
     @Test
     public void testForControl() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("FOR"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueFor"));
         errors.clear();
     }
 
     @Test
     public void testIfControl() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("IF"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueIf"));
         errors.clear();
     }
 
     @Test
     public void testDeclFunction() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("DECL_FUNC"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueDeclFonction"));
         errors.clear();
     }
 
     @Test
     public void testAppelFunction() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("CALL"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueAppelFonction"));
         errors.clear();
     }
 
     @Test
     public void testDeclProcedure() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("DECL_PROC"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueDeclProcedure"));
         errors.clear();
     }
 
     @Test
-    public void testDeclAffection() throws IOException {
+    public void testAppelProcedure() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("AFFECTATION"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueAppelProcedure"));
+        errors.clear();
+    }
+
+    @Test
+    public void testAffectation() throws IOException {
+        SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
+        Semantic semantic = new Semantic(ast);
+        List<String> errors = SemanticControls.getErrors();
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueAffectation"));
+        errors.clear();
+    }
+
+    @Test
+    public void testDeclAffectation() throws IOException {
+        SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
+        Semantic semantic = new Semantic(ast);
+        List<String> errors = SemanticControls.getErrors();
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueAffectationDecl"));
         errors.clear();
     }
 
     @Test
     public void testOperationControl() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("OPERATOR"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueOperateur"));
         errors.clear();
     }
 
     @Test
     public void testWhileControl() throws IOException {
         SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
         Semantic semantic = new Semantic(ast);
         List<String> errors = SemanticControls.getErrors();
-        assert errors.stream().noneMatch(s -> s.contains("WHILE"));
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueWhile"));
+        errors.clear();
+    }
+
+    @Test
+    public void testAccessVariable() throws IOException {
+        SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
+        Semantic semantic = new Semantic(ast);
+        List<String> errors = SemanticControls.getErrors();
+        assert errors.stream().noneMatch(s -> s.contains("controleSemantiqueAccessVariable"));
+        errors.clear();
+    }
+
+    @Test
+    public void testPoint() throws IOException {
+        SyntaxTree ast = createAST("example/SemanticDemo/demo_1.ada");
+        SemanticControls.setName_file(FileHandler.getFileName("demo_1.ada"));
+        Semantic semantic = new Semantic(ast);
+        List<String> errors = SemanticControls.getErrors();
+        assert errors.isEmpty() || errors.stream().noneMatch(s -> s.contains("controleSemantiquePoint"));
         errors.clear();
     }
 }
