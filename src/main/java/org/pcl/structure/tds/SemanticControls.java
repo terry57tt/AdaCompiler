@@ -554,6 +554,13 @@ public class SemanticControls {
                 boolean a = test_expression_arithmetique(left, tds);
                 if (!a){
                     return false;
+                } else {
+                    String type_right = type_valeur(right, tds);
+                    if(!type_right.equalsIgnoreCase("integer")){
+                        printError("Operation '" + node.getValue() + "' between two different types : integer" + " and " + type_right, node);
+                        return false;
+                    }
+                    return true;
                 }
             }
             if (right.getType() == NodeType.ADDITION || right.getType() == NodeType.SUBSTRACTION || right.getType() == NodeType.MULTIPLY || right.getType() == NodeType.DIVIDE || right.getType() == NodeType.REM){
@@ -561,6 +568,14 @@ public class SemanticControls {
                 boolean b = test_expression_arithmetique(right, tds);
                 if (!b){
                     return false;
+                }
+                else {
+                    String type_left = type_valeur(left, tds);
+                    if(!type_left.equalsIgnoreCase("integer")){
+                        printError("Operation '" + node.getValue() + "' between two different types : " + type_left + " and integer", node);
+                        return false;
+                    }
+                    return true;
                 }
             }
             else {
