@@ -14,7 +14,9 @@ public class SemanticControls {
 
     private static String name_file;
 
-    private final  static List<String> errors = new ArrayList<>();
+    private final static List<String> errors = new ArrayList<>();
+
+    private static String currentSemanticControl;
 
     public static void printError(String error, Node node) {
         String numberLine;
@@ -23,14 +25,13 @@ public class SemanticControls {
         else
             numberLine = " ";
         System.out.println(name_file + ":" + numberLine + ColorAnsiCode.ANSI_RED + "error: " + ColorAnsiCode.ANSI_RESET + error + "\n");
-        errors.add(error);
+        if (!errors.contains(currentSemanticControl)) {
+            errors.add(currentSemanticControl);
+        }
     }
 
-
-
-
-
     public static void controleSemantiqueFile(Node file){
+        currentSemanticControl = "controleSemantiqueFile";
         test_egalite_nom_debut_fin(file);
     }
 
@@ -42,12 +43,14 @@ public class SemanticControls {
      * Vérifier que le type est bien défini
      */
     public static void controleSemantiqueDeclVariable(Node decl_var, Tds tds){
+        currentSemanticControl = "controleSemantiqueDeclVariable";
         test_double_declaration(decl_var, tds);
         List<Node> children = decl_var.getChildren();
         test_existence_type(children.get(1).getValue(), tds, children.get(1));
     }
 
     public static void controleSemantiqueTypeAccess(String nom, String type_pointe, Tds tds){
+        currentSemanticControl = "controleSemantiqueTypeAccess";
         //Test la double déclaration
         Node node = new Node();
         boolean a = tds.containsSymbol(nom, SymbolType.TYPE_ACCESS);
@@ -65,6 +68,7 @@ public class SemanticControls {
     }
 
     public static void controleSemantiqueTypeRecord(String nom, List<VariableSymbol> fields, Tds tds){
+        currentSemanticControl = "controleSemantiqueTypeRecord";
         //Test la double déclaration
         Node node = new Node();
         boolean a = tds.containsSymbol(nom, SymbolType.TYPE_ACCESS);
@@ -89,6 +93,7 @@ public class SemanticControls {
     }
 
     public static void controleSemantiquePoint(Node point, Tds tds){
+        currentSemanticControl = "controleSemantiquePoint";
         if (point.getChildren().get(0).getType() == NodeType.CALL){
             controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
             String typeRetour = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
@@ -122,6 +127,8 @@ public class SemanticControls {
      * Normalement la variable compteur n’a pas besoin d’avoir été défini et on sait déjà qu’il s’agit d’un ident donc pas besoin de le vérifier
      */
     public static void controleSemantiqueFor(Node for_node, Tds tds){
+        currentSemanticControl = "controleSemantiqueFor";
+
         List<Node> children = for_node.getChildren();
         String variable_compteur = children.get(0).getValue();
         String direction = children.get(1).getValue();
@@ -142,6 +149,7 @@ public class SemanticControls {
      * Vérifier que le premier paramètre est bien une condition booleene
      */
     public static void controleSemantiqueIf(Node if_node, Tds globalTds){
+        currentSemanticControl = "controleSemantiqueIf";
         List<Node> children = if_node.getChildren();
         Node condition = children.get(0);
         Node then = children.get(1);
@@ -172,6 +180,8 @@ public class SemanticControls {
      * Vérifier que la valeur de retour est un type bien défini
      */
     public static void controleSemantiqueDeclFonction(Node decl_func, Tds tds){
+        currentSemanticControl = "controleSemantiqueDeclFonction";
+
         List<Node> children = decl_func.getChildren();
         Node valeur_retour = children.get(1);
         Node body = children.get(2);
@@ -187,6 +197,7 @@ public class SemanticControls {
      * Vérifier que le nombre de paramètre et le type corresponde à celui qu’on a déclaré dans la TDS
      */
     public static void controleSemantiqueAppelFonction(Node call_func, Tds tds) {
+        currentSemanticControl = "controleSemantiqueAppelFonction";
         List<Node> children = call_func.getChildren();
         Node call_name = children.get(0);
 
@@ -231,6 +242,7 @@ public class SemanticControls {
      * vérifier pas de return
      */
     public static void controleSemantiqueDeclProcedure(Node decl_proc, Tds tds){
+        currentSemanticControl = "controleSemantiqueDeclProcedure";
         List<Node> children = decl_proc.getChildren();
         Node body = children.get(1);
 
@@ -241,6 +253,7 @@ public class SemanticControls {
      * nombre param match et type (pas de return)
      */
     public static void controleSemantiqueAppelProcedure(Node call_proc, Tds tds){
+        currentSemanticControl = "controleSemantiqueAppelProcedure";
         int nb_params = call_proc.getChildren().size() - 1;
         // number of parameters match
         Symbol procedure_symbol = tds.getSymbol(call_proc.getChildren().get(0).getValue(), SymbolType.PROCEDURE);
@@ -264,6 +277,7 @@ public class SemanticControls {
     }
 
     public static void controleSemantiqueAffectation(Node affectation, Tds tds){
+        currentSemanticControl = "controleSemantiqueAffectation";
         List<Node> children = affectation.getChildren();
         Node variable = children.get(0);
         Node valeur = children.get(1);
@@ -301,6 +315,7 @@ public class SemanticControls {
     }
 
     public static void controleSemantiqueAffectationDecl(Node affectation, Tds tds){
+        currentSemanticControl = "controleSemantiqueAffectationDecl";
         List<Node> children = affectation.getChildren();
         Node variable = children.get(0);
         Node valeur = children.get(1);
@@ -332,10 +347,12 @@ public class SemanticControls {
      * Entier à gauche et droite
      */
     public static void controleSemantiqueOperateur(Node operateur, Tds tds){
+        currentSemanticControl = "controleSemantiqueOperateur";
         switch (operateur.getType()){
             case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR:
                 if(!test_expression_arithmetique(operateur, tds)){
-                    printError("The operation " + operateur.getValue() + " is not a valid arithmetic expression", operateur);
+                    errors.add("OPERATOR");
+                    printError("The operator " + operateur.getValue() + " is not a valid arithmetic expression", operateur);
                 }
                 break;
             case AND, OR:
@@ -348,6 +365,7 @@ public class SemanticControls {
      * Vérifier condition bien booléenne
      */
     public static void controleSemantiqueWhile(Node while_node, Tds tds){
+        currentSemanticControl = "controleSemantiqueWhile";
         Node condition = while_node.getChild(0);
         test_condition_booleene(condition, tds);
     }
@@ -356,6 +374,7 @@ public class SemanticControls {
      * Vérifier que la variable a bien été déclaré qu'on y a accès
      */
     public static void controleSemantiqueAccessVariable(Node access_var, Tds tds){
+        currentSemanticControl = "controleSemantiqueAccessVariable";
         Symbol symbol = tds.getSymbol(access_var.getValue(), SymbolType.VARIABLE);
         if (symbol == null){
             printError("The variable " + access_var.getValue() + " has not been declared", access_var);
@@ -366,6 +385,7 @@ public class SemanticControls {
      *Vérifier que le noeud à gauche existe, si existe récupérer tous les champs, regarder si celui de droite est dedans
      */
     // public static void controleSemantiquePoint(Node point, Tds tds){
+    //    currentSemanticControl = "controleSemantiquePoint";
     //     Node structure = point.firstChild();
     //     Node field = point.getChild(1);
     //     Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
@@ -377,7 +397,6 @@ public class SemanticControls {
     //     if(symbolField == null) symbolField = tds.getSymbol(field.getValue(), SymbolType.TYPE_RECORD);
     //     if(symbolField == null) printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue() , field);
     // }
-
 
     // Utility function
 
