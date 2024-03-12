@@ -29,7 +29,7 @@ procedure Quine is
 		w : u := s;
 	begin
 		put(n);put(':');put('u');put(':');put('=');
-		while w /= null loop
+		while w /= 5 loop
 			put('o');put('(');print_int(w.value);put(',');
 			put(')');
 			k := k+1;

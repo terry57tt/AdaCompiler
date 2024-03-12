@@ -135,6 +135,39 @@ public class Tds {
         return null;
     }
 
+    /** File all tds with deplacement. */
+    public void fillAllDeplTds() {
+        fillDeplTds();
+        for (Tds tds : child) {
+            tds.fillAllDeplTds();
+        }
+    }
+
+    /** File tds with deplacement. */
+    public void fillDeplTds() {
+        int depl = 0;
+        for (Symbol symbol : symbols) {
+            switch (symbol.getType()) {
+                case IDENTIFIER -> {
+                }
+                case OPERATION -> {
+                }
+                case FUNCTION -> {
+                }
+                case PROCEDURE -> {
+                }
+                case VARIABLE -> {
+                }
+                case PARAM -> {
+                }
+                case TYPE_RECORD -> {
+                }
+                case TYPE_ACCESS -> {
+                }
+            }
+        }
+    }
+
 
     public Symbol getSymbol(String SymbolName) {
         for (Symbol symbol : symbols) {

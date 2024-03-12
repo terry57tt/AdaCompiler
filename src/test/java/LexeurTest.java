@@ -23,7 +23,7 @@ public class LexeurTest {
 
         Stream<Character> characterStream = FileHandler.getCharacters(testFilePath);
         assertNotNull(characterStream);
-        
+
         String result = characterStream.map(String::valueOf).collect(Collectors.joining());
         // check that the content is correct
         String expectedContent = "access and begin else elsif end if false true\n";
@@ -54,7 +54,7 @@ public class LexeurTest {
         Stream<Character> stream = FileHandler.getCharacters(file);
 
         Lexeur lexeur = new Lexeur(automaton, stream, file);
-        
+
         ArrayList<Token> tokens = lexeur.tokenize();
 
         assert tokens.size() == 9;
@@ -72,10 +72,10 @@ public class LexeurTest {
         Stream<Character> stream = FileHandler.getCharacters(file);
 
         Lexeur lexeur = new Lexeur(automaton, stream, file);
-        
+
         ArrayList<Token> tokens = lexeur.tokenize();
         assert tokens.size() == 21 : "expected 21 tokens got " + tokens.size();
-        
+
         assert tokens.get(0).getType() == TokenType.KEYWORD: "expected TokenType.KEYWORD got " + tokens.get(0).getType() + " instead for " + tokens.get(0).getValue();
         assert tokens.get(0).getValue().equals("with"): "expected 'with' got " + tokens.get(0).getValue();
         assert tokens.get(0).getLineNumber() == 1: "expected line number 1 got " + tokens.get(0).getLineNumber() + " instead for " + tokens.get(0).getValue();

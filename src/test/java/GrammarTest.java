@@ -43,7 +43,7 @@ public class GrammarTest {
         Stream<Character> stream = FileHandler.getCharacters(file);
 
         Lexeur lexeur = new Lexeur(automaton, stream, file);
-        
+
         ArrayList<Token> tokens = lexeur.tokenize();
 
         Grammar grammar = new Grammar(tokens);

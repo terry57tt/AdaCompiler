@@ -68,7 +68,7 @@ procedure josephus is
    begin
       C := Circle(N);
       Print(C);
-      while C /= C.Next loop
+      while C /= C.Next.Next loop
          for I in 1 .. P-1 loop
             C := C.Next;
          end loop;
