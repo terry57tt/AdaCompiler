@@ -281,35 +281,60 @@ public class SemanticControls {
         List<Node> children = affectation.getChildren();
         Node variable = children.get(0);
         Node valeur = children.get(1);
-        VariableSymbol symbol = (VariableSymbol) tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
+
+        //search if the variable is a variable symbol in the tds
+        Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
+        //if not, search if the variable is a param symbol in the tds
+        if(symbol == null) symbol = tds.getSymbol(variable.getValue(), SymbolType.PARAM);
+
         List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
 
-
+        // if variable is neither a variable nor a parameter
         if (symbol == null){
-            printError("The variable " + variable.getValue() + " has not been declared", variable);
-        }
-
-        else if (valeur.getType() == NodeType.CALL){
-            if (tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.PROCEDURE) != null){
-                printError("The procedure " + valeur.getChildren().get(0).getValue() + " can't be used in an affectation", variable);
-                return;
+            if(variable.getType() == NodeType.POINT){
+                controleSemantiquePoint(variable, tds);
             }
-            controleSemantiqueAppelFonction(valeur, tds);
-            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue());
-            if (!symbol.getType_variable().equalsIgnoreCase(functionSymbol.getReturnType())) {
-                printError("Mismatch type for variable " + symbol.getName() + " : " + symbol.getType_variable() + " and " +  functionSymbol.getReturnType() , variable);
+            else printError("The variable " + variable.getValue() + " has not been declared", variable);
+            return;
+        }
+        // if the symbol is a param
+        if(symbol.getType() == SymbolType.PARAM){
+            test_in_out(variable, tds);
+            ParamSymbol paramSymbol = (ParamSymbol) symbol;
+            if(paramSymbol.getMode().equals("in out")) {
+                String type_valeur = type_valeur(valeur, tds);
+                if (!type_valeur.equalsIgnoreCase(type_valeur(variable, tds))){
+                    printError("Mismatch type for parameter " + variable.getValue() + " : " + (paramSymbol).getType_variable() + " and " + valeur, variable);
+                }
             }
             return;
         }
+        //if the symbol is a variable
+        if(symbol.getType() == SymbolType.VARIABLE){
+            VariableSymbol variableSymbol = (VariableSymbol) symbol;
 
-        else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
-                && operators.contains(valeur.getType())) {
-            test_expression_arithmetique(valeur, tds);
-        }
-        else {
-            String type_valeur = type_valeur(valeur, tds);
-            if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)){
+            if (valeur.getType() == NodeType.CALL){
+                if (tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.PROCEDURE) != null){
+                    printError("The procedure " + valeur.getChildren().get(0).getValue() + " can't be used in an affectation", variable);
+                    return;
+                }
+                controleSemantiqueAppelFonction(valeur, tds);
+                FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue());
+                if (!variableSymbol.getType_variable().equalsIgnoreCase(functionSymbol.getReturnType())) {
+                    printError("Mismatch type for variable " + symbol.getName() + " : " + variableSymbol.getType_variable() + " and " +  functionSymbol.getReturnType() , variable);
+                }
+                return;
+            }
+
+            else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
+                    && operators.contains(valeur.getType())) {
+                test_expression_arithmetique(valeur, tds);
+            }
+            else {
+                String type_valeur = type_valeur(valeur, tds);
+                if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)) {
                     printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + valeur, variable);
+                }
             }
         }
     }
@@ -665,6 +690,21 @@ public class SemanticControls {
                 }
             }
         }
+    }
+
+    private static boolean test_param(Node node, Tds tds){
+        Symbol symbol = tds.getSymbol(node.getValue());
+        if(symbol.getType() == null) return false;
+        return symbol.getType() == SymbolType.PARAM;
+    }
+
+    private static void test_in_out(Node node, Tds tds){
+        if(!test_param(node, tds)) return;
+        ParamSymbol param = (ParamSymbol) tds.getSymbol(node.getValue());
+        if(param.getMode().equals("in")){
+            printError("The mode of the parameter " + param.getName() + " is \"in\", it can not be overwrite", node);
+        }
+
     }
 
 

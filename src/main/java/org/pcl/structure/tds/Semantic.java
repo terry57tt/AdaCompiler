@@ -146,9 +146,8 @@ vérifier que la valeur affecté correspond au type de déclaration
                     SemanticControls.printError("The procedure " + nom_procedure + " is already declared", node);
                     return;
                 }
-                Node body = children.get(1);
                 List<ParamSymbol> paramSymbols = new ArrayList<>();
-                if (children.get(0).getChildren().size() != 0) {
+                if (!children.get(0).getChildren().isEmpty()) {
                     List<Node> param = new ArrayList<>();
                     for (Node child : children.get(0).getChildren()) {
                         param.add(child);
@@ -157,8 +156,8 @@ vérifier que la valeur affecté correspond au type de déclaration
 
                     for (Node p : param) {
                         int children_number = p.getChildren().size();
-                        if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("out")) {
-                            for (int i = 0; i < children_number - 3; i++) {
+                        if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("in out")) {
+                            for (int i = 0; i <= children_number - 3; i++) {
                                 String nom = p.getChildren().get(i).getValue();
                                 String type = p.getChildren().get(children_number - 1).getValue();
                                 String mode = "in out";
@@ -192,11 +191,26 @@ vérifier que la valeur affecté correspond au type de déclaration
                 Tds tds_procedure = new Tds(nom_procedure);
                 tds.addChild(tds_procedure);
                 for (ParamSymbol paramSymbol: paramSymbols) {
-                    tds_procedure.addSymbol(
-                            new ParamSymbol(SymbolType.PARAM, 0, paramSymbol.getName(), paramSymbol.getType_variable())
-                    );
+                    tds_procedure.addSymbol(paramSymbol);
                 }
-                constructorTDS(body, tds_procedure);
+
+
+                if (children.get(1).getType() == NodeType.BODY) {
+                    Node body = children.get(2);
+                    constructorTDS(body, tds_procedure);
+                }
+                else {
+                    if (children.get(1).getType() == NodeType.DECLARATION) {
+                        Node body = children.get(2);
+                        for (Node declaration : children.get(1).getChildren()) {
+                            constructorTDS(declaration, tds_procedure);
+                        }
+                        constructorTDS(body, tds_procedure);
+                    } else {
+                        Node body = children.get(1);
+                        constructorTDS(body, tds_procedure);
+                    }
+                }
 
                 controleSemantiqueDeclProcedure(node, tds_procedure);
             }
@@ -214,7 +228,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                             .getChildren().get(0).getValue();
                 }
                 List<ParamSymbol> paramSymbols = new ArrayList<>();
-                if (children.get(0).getChildren().size() != 0) {
+                if (!children.get(0).getChildren().isEmpty()) {
                     List<Node> param = new ArrayList<>();
                     for (Node child : children.get(0).getChildren()) {
                         param.add(child);
@@ -222,8 +236,8 @@ vérifier que la valeur affecté correspond au type de déclaration
 
                     for (Node p : param) {
                         int children_number = p.getChildren().size();
-                        if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("out")) {
-                            for (int i = 0; i < children_number - 3; i++) {
+                        if (p.getChildren().get(children_number - 2).getValue().equalsIgnoreCase("in out")) {
+                            for (int i = 0; i <= children_number - 3; i++) {
                                 String nom = p.getChildren().get(i).getValue();
                                 String type = p.getChildren().get(children_number - 1).getValue();
                                 String mode = "in out";
@@ -258,9 +272,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 Tds tds_function = new Tds(nom_fonction);
                 tds.addChild(tds_function);
                 for (ParamSymbol paramSymbol: paramSymbols) {
-                    tds_function.addSymbol(
-                            new ParamSymbol(SymbolType.PARAM, 0, paramSymbol.getName(), paramSymbol.getType_variable())
-                    );
+                    tds_function.addSymbol(paramSymbol);
                 }
 
                 if (children.get(2).getType() == NodeType.BODY) {

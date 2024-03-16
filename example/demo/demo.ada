@@ -12,24 +12,32 @@ procedure Pascal is
    end record;
 
 
-   function Get(L: List; I: Integer) return Integer is
+   function Get(L: in List; I: in out Integer) return Integer is
        ai2: Integer;
        c : char;
    begin
       ai1 := 0;
       c := 'c';
+      L := d;
+      I := 3;
+      I := 'a';
 
       if I = 0 then return L.val; end if;
       return Get(L, I - 1);
    end;
 
-   procedure Set(L: List; I, V: Integer) is
+   procedure Set(L: in out List; I, V: in Integer) is
     ab1: Integer;
    begin
+      ab1 := 'c';
+      set1 := 3;
+      L := d;
+      I := 3;
+      V := 'a';
       if I = 0 then
          L.Value := v;
       else
-         Set(L, I - 1, V);
+         Set(L, I - 1, V, 6);
       end if;
    end;
 
