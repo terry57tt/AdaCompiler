@@ -504,8 +504,7 @@ public class SemanticControls {
             Node right = children.get(1);
             // in a while or if condition
             if (condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("/=")) {
-
-                System.out.println("left : " + return_type_node(left,tds) + "right : " + return_type_node(right,tds));
+                if(return_type_node(left,tds).equalsIgnoreCase("point") || return_type_node(right,tds).equalsIgnoreCase("point")) return;
                 // cas ou les types ne correspondent pas
                 if (!return_type_node(left,tds).equalsIgnoreCase(return_type_node(right,tds))) {
                     printError("The condition is not a valid boolean expression because the operands are not of the same type: " + left.getValue() + " " + right.getValue(), left);
@@ -670,22 +669,8 @@ public class SemanticControls {
                         yield "none";
                     }
                 }
-                case POINT -> { //TODO : renoyer type de la structure
-                    Node structure = currentNode.getChildren().get(0);
-                    Node field = currentNode.getChildren().get(1);
-                    Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.TYPE_RECORD);
-                    if (symbolStructure == null) {
-                        yield "none";
-                    }
-                    List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
-                    for (VariableSymbol field1 : fields) {
-                        if (field1.getName().equalsIgnoreCase(field.getValue())) {
-                            yield field1.getType_variable();
-                        }
-                    }
-                    yield "none";
-                }
-                default -> "none"; // never reached
+                case POINT -> "point";
+                default -> type_valeur(currentNode, tds);
             };
         }catch (Exception e){
             return type_valeur(currentNode, tds);
