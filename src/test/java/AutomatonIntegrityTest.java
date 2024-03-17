@@ -51,7 +51,7 @@ public class AutomatonIntegrityTest {
     /** Verify advance function */
     @Test
     public void advanceAutomatonTest(){
-        
+
         AutomatonState stateA = new AutomatonState('a', false);
         AutomatonState stateB = new AutomatonState('b', true, TokenType.KEYWORD);
         AutomatonState stateC = new AutomatonState('c', false);
@@ -73,7 +73,7 @@ public class AutomatonIntegrityTest {
 
         automaton.advance('d');
         assert automaton.isFinal();
-        assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER;    
+        assert automaton.getCurrentState().getTokenType() == TokenType.IDENTIFIER;
     }
 
     /** verify that the loop are correct */

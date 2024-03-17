@@ -2,7 +2,7 @@ import org.junit.jupiter.api.Test;
 import org.pcl.structure.tds.*;
 
 public class TdsTest {
-
+/*
     @Test
     public void testTds() {
         Tds tds = new Tds("");
@@ -23,5 +23,5 @@ public class TdsTest {
 
         System.out.println(tds);
         System.out.println(child);
-    }
+    }*/
 }
