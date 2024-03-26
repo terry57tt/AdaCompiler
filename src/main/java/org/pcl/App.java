@@ -78,7 +78,7 @@ public class App {
             }
 
             Semantic semantic = new Semantic(tree);
-
+            semantic.getGlobalTds().fillAllDeplTds();
             semantic.getGlobalTds().displayWithChild();
         }
     }
