@@ -149,7 +149,6 @@ public class Tds {
     public void fillDeplTds() {
         int depl = 0;
         for (Symbol symbol : symbols) {
-            System.out.println(symbol.getName() + " " + symbol.getDeplacement());
             switch (symbol.getType()) {
                 case IDENTIFIER, OPERATION -> {
                     symbol.setDeplacement(null);

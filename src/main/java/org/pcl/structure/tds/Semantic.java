@@ -308,8 +308,8 @@ vérifier que la valeur affecté correspond au type de déclaration
                 fillTDsChild(node, tds);
             }
             case POINT -> {
-                fillTDsChild(node, tds);
                 controleSemantiquePoint(node, tds);
+                fillTDsChild(node, tds);
             }
             case IF -> {
                 List<Node> children = node.getChildren();
