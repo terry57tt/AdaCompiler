@@ -1945,6 +1945,13 @@ public class Grammar {
                 currentNode.setMeaningful(true);
             }
 
+            //nodeChampstar in record (type block)
+            if (currentNode.getValue().equals("nodeChampstar") && currentNode.getParent().getValue().equalsIgnoreCase("record")) {
+                currentNode.deleteFromParent();
+                currentNode.getParent().addChildren(currentNode.getChildren());
+            }
+
+
             //function block
             if (currentNode.getValue().equals("nodeDecl")
                     && currentNode.firstChild().getValue().equalsIgnoreCase("function")) {
