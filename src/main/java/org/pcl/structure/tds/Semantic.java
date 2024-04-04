@@ -63,6 +63,8 @@ vérifier que la valeur affecté correspond au type de déclaration
 
     public void buildTds(SyntaxTree ast) {
         Node root = ast.getRootNode();
+        FunctionSymbol functionSymbol = new FunctionSymbol(SymbolType.FUNCTION, 0, "Put", "NONE");
+        GlobalTds.addSymbol(functionSymbol);
         constructorTDS(root, GlobalTds);
     }
 
@@ -115,13 +117,15 @@ vérifier que la valeur affecté correspond au type de déclaration
                     if (type.equalsIgnoreCase("RECORD")) {
                         List<VariableSymbol> fields = new ArrayList<>();
                         for (Node field : type_node.getChildren()) {
-                            String nom_field = field.getChildren().get(0).getValue();
-                            String type_field = field.getChildren().get(1).getValue();
-                            VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom_field, type_field);
-                            fields.add(variableSymbol);
+                            for (int i = 0; i < field.getChildren().size() - 1; i++) {
+                                String nom_field = field.getChildren().get(i).getValue();
+                                String type_field = field.getChildren().get(field.getChildren().size() - 1).getValue();
+                                VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom_field, type_field);
+                                fields.add(variableSymbol);
                         }
                         TypeRecordSymbol typeRecordSymbol = new TypeRecordSymbol(SymbolType.TYPE_RECORD, 0, nom, fields);
                         tds.addSymbol(typeRecordSymbol);
+                        }
                     }
                     else if (type.equalsIgnoreCase("ACCESS")) {
                         String type_pointe = children.get(1).getChildren().get(0).getChildren().get(0).getValue();
@@ -132,12 +136,28 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
             case DECL_VAR -> {
                 List<Node> children = node.getChildren();
-                String nom = children.get(0).getValue();
-                String type = children.get(1).getValue();
-                VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
-                controleSemantiqueDeclVariable(node, tds);
-                tds.addSymbol(variableSymbol);
+                List<String> noms_variables = new ArrayList<>();
+                for (int i = 0; i < children.size() - 1; i++) {
+                    noms_variables.add(children.get(i).getValue());
+                }
+                String type = children.get(children.size() - 1).getValue();
+                if (tds.containsSymbol(type, SymbolType.TYPE_RECORD)) {
+                    for (String nom : noms_variables) {
+                        TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type, SymbolType.TYPE_RECORD);
+                        StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, nom, type, typeRecordSymbol.getFields());
+                        tds.addSymbol(structureSymbol);
+                    }
+                }
+                else {
+                    for (String nom : noms_variables) {
+                        System.out.println(nom);
+                        VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
+                        controleSemantiqueDeclVariable(node, tds);
+                        tds.addSymbol(variableSymbol);
+                    }
+                }
             }
+
             case DECL_PROC -> {
 
                 List<Node> children = node.getChildren();
@@ -175,7 +195,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                         else {
                             for (int i = 0; i < children_number - 1; i++) {
                                 String nom = p.getChildren().get(i).getValue();
-                                String type = p.getChildren().get(children_number -1).getValue();
+                                String type = p.getChildren().get(children_number - 1).getValue();
                                 ParamSymbol paramSymbol = new ParamSymbol(SymbolType.PARAM, 0, nom, type);
                                 paramSymbols.add(paramSymbol);
                             }
@@ -194,9 +214,8 @@ vérifier que la valeur affecté correspond au type de déclaration
                     tds_procedure.addSymbol(paramSymbol);
                 }
 
-
                 if (children.get(1).getType() == NodeType.BODY) {
-                    Node body = children.get(2);
+                    Node body = children.get(1);
                     constructorTDS(body, tds_procedure);
                 }
                 else {
@@ -214,6 +233,7 @@ vérifier que la valeur affecté correspond au type de déclaration
 
                 controleSemantiqueDeclProcedure(node, tds_procedure);
             }
+
             case DECL_FUNC -> {
                 List<Node> children = node.getChildren();
 
@@ -366,7 +386,10 @@ vérifier que la valeur affecté correspond au type de déclaration
             case EXPRESSION -> {
             }
             case CALL -> {
-                SemanticControls.controleSemantiqueAppelFonction(node, tds);
+                if (node.getChildren().get(0).getValue().equals("Put")) {
+                    return;
+                }
+                controleSemantiqueAppelFonction(node, tds);
             }
 
         }

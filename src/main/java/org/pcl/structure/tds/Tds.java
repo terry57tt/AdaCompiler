@@ -126,6 +126,13 @@ public class Tds {
     }
 
     public Symbol getSymbol(String SymbolName, SymbolType type) {
+        if (type == VARIABLE) {
+            for (Symbol symbol : symbols) {
+                if (symbol.getName().equals(SymbolName) && (symbol.getType() == VARIABLE || symbol.getType() == STRUCTURE)) {
+                    return symbol;
+                }
+            }
+        }
         for (Symbol symbol : symbols) {
             if (symbol.getName().equals(SymbolName) && symbol.getType() == type) {
                 return symbol;
