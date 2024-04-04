@@ -125,8 +125,6 @@ public class SemanticControls {
             try {
                 List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
                 for (VariableSymbol field1 : fields) {
-                    System.out.println("GetName " + field1.getName());
-                    System.out.print("getvalue " + field.getValue());
                     if (field1.getName().equalsIgnoreCase(field.getValue())) {
                         return;
                     }
@@ -721,6 +719,10 @@ public class SemanticControls {
 
     private static String type_valeur(Node valeur, Tds tds) {
         List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
+        if (valeur.getType() == NodeType.POINT){
+            controleSemantiquePoint(valeur, tds);
+            return getTypeNoeudPoint(valeur, tds);
+        }
         try {
             ;
             // Essaie de parser la valeur en entier
