@@ -4,6 +4,7 @@ import org.pcl.ColorAnsiCode;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
+import org.stringtemplate.v4.ST;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,26 +95,93 @@ public class SemanticControls {
 
     public static void controleSemantiquePoint(Node point, Tds tds) {
         currentSemanticControl = "controleSemantiquePoint";
-        if (point.getChildren().get(0).getType() == NodeType.CALL) {
-            controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
-            String typeRetour = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
-            return;
-        }
-        Node structure = point.getChildren().get(0);
-        Node field = point.getChildren().get(1);
-        Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.TYPE_RECORD);
-        if (symbolStructure == null) {
-            printError(structure.getValue() + " is not a declared structure", structure);
-            return;
-        }
-        List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
-        for (VariableSymbol field1 : fields) {
-            if (field1.getName().equalsIgnoreCase(field.getValue())) {
-                return;
+        if (point.getChildren().get(0).getType() == NodeType.POINT) {
+            String typeNoeudPoint = getTypeNoeudPoint(point, tds);
+            if (typeNoeudPoint.equals(" ")) return;
+            else {
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(typeNoeudPoint, SymbolType.STRUCTURE);
+                if (symbolStructure == null) {
+                    printError(typeNoeudPoint + " is not a declared structure", point);
+                    return;
+                }
+                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                for (VariableSymbol field1 : fields) {
+                    if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        return;
+                    }
+                }
+                printError("The field " + field.getValue() + " doesn't exist for " + typeNoeudPoint, field);
             }
         }
-        printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue(), field);
+        else {
+            Node structure = point.getChildren().get(0);
+            Node field = point.getChildren().get(1);
+            Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
+            if (symbolStructure == null) {
+                printError(structure.getValue() + " is not a declared structure", structure);
+                return;
+            }
+            try {
+                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                for (VariableSymbol field1 : fields) {
+                    System.out.println("GetName " + field1.getName());
+                    System.out.print("getvalue " + field.getValue());
+                    if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        return;
+                    }
+                }
+                printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue(), field);
+            }
+            catch (Exception e){
+                printError("The variable " + structure.getValue() + " is not a declared structure", structure);
+            }
+        }
     }
+
+    public static String getTypeNoeudPoint(Node point, Tds tds){
+        if (point.getChildren().get(0).getType() != NodeType.POINT){
+            if (point.getChildren().get(0).getType() == NodeType.CALL){
+                controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
+                String returnType = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(returnType, SymbolType.STRUCTURE);
+                if (symbolStructure == null) {
+                    printError(returnType + " is not a declared structure", point);
+                    return " ";
+                }
+                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                for (VariableSymbol field1 : fields) {
+                    if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        return field1.getType_variable();
+                    }
+                }
+                printError("The field " + field.getValue() + " doesn't exist for " + returnType, field);
+                return " ";
+            }
+            else {
+                Node structure = point.getChildren().get(0);
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.STRUCTURE);
+                if (symbolStructure == null) {
+                    printError(structure.getValue() + " is not a declared structure", structure);
+                    return " ";
+                }
+                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                for (VariableSymbol field1 : fields) {
+                    if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        return field1.getType_variable();
+                    }
+                }
+                printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue(), field);
+                return " ";
+            }
+        }
+        else {
+            return getTypeNoeudPoint(point.getChildren().get(0), tds);
+        } 
+    }
+
 
 
     /**

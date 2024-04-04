@@ -10,6 +10,8 @@ import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.pcl.structure.tds.SymbolType.*;
+
 /** Represent the TDS. */
 public class Tds {
 
@@ -124,6 +126,13 @@ public class Tds {
     }
 
     public Symbol getSymbol(String SymbolName, SymbolType type) {
+        if (type == VARIABLE) {
+            for (Symbol symbol : symbols) {
+                if (symbol.getName().equals(SymbolName) && (symbol.getType() == VARIABLE || symbol.getType() == STRUCTURE)) {
+                    return symbol;
+                }
+            }
+        }
         for (Symbol symbol : symbols) {
             if (symbol.getName().equals(SymbolName) && symbol.getType() == type) {
                 return symbol;
@@ -148,21 +157,41 @@ public class Tds {
         int depl = 0;
         for (Symbol symbol : symbols) {
             switch (symbol.getType()) {
-                case IDENTIFIER -> {
+                case IDENTIFIER, OPERATION -> {
+                    symbol.setDeplacement(null);
                 }
-                case OPERATION -> {
-                }
-                case FUNCTION -> {
-                }
-                case PROCEDURE -> {
-                }
-                case VARIABLE -> {
+                case FUNCTION, PROCEDURE -> {
+                    symbol.setDeplacement(null);
                 }
                 case PARAM -> {
+                    symbol.setDeplacement(depl);
+                    String type = ((ParamSymbol) symbol).getType_variable();
+                    if (type.equalsIgnoreCase("integer")) {
+                        depl += 4;
+                    } else  if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("character")) {
+                        depl++;
+                    } else {
+                        symbol.setDeplacement(null);
+                    }
+                }
+                case VARIABLE -> {
+                    symbol.setDeplacement(depl);
+                    String type = ((VariableSymbol) symbol).getType_variable();
+                    if (type.equalsIgnoreCase("integer")) {
+                        depl += 4;
+                    } else  if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("character")) {
+                        depl++;
+                    } else {
+                        symbol.setDeplacement(null);
+                    }
                 }
                 case TYPE_RECORD -> {
+                    symbol.setDeplacement(null);
+                    // Not implemented
                 }
                 case TYPE_ACCESS -> {
+                    symbol.setDeplacement(null);
+                    // Not implemented
                 }
             }
         }
@@ -188,9 +217,13 @@ public class Tds {
         System.out.println(" TDS - Région:" + region + " Imbrication:" + imbrication + " Nom : " + name);
         asciiTable.addRow("Nom", "Contenu");
         asciiTable.addRule();
-
+        String depl = "";
         for (Symbol symbol : symbols) {
-            AT_Cell cell = asciiTable.addRow(symbol.getName(), symbol).getCells().get(1);
+            depl = "";
+            if (symbol.getDeplacement() != null) {
+                depl = "<br>deplacement: " + symbol.getDeplacement();
+            }
+            AT_Cell cell = asciiTable.addRow(symbol.getName(), symbol + depl).getCells().get(1);
             cell.getContext().setPadding(1);
             cell.getContext().setTextAlignment(TextAlignment.LEFT);
             asciiTable.addRule();

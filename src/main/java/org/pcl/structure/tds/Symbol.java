@@ -7,18 +7,22 @@ public abstract class Symbol {
 
     private SymbolType type;
 
-    private int deplacement;
+    private Integer deplacement;
 
     private String name;
 
     public Symbol(SymbolType type, int deplacement, String name) {
         this.type = type;
         this.name = name;
-        this.deplacement = deplacement;
+        this.deplacement = null;
     }
 
-    public int getDeplacement() {
+    public Integer getDeplacement() {
         return deplacement;
+    }
+
+    public void setDeplacement(Integer deplacement) {
+        this.deplacement = deplacement;
     }
 
     public SymbolType getType() {

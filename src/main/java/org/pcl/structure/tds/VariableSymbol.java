@@ -30,6 +30,6 @@ public class VariableSymbol extends Symbol {
 
     @Override
     public String toString() {
-        return "VARIABLE - Type: " + type_variable;
+        return "VARIABLE - Nom " + getName() + " Type: " + type_variable;
     }
 }

@@ -9,8 +9,9 @@ public enum SymbolType {
     VARIABLE,
     PARAM,
     TYPE_RECORD,
-    TYPE_ACCESS
+    TYPE_ACCESS,
 
+    STRUCTURE
 
 
 }
