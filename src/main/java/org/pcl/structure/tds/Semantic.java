@@ -122,10 +122,10 @@ vérifier que la valeur affecté correspond au type de déclaration
                                 String type_field = field.getChildren().get(field.getChildren().size() - 1).getValue();
                                 VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom_field, type_field);
                                 fields.add(variableSymbol);
+                            }
                         }
                         TypeRecordSymbol typeRecordSymbol = new TypeRecordSymbol(SymbolType.TYPE_RECORD, 0, nom, fields);
                         tds.addSymbol(typeRecordSymbol);
-                        }
                     }
                     else if (type.equalsIgnoreCase("ACCESS")) {
                         String type_pointe = children.get(1).getChildren().get(0).getChildren().get(0).getValue();
@@ -386,7 +386,7 @@ vérifier que la valeur affecté correspond au type de déclaration
             case EXPRESSION -> {
             }
             case CALL -> {
-                if (node.getChildren().get(0).getValue().equals("Put")) {
+                if (node.getChildren().get(0).getValue().equalsIgnoreCase("Put")) {
                     return;
                 }
                 controleSemantiqueAppelFonction(node, tds);

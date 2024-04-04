@@ -100,12 +100,12 @@ public class SemanticControls {
             if (typeNoeudPoint.equals(" ")) return;
             else {
                 Node field = point.getChildren().get(1);
-                Symbol symbolStructure = tds.getSymbol(typeNoeudPoint, SymbolType.STRUCTURE);
+                Symbol symbolStructure = tds.getSymbol(typeNoeudPoint, SymbolType.TYPE_RECORD);
                 if (symbolStructure == null) {
                     printError(typeNoeudPoint + " is not a declared structure", point);
                     return;
                 }
-                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
                 for (VariableSymbol field1 : fields) {
                     if (field1.getName().equalsIgnoreCase(field.getValue())) {
                         return;
@@ -141,20 +141,20 @@ public class SemanticControls {
         if (point.getChildren().get(0).getType() != NodeType.POINT){
             if (point.getChildren().get(0).getType() == NodeType.CALL){
                 controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
-                String returnType = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                String returnType = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
                 Node field = point.getChildren().get(1);
-                Symbol symbolStructure = tds.getSymbol(returnType, SymbolType.STRUCTURE);
+                Symbol symbolStructure = tds.getSymbol(returnType, SymbolType.TYPE_RECORD);
                 if (symbolStructure == null) {
                     printError(returnType + " is not a declared structure", point);
                     return " ";
                 }
-                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
                 for (VariableSymbol field1 : fields) {
                     if (field1.getName().equalsIgnoreCase(field.getValue())) {
                         return field1.getType_variable();
                     }
                 }
-                printError("The field " + field.getValue() + " doesn't exist for " + returnType, field);
+                printError("The field " + field.getValue() + " doesn't exist for" + returnType + " which is the result of the function " + point.getChildren().get(0).getChildren().get(0).getValue(), field);
                 return " ";
             }
             else {
