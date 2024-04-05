@@ -1601,6 +1601,19 @@ public class Grammar {
                     }
                 }
 
+            //return in function declaration (return nodeType)
+            if(currentNode.getValue().equals("nodeType") && currentNode.getParent().getValue().equals("nodeDecl")
+                    && currentNode.getChildren().size() == 1){
+                int indexCurrentNode = currentNode.getParent().getChildren().indexOf(currentNode);
+                if (currentNode.getParent().getChild(indexCurrentNode-1).getValue().equalsIgnoreCase("return")
+                && currentNode.getParent().getChild(indexCurrentNode+1).getValue().equalsIgnoreCase("is")){
+                    currentNode.deleteFromParent();
+                    currentNode.getParent().getChildren().get(indexCurrentNode-1).setMeaningful(true);
+                    currentNode.getParent().getChildren().get(indexCurrentNode-1).addChild(currentNode);
+                }
+                //want nodeType to be deleted
+            }
+
 
             } else {
                 //on est sur un noeud terminal
@@ -2197,6 +2210,8 @@ public class Grammar {
                 currentNode.deleteFromParent();
                 currentNode.getParent().getChildren().get(index - 1).addChild(currentNode);
             }
+
+
 
 
 
