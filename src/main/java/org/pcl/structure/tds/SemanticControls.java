@@ -117,24 +117,42 @@ public class SemanticControls {
             }
         }
         else {
-            Node structure = point.getChildren().get(0);
-            Node field = point.getChildren().get(1);
-            Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
-            if (symbolStructure == null) {
-                printError(structure.getValue() + " is not a declared structure ####", structure);
-                return;
-            }
-            try {
-                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+            if (point.getChildren().get(0).getType() == NodeType.CALL) {
+                controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
+                String returnType = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(returnType, SymbolType.TYPE_RECORD);
+                if (symbolStructure == null) {
+                    printError(returnType + " is not a declared structure", point);
+                    return;
+                }
+                List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
                 for (VariableSymbol field1 : fields) {
                     if (field1.getName().equalsIgnoreCase(field.getValue())) {
                         return;
                     }
                 }
-                printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue(), field);
-            }
-            catch (Exception e){
-                printError("The variable " + structure.getValue() + " is not a declared structure", structure);
+                printError("The field " + field.getValue() + " doesn't exist for " + returnType + " which is the result of the function " + point.getChildren().get(0).getChildren().get(0).getValue(), field);
+                return;
+            } else {
+                Node structure = point.getChildren().get(0);
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
+                if (symbolStructure == null) {
+                    printError(structure.getValue() + " is not a declared structure ####", structure);
+                    return;
+                }
+                try {
+                    List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                    for (VariableSymbol field1 : fields) {
+                        if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                            return;
+                        }
+                    }
+                    printError("The field " + field.getValue() + " doesn't exist for " + structure.getValue(), field);
+                } catch (Exception e) {
+                    printError("The variable " + structure.getValue() + " is not a declared structure", structure);
+                }
             }
         }
     }
@@ -154,6 +172,7 @@ public class SemanticControls {
                     return field1.getType_variable();
                 }
             }
+            printError("The field " + field.getValue() + " doesn't exist for " + typeNoeudPoint, field);
             return " ";
         }
     }
@@ -197,7 +216,21 @@ public class SemanticControls {
             }
         }
         else {
-            return getTypeNoeudPointAvant(point.getChildren().get(0), tds);
+            String typeNoeudPointAvant = getTypeNoeudPointAvant(point.getChildren().get(0), tds);
+            Node field = point.getChildren().get(1);
+            Symbol symbolStructure = tds.getSymbol(typeNoeudPointAvant, SymbolType.TYPE_RECORD);
+            if (symbolStructure == null) {
+                printError(typeNoeudPointAvant + " is not a declared structure", point);
+                return " ";
+            }
+            List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
+            for (VariableSymbol field1 : fields) {
+                if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                    return field1.getType_variable();
+                }
+            }
+            printError("The field " + field.getValue() + " doesn't exist for " + typeNoeudPointAvant, field);
+            return " ";
         } 
     }
 
@@ -418,7 +451,6 @@ public class SemanticControls {
                 test_expression_arithmetique(valeur, tds);
             }
             else if (valeur.getType() == NodeType.POINT){
-                controleSemantiquePoint(valeur, tds);
                 String typeNoeudPoint = getTypeNoeudPoint(valeur, tds);
                 if (!variableSymbol.getType_variable().equalsIgnoreCase(typeNoeudPoint)){
                     if (typeNoeudPoint.equals(" ")) return;
@@ -750,7 +782,6 @@ public class SemanticControls {
     private static String type_valeur(Node valeur, Tds tds) {
         List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
         if (valeur.getType() == NodeType.POINT){
-            controleSemantiquePoint(valeur, tds);
             return getTypeNoeudPoint(valeur, tds);
         }
         try {
@@ -808,7 +839,7 @@ public class SemanticControls {
                 case AND, OR, EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR, INFERIOR_EQUAL -> "boolean";
                 case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, NEGATIVE_SIGN -> "integer";
                 case CALL -> {
-                    FunctionSymbol function = (FunctionSymbol) tds.getSymbol(currentNode.getValue(), SymbolType.FUNCTION);
+                    FunctionSymbol function = (FunctionSymbol) tds.getSymbol(currentNode.getChildren().get(0).getValue(), SymbolType.FUNCTION);
                     if(function!= null){
                         yield function.getReturnType();
                     }

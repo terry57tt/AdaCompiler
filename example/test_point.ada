@@ -12,6 +12,11 @@ procedure Record_Test is
       E: Character;
    end record;
 
+   type T is record
+         G: S;
+         H: Character;
+      end record;
+
    function Create_R (A_Char, B_Char : Character) return R is
       Result : R;
    begin
@@ -28,6 +33,14 @@ procedure Record_Test is
       Result.E := E_Char;
       return Result;
    end Create_S;
+
+   function Create_T (G_Struct : S; H_Char : Character) return T is
+         Result : T;
+      begin
+         Result.G := G_Struct;
+         Result.H := H_Char;
+         return Result;
+      end Create_T;
 
    V: R := Create_R('1', '2');
    X: S := Create_S('0', V, '3');
@@ -57,4 +70,13 @@ begin
    if X = V then
     put('p');
    end if;
+
+   -- Test valide: Imbrication profonde avec fonction
+   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.A;
+
+   -- Test valide: Imbrication profonde avec fonction
+   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.B;
+
+   -- Test invalide: Imbrication profonde avec fonction
+   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.H;
 end Record_Test;
