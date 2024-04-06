@@ -76,7 +76,7 @@ vérifier que la valeur affecté correspond au type de déclaration
 
         switch (node.getType()) {
             case FILE, DECLARATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, RETURN, BEGIN,
-                    NOT, IN, INOUT, MODE, RECORD, ACCESS, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE,
+                    NOT, IN, INOUT, MODE, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE,
                     NULL, INITIALIZATION, FIELD, IS-> fillTDsChild(node, tds);
 
             case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, OR, AND,
@@ -86,6 +86,12 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
 
             case PROGRAM -> {
+            }
+
+            case RECORD -> {
+            }
+
+            case ACCESS -> {
             }
 
             case AFFECTATION -> {
@@ -124,13 +130,16 @@ vérifier que la valeur affecté correspond au type de déclaration
                                 fields.add(variableSymbol);
                             }
                         }
+                        controleSemantiqueTypeRecord(nom, fields, tds);
                         TypeRecordSymbol typeRecordSymbol = new TypeRecordSymbol(SymbolType.TYPE_RECORD, 0, nom, fields);
                         tds.addSymbol(typeRecordSymbol);
                     }
                     else if (type.equalsIgnoreCase("ACCESS")) {
                         String type_pointe = children.get(1).getChildren().get(0).getChildren().get(0).getValue();
+                        controleSemantiqueTypeAccess(nom, type_pointe, tds);
                         TypeAccessSymbol typeAccessSymbol = new TypeAccessSymbol(SymbolType.TYPE_ACCESS, 0, nom, type_pointe);
                         tds.addSymbol(typeAccessSymbol);
+
                     }
                 }
             }
@@ -150,7 +159,6 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
                 else {
                     for (String nom : noms_variables) {
-                        System.out.println(nom);
                         VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
                         controleSemantiqueDeclVariable(node, tds);
                         tds.addSymbol(variableSymbol);

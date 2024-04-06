@@ -83,20 +83,22 @@ public class SemanticControls {
         }
 
         //Test l'existence des types des champs
+        List<VariableSymbol> fields_declare = new ArrayList<>();
         for (VariableSymbol field1 : fields) {
-            for (VariableSymbol field2 : fields) {
-                if (field1.getName().equalsIgnoreCase(field2.getName())) {
+            for (VariableSymbol field_declare : fields_declare) {
+                if (field1.getName().equalsIgnoreCase(field_declare.getName())) {
                     printError("The field " + field1.getName() + " has already been declared", node);
                 }
             }
             test_existence_type(field1.getType_variable(), tds, node);
+            fields_declare.add(field1);
         }
     }
 
     public static void controleSemantiquePoint(Node point, Tds tds) {
         currentSemanticControl = "controleSemantiquePoint";
         if (point.getChildren().get(0).getType() == NodeType.POINT) {
-            String typeNoeudPoint = getTypeNoeudPoint(point, tds);
+            String typeNoeudPoint = getTypeNoeudPointAvant(point, tds);
             if (typeNoeudPoint.equals(" ")) return;
             else {
                 Node field = point.getChildren().get(1);
@@ -119,7 +121,7 @@ public class SemanticControls {
             Node field = point.getChildren().get(1);
             Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
             if (symbolStructure == null) {
-                printError(structure.getValue() + " is not a declared structure", structure);
+                printError(structure.getValue() + " is not a declared structure ####", structure);
                 return;
             }
             try {
@@ -138,6 +140,25 @@ public class SemanticControls {
     }
 
     public static String getTypeNoeudPoint(Node point, Tds tds){
+        String typeNoeudPoint = getTypeNoeudPointAvant(point, tds);
+        if (typeNoeudPoint.equals(" ")) return " ";
+        else {
+            Node field = point.getChildren().get(1);
+            Symbol symbolStructure = tds.getSymbol(typeNoeudPoint, SymbolType.TYPE_RECORD);
+            if (symbolStructure == null) {
+                return " ";
+            }
+            List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
+            for (VariableSymbol field1 : fields) {
+                if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                    return field1.getType_variable();
+                }
+            }
+            return " ";
+        }
+    }
+
+    public static String getTypeNoeudPointAvant(Node point, Tds tds){
         if (point.getChildren().get(0).getType() != NodeType.POINT){
             if (point.getChildren().get(0).getType() == NodeType.CALL){
                 controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
@@ -154,7 +175,7 @@ public class SemanticControls {
                         return field1.getType_variable();
                     }
                 }
-                printError("The field " + field.getValue() + " doesn't exist for" + returnType + " which is the result of the function " + point.getChildren().get(0).getChildren().get(0).getValue(), field);
+                printError("The field " + field.getValue() + " doesn't exist for " + returnType + " which is the result of the function " + point.getChildren().get(0).getChildren().get(0).getValue(), field);
                 return " ";
             }
             else {
@@ -176,7 +197,7 @@ public class SemanticControls {
             }
         }
         else {
-            return getTypeNoeudPoint(point.getChildren().get(0), tds);
+            return getTypeNoeudPointAvant(point.getChildren().get(0), tds);
         } 
     }
 
@@ -359,7 +380,9 @@ public class SemanticControls {
             if(variable.getType() == NodeType.POINT){
                 controleSemantiquePoint(variable, tds);
             }
-            else printError("The variable " + variable.getValue() + " has not been declared", variable);
+            else {
+                printError("The variable " + variable.getValue() + " has not been declared", variable);
+            }
             return;
         }
         // if the symbol is a param
@@ -375,9 +398,8 @@ public class SemanticControls {
             return;
         }
         //if the symbol is a variable
-        if(symbol.getType() == SymbolType.VARIABLE){
+        if(symbol.getType() == SymbolType.VARIABLE || symbol.getType() == SymbolType.STRUCTURE){
             VariableSymbol variableSymbol = (VariableSymbol) symbol;
-
             if (valeur.getType() == NodeType.CALL){
                 if (tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.PROCEDURE) != null){
                     printError("The procedure " + valeur.getChildren().get(0).getValue() + " can't be used in an affectation", variable);
@@ -394,6 +416,14 @@ public class SemanticControls {
             else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
                     && operators.contains(valeur.getType())) {
                 test_expression_arithmetique(valeur, tds);
+            }
+            else if (valeur.getType() == NodeType.POINT){
+                controleSemantiquePoint(valeur, tds);
+                String typeNoeudPoint = getTypeNoeudPoint(valeur, tds);
+                if (!variableSymbol.getType_variable().equalsIgnoreCase(typeNoeudPoint)){
+                    if (typeNoeudPoint.equals(" ")) return;
+                    printError("Mismatch type for variable " + symbol.getName() + " : " + variableSymbol.getType_variable() + " and " +  typeNoeudPoint, variable);
+                }
             }
             else {
                 String type_valeur = type_valeur(valeur, tds);
@@ -553,7 +583,7 @@ public class SemanticControls {
         List<String> typesValide = new ArrayList<>();
         typesValide.add("integer");
         typesValide.add("boolean");
-        typesValide.add("char");
+        typesValide.add("Character");
         typesValide.add("access");
 
         //Symbol createdType = tds.getSymbol(type,SymbolType.TYPE);
@@ -733,7 +763,7 @@ public class SemanticControls {
             if (valueStr.equalsIgnoreCase("true") || valueStr.equalsIgnoreCase("false")) {
                 return "boolean";
             } else if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
-                return "char";
+                return "Character";
             } else if (operators.contains(valeur.getType())) {
                 if (test_expression_arithmetique(valeur, tds)) return "integer";
                 return "operator";
@@ -748,6 +778,9 @@ public class SemanticControls {
                 if (tds.getSymbol(valeur.getValue()) != null) {
                     return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
                 } else {
+                    if (valeur.getType() == NodeType.CALL){
+                        return ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                    }
                     controleSemantiqueAccessVariable(valeur, tds);
                     return " ";
                 }
