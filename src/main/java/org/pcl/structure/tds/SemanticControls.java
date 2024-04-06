@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.pcl.structure.tds.Semantic.typeEnCoursDeDeclaration;
+
 /** List all the semantic controls. */
 public class SemanticControls {
 
@@ -139,7 +141,7 @@ public class SemanticControls {
                 Node field = point.getChildren().get(1);
                 Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
                 if (symbolStructure == null) {
-                    printError(structure.getValue() + " is not a declared structure ####", structure);
+                    printError(structure.getValue() + " is not a declared structure", structure);
                     return;
                 }
                 try {
@@ -460,7 +462,7 @@ public class SemanticControls {
             else {
                 String type_valeur = type_valeur(valeur, tds);
                 if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)) {
-                    printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + valeur, variable);
+                    printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
                 }
             }
         }
@@ -480,7 +482,7 @@ public class SemanticControls {
         } else {
             String type_valeur = type_valeur(valeur, tds);
             if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)) {
-                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + valeur, variable);
+                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
             }
         }
     }
@@ -632,6 +634,12 @@ public class SemanticControls {
 
         for (String t : typesValide) {
             if (type.equalsIgnoreCase(t)) {
+                return;
+            }
+        }
+
+        for (String t : typeEnCoursDeDeclaration){
+            if (type.equalsIgnoreCase(t)){
                 return;
             }
         }

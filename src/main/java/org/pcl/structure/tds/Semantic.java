@@ -18,7 +18,7 @@ public class Semantic {
 
     private final Tds GlobalTds = new Tds("root");
 
-    private List<String> typeEnCoursDeDeclaration = new ArrayList<>();
+    public static List<String> typeEnCoursDeDeclaration = new ArrayList<>();
 
     /*
      * 

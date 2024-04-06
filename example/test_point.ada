@@ -56,13 +56,13 @@ begin
    test := Create_S('a', Create_R('x', 'y'), 'z').Z;
 
    -- Test valide: Affectation d'une structure à une autre du même type (devrait réussir)
-   V := Create_R('x', 'y');
+   V := Create_R('2', '6');
 
    -- Test invalide: Affectation entre types incompatibles (devrait échouer)
    V := Create_S('a', Create_R('x', 'y'), 'z');
 
    -- Test valide: Comparaison de deux structures de même type (devrait réussir)
-   if V = Create_R('x', 'y') then
+   if V = Create_R('8', '8') then
     put('p');
    end if;
 
@@ -72,7 +72,7 @@ begin
    end if;
 
    -- Test valide: Imbrication profonde avec fonction
-   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.A;
+   test := Create_T(Create_S('2', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.A;
 
    -- Test valide: Imbrication profonde avec fonction
    test := Create_T(Create_S('a', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.B;
