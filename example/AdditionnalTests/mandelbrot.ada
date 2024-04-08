@@ -49,7 +49,7 @@ procedure Mandelbrot is
    procedure Run(Steps: in Integer) is
       xmin, xmax, deltax, ymin, ymax, deltay, X, Y: Integer;
    begin
-      xmin := ofint(-2);
+      xmin := ofint(4*3 + 6 + 4);
       xmax := ofint(1);
       deltax := div(sub(xmax, xmin), ofint(2 * steps));
       ymin := ofint(-1);

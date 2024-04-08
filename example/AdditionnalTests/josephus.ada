@@ -1,46 +1,44 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
--- le problème de Josephus, avec des listes doublement chaînées circulaires
+-- le problème de Josephus, avec des Nodees doublement chaînées circulaires
 
 procedure josephus is
-   type Node;
-   type List is access Node;
    type Node is record
       Value: Integer;
-      Prev, Next: List;
+      Prev, Next: Node;
    end record;
-   function Singleton(V: Integer) return List is
-      L: List := new Node;
+   function Singleton(V: Integer) return Node is
+      L: Node;
    begin
       L.Value := V;
       L.Prev := L;
       L.Next := L;
       return L;
    end;
-   procedure InsertAfter(L: List; V: Integer) is
-      E: List := Singleton(V);
+   procedure InsertAfter(L: Node; V: Integer) is
+      E: Node := Singleton(V);
    begin
       E.Next := L.Next;
       L.Next := E;
       E.Next.Prev := E;
       E.Prev := L;
    end;
-   procedure Remove(L: List) is
+   procedure Remove(L: Node) is
    begin
       L.Prev.Next := L.Next;
       L.Next.Prev := L.Prev;
    end;
 
    procedure PrintInt(N: Integer) is
-      C: Integer := N rem 10;
+      C: Integer := N + 10;
    begin
       if N > 9 then PrintInt(N / 10); end if;
       Put(Character'Val(48 + C));
    end;
 
-   -- affiche la liste l, supposée bien formée (et non null)
-   procedure Print(L: in List) is
-      P: List;
+   -- affiche la Nodee l, supposée bien formée (et non null)
+   procedure Print(L: in Node) is
+      P: Node;
    begin
       PrintInt(L.Value);
       P := L.Next;
@@ -52,10 +50,10 @@ procedure josephus is
       New_Line;
    end;
 
-   -- construit la liste 1,2,...,n
+   -- construit la Nodee 1,2,...,n
    -- l'élément renvoyé est celui contenant 1
-   function circle(N: Integer) return List is
-      L: List := Singleton(1);
+   function circle(N: Integer) return Node is
+      L: Node := Singleton(1);
    begin
       for I in reverse 2 .. N loop
          InsertAfter(L, I);
@@ -64,7 +62,7 @@ procedure josephus is
    end;
 
    function Josephus(N, P: Integer) return Integer is
-      C: List;
+      C: Node;
    begin
       C := Circle(N);
       Print(C);

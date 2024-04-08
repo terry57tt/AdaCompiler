@@ -100,12 +100,26 @@ vérifier que la valeur affecté correspond au type de déclaration
 
             case AFFECTATION -> {
                 if (node.getChildren().get(0).getType() == NodeType.DECL_VAR) {
-                    List<Node> children = node.getChildren();
-                    String nom = children.get(0).getChildren().get(0).getValue();
-                    VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom , children.get(0).getChildren().get(1).getValue());
-
-                    controleSemantiqueDeclVariable(node.getChildren().get(0), tds);
-                    tds.addSymbol(variableSymbol);
+                    List<Node> children = node.getChildren().get(0).getChildren();
+                    List<String> noms_variables = new ArrayList<>();
+                    for (int i = 0; i < children.size() - 1; i++) {
+                        noms_variables.add(children.get(i).getValue());
+                    }
+                    String type = children.get(children.size() - 1).getValue();
+                    if (tds.containsSymbol(type, SymbolType.TYPE_RECORD)) {
+                        for (String nom : noms_variables) {
+                            TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type, SymbolType.TYPE_RECORD);
+                            StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, nom, type, typeRecordSymbol.getFields());
+                            tds.addSymbol(structureSymbol);
+                        }
+                    }
+                    else {
+                        for (String nom : noms_variables) {
+                            VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
+                            controleSemantiqueDeclVariable(node.getChildren().get(0), tds, variableSymbol);
+                            tds.addSymbol(variableSymbol);
+                        }
+                    }
                     controleSemantiqueAffectationDecl(node, tds);
                     return;
                 }
@@ -123,6 +137,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 }
                 else {
                     String type = children.get(1).getChildren().get(0).getValue();
+                    typeEnCoursDeDeclaration.add(nom);
                     Node type_node = children.get(1).getChildren().get(0);
                     if (type.equalsIgnoreCase("RECORD")) {
                         List<VariableSymbol> fields = new ArrayList<>();
@@ -164,7 +179,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 else {
                     for (String nom : noms_variables) {
                         VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, nom, type);
-                        controleSemantiqueDeclVariable(node, tds);
+                        controleSemantiqueDeclVariable(node, tds, variableSymbol);
                         tds.addSymbol(variableSymbol);
                     }
                 }

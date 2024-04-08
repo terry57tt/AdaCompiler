@@ -46,11 +46,11 @@ public class SemanticControls {
      * Vérifier que le nom n’est pas déjà pris (double déclaration)
      * Vérifier que le type est bien défini
      */
-    public static void controleSemantiqueDeclVariable(Node decl_var, Tds tds) {
+    public static void controleSemantiqueDeclVariable(Node decl_var, Tds tds, VariableSymbol variableSymbol) {
         currentSemanticControl = "controleSemantiqueDeclVariable";
-        test_double_declaration(decl_var, tds);
+        test_double_declaration(decl_var, tds, variableSymbol);
         List<Node> children = decl_var.getChildren();
-        test_existence_type(children.get(1).getValue(), tds, children.get(1));
+        test_existence_type(variableSymbol.getType_variable(), tds, children.get(1));
     }
 
     public static void controleSemantiqueTypeAccess(String nom, String type_pointe, Tds tds) {
@@ -249,7 +249,7 @@ public class SemanticControls {
                 Node field = point.getChildren().get(1);
                 Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.STRUCTURE);
                 if (symbolStructure == null) {
-                    printError(structure.getValue() + " is not a declared structure", structure);
+                    printError(structure.getValue() + " is not a declared structure ###", structure);
                     return " ";
                 }
                 List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
@@ -535,20 +535,96 @@ public class SemanticControls {
     }
 
     public static void controleSemantiqueAffectationDecl(Node affectation, Tds tds) {
-        currentSemanticControl = "controleSemantiqueAffectationDecl";
+        // currentSemanticControl = "controleSemantiqueAffectationDecl";
+        // List<Node> children = affectation.getChildren();
+        // Node variable = children.get(0);
+        // Node valeur = children.get(1);
+        // Symbol symbol = tds.getSymbol(variable.getChildren().get(0).getValue(), SymbolType.VARIABLE);
+        // if (symbol == null) {
+        //     printError("The variable " + variable.getValue() + " has not been declared", variable);
+        // } else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
+        //         && type_valeur(valeur, tds).equalsIgnoreCase("operator")) {
+        //     test_expression_arithmetique(valeur, tds);
+        // } else {
+        //     String type_valeur = type_valeur(valeur, tds);
+        //     if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)) {
+        //         printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
+        //     }
+        // }
+
         List<Node> children = affectation.getChildren();
-        Node variable = children.get(0);
+        Node variable = children.get(0).getChildren().get(0);
         Node valeur = children.get(1);
-        Symbol symbol = tds.getSymbol(variable.getChildren().get(0).getValue(), SymbolType.VARIABLE);
-        if (symbol == null) {
-            printError("The variable " + variable.getValue() + " has not been declared", variable);
-        } else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
-                && type_valeur(valeur, tds).equalsIgnoreCase("operator")) {
-            test_expression_arithmetique(valeur, tds);
-        } else {
-            String type_valeur = type_valeur(valeur, tds);
-            if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)) {
-                printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
+
+        //search if the variable is a variable symbol in the td
+        Symbol symbol = tds.getSymbol(variable.getValue(), SymbolType.VARIABLE);
+        //if not, search if the variable is a param symbol in the tds
+        if(symbol == null) symbol = tds.getSymbol(variable.getValue(), SymbolType.PARAM);
+
+        List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
+
+        // if variable is neither a variable nor a parameter
+        if (symbol == null){
+            if(variable.getType() == NodeType.POINT){
+                controleSemantiquePoint(variable, tds);
+                String typeNoeudPoint = getTypeNoeudPoint(variable, tds);
+                String type_valeur = type_valeur(valeur, tds);
+                if (!typeNoeudPoint.equalsIgnoreCase(type_valeur)) {
+                    printError("Mismatch type : " + typeNoeudPoint + " and " +  type_valeur , variable);
+                }
+            }
+            else {
+                printError("The variable " + variable.getValue() + " has not been declared", variable);
+            }
+            return;
+        }
+        // if the symbol is a param
+        if(symbol.getType() == SymbolType.PARAM){
+            test_in_out(variable, tds);
+            ParamSymbol paramSymbol = (ParamSymbol) symbol;
+            if(paramSymbol.getMode().equals("in out")) {
+                String type_valeur = type_valeur(valeur, tds);
+                if (!type_valeur.equalsIgnoreCase(type_valeur(variable, tds))){
+                    printError("Mismatch type for parameter " + variable.getValue() + " : " + (paramSymbol).getType_variable() + " and " + valeur, variable);
+                }
+            }
+            return;
+        }
+        //if the symbol is a variable
+        if(symbol.getType() == SymbolType.VARIABLE || symbol.getType() == SymbolType.STRUCTURE){
+            VariableSymbol variableSymbol = (VariableSymbol) symbol;
+            if (valeur.getType() == NodeType.CALL){
+                if (tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.PROCEDURE) != null){
+                    printError("The procedure " + valeur.getChildren().get(0).getValue() + " can't be used in an affectation", variable);
+                    return;
+                }
+                controleSemantiqueAppelFonction(valeur, tds);
+                FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue());
+                if (functionSymbol == null){
+                    return;
+                }
+                if (!variableSymbol.getType_variable().equalsIgnoreCase(functionSymbol.getReturnType())) {
+                    printError("Mismatch type for variable " + symbol.getName() + " : " + variableSymbol.getType_variable() + " and " +  functionSymbol.getReturnType() , variable);
+                }
+                return;
+            }
+            else if (((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")
+                    && operators.contains(valeur.getType())) {
+                test_expression_arithmetique(valeur, tds);
+            }
+            else if (valeur.getType() == NodeType.POINT){
+                String typeNoeudPoint = getTypeNoeudPoint(valeur, tds);
+                if (!variableSymbol.getType_variable().equalsIgnoreCase(typeNoeudPoint)){
+                    if (typeNoeudPoint.equals(" ")) return;
+                    printError("Mismatch type for variable " + symbol.getName() + " : " + variableSymbol.getType_variable() + " and " +  typeNoeudPoint, variable);
+                }
+            }
+            else {
+                String type_valeur = type_valeur(valeur, tds);
+                if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)) {
+                    if (type_valeur.equals(" ")) return;
+                    printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
+                }
             }
         }
     }
@@ -597,7 +673,7 @@ public class SemanticControls {
         currentSemanticControl = "controleSemantiqueAccessVariable";
         Symbol symbol = tds.getSymbol(access_var.getValue(), SymbolType.VARIABLE);
         if (symbol == null) {
-            printError("The variable " + access_var.getValue() + " has not been declared", access_var);
+            printError("The variable " + access_var.getValue() + " has not been declared ###", access_var);
         }
     }
 
@@ -629,18 +705,9 @@ public class SemanticControls {
         }
     }
 
-    private static void test_double_declaration(Node node, Tds tds) {
-        SymbolType type;
-        if (node.getType() == NodeType.DECL_VAR) {
-            type = SymbolType.VARIABLE;
-        } else if (node.getType() == NodeType.DECL_FUNC) {
-            type = SymbolType.FUNCTION;
-        } else if (node.getType() == NodeType.DECL_PROC) {
-            type = SymbolType.PROCEDURE;
-        } else {
-            return;
-        }
-        boolean a = tds.containsSymbol(node.getChildren().get(0).getValue(), type);
+    private static void test_double_declaration(Node node, Tds tds, VariableSymbol variableSymbol) {
+        SymbolType type = SymbolType.VARIABLE;
+        boolean a = tds.containsSymbol(variableSymbol.getName(), type);
         if (a) {
             printError(node.getValue() + " has already been declared in the current scope", node);
         }
@@ -865,6 +932,10 @@ public class SemanticControls {
         try {
             ;
             // Essaie de parser la valeur en entier
+            if (valeur.getValue().equalsIgnoreCase("-") && valeur.getChildren().size() == 1) {
+                Integer.parseInt(valeur.getChildren().get(0).getValue());
+                return "integer";
+            }
             Integer.parseInt(valeur.getValue());
             if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
                 return "Character";
