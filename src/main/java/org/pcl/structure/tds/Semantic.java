@@ -81,8 +81,8 @@ vérifier que la valeur affecté correspond au type de déclaration
 
             case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, OR, AND,
                     EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR -> {
-                fillTDsChild(node, tds);
                 controleSemantiqueOperateur(node, tds);
+                fillTDsChild(node, tds);
             }
 
             case PROGRAM -> {

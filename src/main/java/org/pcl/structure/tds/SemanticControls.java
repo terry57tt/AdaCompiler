@@ -125,6 +125,9 @@ public class SemanticControls {
                 Node field = point.getChildren().get(1);
                 Symbol symbolStructure = tds.getSymbol(returnType, SymbolType.TYPE_RECORD);
                 if (symbolStructure == null) {
+                    if (returnType.equals(" ")){
+                        return;
+                    }
                     printError(returnType + " is not a declared structure", point);
                     return;
                 }
@@ -141,6 +144,9 @@ public class SemanticControls {
                 Node field = point.getChildren().get(1);
                 Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.VARIABLE);
                 if (symbolStructure == null) {
+                    if (structure.getValue().equals(" ")){
+                        return;
+                    }
                     printError(structure.getValue() + " is not a declared structure", structure);
                     return;
                 }
@@ -222,6 +228,9 @@ public class SemanticControls {
             Node field = point.getChildren().get(1);
             Symbol symbolStructure = tds.getSymbol(typeNoeudPointAvant, SymbolType.TYPE_RECORD);
             if (symbolStructure == null) {
+                if (typeNoeudPointAvant.equals(" ")){
+                    return " ";
+                }
                 printError(typeNoeudPointAvant + " is not a declared structure", point);
                 return " ";
             }
@@ -258,6 +267,14 @@ public class SemanticControls {
 
         test_borne_suf_inf(children.get(2), children.get(3), for_node, tds);
 
+        Node body = children.get(4);
+        for (Node child : body.getChildren()) {
+            if (child.getType() == NodeType.AFFECTATION) {
+                if (child.getChildren().get(0).getValue().equalsIgnoreCase(variable_compteur)) {
+                    printError("The counter variable " + variable_compteur + " cannot be modified in the loop body", child.getChildren().get(0));
+                }
+            }
+        }
     }
 
     /**
@@ -330,7 +347,7 @@ public class SemanticControls {
         Symbol procedure_symbol = tds.getSymbol(call_name.getValue(), SymbolType.PROCEDURE);
         boolean is_function = function_symbol != null;
         if (function_symbol == null && procedure_symbol == null) {
-            printError("The call name " + call_name.getValue() + " has not been declared", call_name);
+            printError("The function or procedure " + call_name.getValue() + " has not been declared", call_name);
             return;
         }
         if (!is_function) {
@@ -442,6 +459,9 @@ public class SemanticControls {
                 }
                 controleSemantiqueAppelFonction(valeur, tds);
                 FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue());
+                if (functionSymbol == null){
+                    return;
+                }
                 if (!variableSymbol.getType_variable().equalsIgnoreCase(functionSymbol.getReturnType())) {
                     printError("Mismatch type for variable " + symbol.getName() + " : " + variableSymbol.getType_variable() + " and " +  functionSymbol.getReturnType() , variable);
                 }
@@ -462,6 +482,7 @@ public class SemanticControls {
             else {
                 String type_valeur = type_valeur(valeur, tds);
                 if (!((VariableSymbol) symbol).getType_variable().equalsIgnoreCase(type_valeur)) {
+                    if (type_valeur.equals(" ")) return;
                     printError("Mismatch type for variable " + variable.getValue() + " : " + ((VariableSymbol) symbol).getType_variable() + " and " + type_valeur, variable);
                 }
             }
@@ -503,7 +524,7 @@ public class SemanticControls {
     public static void controleSemantiqueOperateur(Node operateur, Tds tds) {
         currentSemanticControl = "controleSemantiqueOperateur";
         switch (operateur.getType()) {
-            case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR:
+            case ADDITION, SUBSTRACTION, MULTIPLY, REM, EQUAL, DIVIDE, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR:
                 if (!test_expression_arithmetique(operateur, tds)) {
                     errors.add("OPERATOR");
                     printError("The operator " + operateur.getValue() + " is not a valid arithmetic expression", operateur);
@@ -722,7 +743,11 @@ public class SemanticControls {
     }
 
     private static boolean test_expression_arithmetique(Node node, Tds tds) {
-
+        if (node.getType() == NodeType.DIVIDE){
+            if (node.getChild(1).getValue().equals("0")){
+                printError("Division by zero", node.getChild(1));
+            }
+        }
         if (node.getType() == NodeType.ADDITION || node.getType() == NodeType.SUBSTRACTION || node.getType() == NodeType.MULTIPLY || node.getType() == NodeType.DIVIDE || node.getType() == NodeType.REM) {
             List<Node> children = node.getChildren();
             Node left = children.get(0);

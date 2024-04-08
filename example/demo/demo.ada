@@ -34,6 +34,8 @@ procedure Pascal is
       L := d;
       I := 3;
       V := 'a';
+      ab1 := 2 + 3 + 4*(2+3/0);
+      ab1 := 2;
       if I = 0 then
          L.Value := v;
       else
@@ -45,6 +47,7 @@ begin
    for i in 0 .. N-1 loop
       car := Set(R, i, 'z');
       car := Get(R);
+      i := 3;
       compute_row(i);
    end loop;
    while index < N loop
@@ -52,6 +55,3 @@ begin
    end loop;
 end Pascalito;
 
---  Local Variables:
---  compile-command: "gnatmake pascal.adb && ./pascal"
---  End:
