@@ -75,7 +75,7 @@ vérifier que la valeur affecté correspond au type de déclaration
         if (node.getType() == null) return;
 
         switch (node.getType()) {
-            case FILE, DECLARATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, RETURN, BEGIN,
+            case FILE, DECLARATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, BEGIN,
                     NOT, IN, INOUT, MODE, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE,
                     NULL, INITIALIZATION, FIELD, IS-> fillTDsChild(node, tds);
 
@@ -92,6 +92,10 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
 
             case ACCESS -> {
+            }
+
+            case RETURN -> {
+
             }
 
             case AFFECTATION -> {

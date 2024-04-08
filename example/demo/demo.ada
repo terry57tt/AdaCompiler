@@ -18,7 +18,7 @@ procedure Pascal is
    begin
       ai1 := 0;
       c := 'c';
-      L := d;
+      L.value := 'a';
       I := 3;
       I := 'a';
 

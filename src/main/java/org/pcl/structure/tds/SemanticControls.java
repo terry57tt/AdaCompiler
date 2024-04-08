@@ -6,6 +6,7 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 import org.stringtemplate.v4.ST;
 
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -166,22 +167,60 @@ public class SemanticControls {
     }
 
     public static String getTypeNoeudPoint(Node point, Tds tds){
-        String typeNoeudPoint = getTypeNoeudPointAvant(point, tds);
-        if (typeNoeudPoint.equals(" ")) return " ";
-        else {
-            Node field = point.getChildren().get(1);
-            Symbol symbolStructure = tds.getSymbol(typeNoeudPoint, SymbolType.TYPE_RECORD);
-            if (symbolStructure == null) {
+        if (point.getChildren().get(0).getType() != NodeType.POINT){
+            if (point.getChildren().get(0).getType() == NodeType.CALL){
+                controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
+                String returnType = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(returnType, SymbolType.TYPE_RECORD);
+                if (symbolStructure == null) {
+                    printError(returnType + " is not a declared structure", point);
+                    return " ";
+                }
+                List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
+                for (VariableSymbol field1 : fields) {
+                    if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        return field1.getType_variable();
+                    }
+                }
+                printError("The field " + field.getValue() + " doesn't exist for " + returnType + " which is the result of the function " + point.getChildren().get(0).getValue(), field);
                 return " ";
             }
-            List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
-            for (VariableSymbol field1 : fields) {
-                if (field1.getName().equalsIgnoreCase(field.getValue())) {
-                    return field1.getType_variable();
+            else {
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.STRUCTURE);
+                if (symbolStructure == null) {
+                    return " ";
                 }
+                List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
+                for (VariableSymbol field1 : fields) {
+                    if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        return field1.getType_variable();
+                    }
+                }
+                printError("The field " + field.getValue() + " doesn't exist for " + point.getChildren().get(0).getValue(), field);
+                return " ";
             }
-            printError("The field " + field.getValue() + " doesn't exist for " + typeNoeudPoint, field);
-            return " ";
+
+        }
+        else {
+            String typeNoeudPoint = getTypeNoeudPointAvant(point, tds);
+            if (typeNoeudPoint.equals(" ")) return " ";
+            else {
+                Node field = point.getChildren().get(1);
+                Symbol symbolStructure = tds.getSymbol(typeNoeudPoint, SymbolType.TYPE_RECORD);
+                if (symbolStructure == null) {
+                    return " ";
+                }
+                List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
+                for (VariableSymbol field1 : fields) {
+                    if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        return field1.getType_variable();
+                    }
+                }
+                printError("The field " + field.getValue() + " doesn't exist for " + typeNoeudPoint, field);
+                return " ";
+            }
         }
     }
 
@@ -328,6 +367,7 @@ public class SemanticControls {
         valeur_retour = valeur_retour.getChild(0);
         test_return_present(body);
         test_existence_type(valeur_retour.getValue(), tds, valeur_retour);
+        test_bon_type_retour(body, valeur_retour.getValue(), tds);
     }
 
     /**
@@ -431,6 +471,11 @@ public class SemanticControls {
         if (symbol == null){
             if(variable.getType() == NodeType.POINT){
                 controleSemantiquePoint(variable, tds);
+                String typeNoeudPoint = getTypeNoeudPoint(variable, tds);
+                String type_valeur = type_valeur(valeur, tds);
+                if (!typeNoeudPoint.equalsIgnoreCase(type_valeur)) {
+                    printError("Mismatch type : " + typeNoeudPoint + " and " +  type_valeur , variable);
+                }
             }
             else {
                 printError("The variable " + variable.getValue() + " has not been declared", variable);
@@ -888,6 +933,35 @@ public class SemanticControls {
             };
         }catch (Exception e){
             return type_valeur(currentNode, tds);
+        }
+    }
+
+    private static void test_bon_type_retour(Node function_decl, String type_retour, Tds tds) {
+        for (Node child : function_decl.getChildren()) {
+            if (child.getType() == NodeType.RETURN) {
+                //si on trouve un return, on vérifie que le type de retour est bien celui attendu
+                if (child.getChildren().get(0).getType() == NodeType.CALL){
+                    FunctionSymbol function = (FunctionSymbol) tds.getSymbol(child.getChildren().get(0).getValue(), SymbolType.FUNCTION);
+                    if(function!= null){
+                        if (!type_retour.equalsIgnoreCase(function.getReturnType())) {
+                            printError("The return type of the function is not the same as the declared return type : expected " + type_retour + " and got " + function.getReturnType(), child);
+                        }
+                    }
+                }
+                else if (child.getChildren().get(0).getType() == NodeType.POINT){
+                    String typeNoeudPoint = getTypeNoeudPoint(child.getChildren().get(0), tds);
+                    if (!type_retour.equalsIgnoreCase(typeNoeudPoint)){
+                        printError("The return type of the function is not the same as the declared return type : expected " + type_retour + " and got " + typeNoeudPoint, child);
+                    }
+                }
+                else {
+                    String type_valeur = type_valeur(child.getChildren().get(0), tds);
+                    if (!type_retour.equalsIgnoreCase(type_valeur)) {
+                    printError("The return type of the function is not the same as the declared return type : expected " + type_retour + " and got " + type_valeur, child);
+                    }
+                }
+            }
+            test_bon_type_retour(child, type_retour, tds);
         }
     }
 
