@@ -796,6 +796,9 @@ public class SemanticControls {
             ;
             // Essaie de parser la valeur en entier
             Integer.parseInt(valeur.getValue());
+            if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
+                return "Character";
+            }
             return "integer";
         } catch (NumberFormatException e) {
             String valueStr = valeur.getValue().toLowerCase();
