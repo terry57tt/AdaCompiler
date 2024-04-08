@@ -220,6 +220,21 @@ vérifier que la valeur affecté correspond au type de déclaration
                 tds.addChild(tds_procedure);
                 for (ParamSymbol paramSymbol: paramSymbols) {
                     tds_procedure.addSymbol(paramSymbol);
+                    String type_variable = paramSymbol.getType_variable();
+                    if (tds.containsSymbol(type_variable, SymbolType.TYPE_RECORD)) {
+                        TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_variable, SymbolType.TYPE_RECORD);
+                        StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, paramSymbol.getName(), type_variable, typeRecordSymbol.getFields());
+                        tds_procedure.addSymbol(structureSymbol);
+                    }
+                    if (tds.containsSymbol(type_variable, SymbolType.TYPE_ACCESS)) {
+                        TypeAccessSymbol typeAccessSymbol = (TypeAccessSymbol) tds.getSymbol(type_variable, SymbolType.TYPE_ACCESS);
+                        String type_pointe = typeAccessSymbol.getTypePointe();
+                        if (tds.containsSymbol(type_pointe, SymbolType.TYPE_RECORD)) {
+                            TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_pointe, SymbolType.TYPE_RECORD);
+                            StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, paramSymbol.getName(), type_pointe, typeRecordSymbol.getFields());
+                            tds_procedure.addSymbol(structureSymbol);
+                        }
+                    }
                 }
 
                 if (children.get(1).getType() == NodeType.BODY) {
@@ -301,6 +316,21 @@ vérifier que la valeur affecté correspond au type de déclaration
                 tds.addChild(tds_function);
                 for (ParamSymbol paramSymbol: paramSymbols) {
                     tds_function.addSymbol(paramSymbol);
+                    String type_variable = paramSymbol.getType_variable();
+                    if (tds.containsSymbol(type_variable, SymbolType.TYPE_RECORD)) {
+                        TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_variable, SymbolType.TYPE_RECORD);
+                        StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, paramSymbol.getName(), type_variable, typeRecordSymbol.getFields());
+                        tds_function.addSymbol(structureSymbol);
+                    }
+                    if (tds.containsSymbol(type_variable, SymbolType.TYPE_ACCESS)) {
+                        TypeAccessSymbol typeAccessSymbol = (TypeAccessSymbol) tds.getSymbol(type_variable, SymbolType.TYPE_ACCESS);
+                        String type_pointe = typeAccessSymbol.getTypePointe();
+                        if (tds.containsSymbol(type_pointe, SymbolType.TYPE_RECORD)) {
+                            TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_pointe, SymbolType.TYPE_RECORD);
+                            StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, paramSymbol.getName(), type_pointe, typeRecordSymbol.getFields());
+                            tds_function.addSymbol(structureSymbol);
+                        }
+                    }
                 }
 
                 if (children.get(2).getType() == NodeType.BODY) {
