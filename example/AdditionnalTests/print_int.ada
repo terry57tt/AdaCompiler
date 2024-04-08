@@ -18,7 +18,7 @@ procedure Print_int is
    end;
 
 begin
-   PrintsInt(-2147483648);
+   PrintsInt(2147483647);
    New_Line;
    for N in -17 .. 42 loop
       Printsint(N);

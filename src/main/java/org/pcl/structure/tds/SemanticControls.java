@@ -249,7 +249,7 @@ public class SemanticControls {
                 Node field = point.getChildren().get(1);
                 Symbol symbolStructure = tds.getSymbol(structure.getValue(), SymbolType.STRUCTURE);
                 if (symbolStructure == null) {
-                    printError(structure.getValue() + " is not a declared structure ###", structure);
+                    printError(structure.getValue() + " is not a declared structure", structure);
                     return " ";
                 }
                 List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
