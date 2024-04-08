@@ -941,6 +941,7 @@ public class SemanticControls {
             if (child.getType() == NodeType.RETURN) {
                 //si on trouve un return, on vérifie que le type de retour est bien celui attendu
                 if (child.getChildren().get(0).getType() == NodeType.CALL){
+                    controleSemantiqueAppelFonction(child.getChildren().get(0), tds);
                     FunctionSymbol function = (FunctionSymbol) tds.getSymbol(child.getChildren().get(0).getValue(), SymbolType.FUNCTION);
                     if(function!= null){
                         if (!type_retour.equalsIgnoreCase(function.getReturnType())) {
