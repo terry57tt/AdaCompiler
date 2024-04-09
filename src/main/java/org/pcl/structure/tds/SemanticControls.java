@@ -717,6 +717,13 @@ public class SemanticControls {
         }
     }
 
+    public static void controleSemantiqueFonctionStatement(Node call_node, Tds tds){
+        currentSemanticControl = "controleSemantiqueFonctionStatement";
+        if(call_node.getParent().getType() == NodeType.BODY){
+            printError("Cannot use call to function \""+ call_node.firstChild() +"\" as a statement", call_node);
+        }
+    }
+
     /**
      * Vérifier que le noeud à gauche existe, si existe récupérer tous les champs, regarder si celui de droite est dedans
      */

@@ -447,6 +447,10 @@ vérifier que la valeur affecté correspond au type de déclaration
                     controlesSemantiquesPut(node, tds);
                     return;
                 }
+                if(node.getParent().getType() == NodeType.BODY){
+                    controleSemantiqueFonctionStatement(node, tds);
+                    return;
+                }
                 controleSemantiqueAppelFonction(node, tds);
             }
 
