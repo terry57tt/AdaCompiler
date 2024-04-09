@@ -471,6 +471,11 @@ public class SemanticControls {
         if (symbol == null){
             if(variable.getType() == NodeType.POINT){
                 controleSemantiquePoint(variable, tds);
+                Symbol symbolVar = tds.getSymbol(variable.firstChild().getValue(), SymbolType.PARAM);
+                if(symbolVar != null) {
+                    test_in_out(variable.firstChild(), tds);
+                }
+
                 String typeNoeudPoint = getTypeNoeudPoint(variable, tds);
                 String type_valeur = type_valeur(valeur, tds);
                 if (!typeNoeudPoint.equalsIgnoreCase(type_valeur)) {
