@@ -401,14 +401,26 @@ public class SemanticControls {
             printError("The number of parameters in the function \"" + call_name.getValue() + "\" doesn't match the number of parameters in the function declaration. Expected " + ((FunctionSymbol) function_symbol).getNbParameters() + " but got " + nb_params, call_name);
         } else {
             for (int i = 1; i < children.size(); i++) {
-
+                String mode = ((FunctionSymbol) function_symbol).getParameters().get(i - 1).getMode();
+                if(mode.equals("in out")){
+                    Symbol childSymbol = tds.getSymbol(children.get(i).getValue(), SymbolType.VARIABLE);
+                    if(!children.get(i).getValue().equals(".") && childSymbol == null){
+                        printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_name.getValue() + "\" is \" in out \". Expected a variable or an x.f expression.", children.get(i));
+                    }
+                    if(childSymbol != null){
+                        VariableSymbol variableSymbol = (VariableSymbol) childSymbol;
+                        if(variableSymbol.isForVariable()){
+                            printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_name.getValue() + "\" is \" in out \". Expected a variable or an x.f expression, but got a for loop counter", children.get(i));
+                        }
+                    }
+                }
 
                 String value_type = type_valeur(children.get(i), tds);
                 if (value_type.equals(" ")) continue;
                 String expected_type;
                 expected_type = ((FunctionSymbol) function_symbol).getParameters().get(i - 1).getType_variable();
                 if (!value_type.equalsIgnoreCase(expected_type) && !value_type.equals("operator")) {
-                    printError("The type of the parameter \"" + children.get(i).getValue() + "\" in the call \"" + call_name.getValue() + "\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_name);
+                    printError("The type of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_name.getValue() + "\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_name);
                 }
 
             }
@@ -436,6 +448,7 @@ public class SemanticControls {
     public static void controleSemantiqueAppelProcedure(Node call_proc, Tds tds) {
         currentSemanticControl = "controleSemantiqueAppelProcedure";
         int nb_params = call_proc.getChildren().size() - 1;
+        List<Node> children = call_proc.getChildren();
         // number of parameters match
         Symbol procedure_symbol = tds.getSymbol(call_proc.getChildren().get(0).getValue(), SymbolType.PROCEDURE);
         if (nb_params != ((ProcedureSymbol) procedure_symbol).getNbParameters()) {
@@ -444,12 +457,25 @@ public class SemanticControls {
         } else {
             for (int i = 1; i < call_proc.getChildren().size(); i++) {
 
+                String mode = ((ProcedureSymbol) procedure_symbol).getParameters().get(i - 1).getMode();
+                if(mode.equals("in out")){
+                    Symbol childSymbol = tds.getSymbol(children.get(i).getValue(), SymbolType.VARIABLE);
+                    if(!children.get(i).getValue().equals(".") && childSymbol == null){
+                        printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_proc.getChildren().get(0).getValue() + "\" is \" in out \". Expected a variable or an x.f expression.", children.get(i));
+                    }
+                    if(childSymbol != null){
+                        VariableSymbol variableSymbol = (VariableSymbol) childSymbol;
+                        if(variableSymbol.isForVariable()){
+                            printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_proc.getChildren().get(0).getValue() + "\" is \" in out \". Expected a variable or an x.f expression, but got a for loop counter", children.get(i));
+                        }
+                    }
+                }
                 String value_type = type_valeur(call_proc.getChildren().get(i), tds);
                 if (value_type.equals(" ")) continue;
                 String expected_type;
                 expected_type = ((ProcedureSymbol) procedure_symbol).getParameters().get(i - 1).getType_variable();
                 if (!value_type.equalsIgnoreCase(expected_type) && !value_type.equals("operator")) {
-                    printError("The type of the parameter \"" + call_proc.getChildren().get(i).getValue() + "\" in the call \""
+                    printError("The type of the parameter number "+ i +" \"" + call_proc.getChildren().get(i).getValue() + "\" in the call \""
                             + call_proc.getChildren().get(0).getValue() + "\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_proc.getChildren().get(0));
                 }
             }
@@ -982,7 +1008,6 @@ public class SemanticControls {
                     if (valeur.getValue().equalsIgnoreCase("Character'Val")){
                         try {
                             Integer.parseInt(valeur.getChildren().get(0).getValue());
-                            System.out.println(valeur.getChildren().get(0).getToken().getType());
                             if (valeur.getChildren().get(0).getToken() != null && valeur.getChildren().get(0).getToken().getType() == TokenType.CHARACTER) {
                                 printError("The function Character'Val can only be applied to an integer", valeur.getChildren().get(0));
                                 return "Character";

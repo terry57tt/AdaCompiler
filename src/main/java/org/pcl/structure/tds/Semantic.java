@@ -420,7 +420,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                 Node loop = children.get(4);
                 Tds tds_for = new Tds("for");
                 tds.addChild(tds_for);
-                VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, variable_compteur, "INTEGER");
+                VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, variable_compteur, "INTEGER", true);
                 tds_for.addSymbol(variableSymbol);
                 constructorTDS(loop, tds_for);
                 controleSemantiqueFor(node, tds_for);
