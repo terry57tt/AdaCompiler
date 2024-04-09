@@ -969,6 +969,22 @@ public class SemanticControls {
                     if (valeur.getType() == NodeType.CALL){
                         return ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
                     }
+                    if (valeur.getValue().equalsIgnoreCase("Character'Val")){
+                        try {
+                            Integer.parseInt(valeur.getChildren().get(0).getValue());
+                            System.out.println(valeur.getChildren().get(0).getToken().getType());
+                            if (valeur.getChildren().get(0).getToken() != null && valeur.getChildren().get(0).getToken().getType() == TokenType.CHARACTER) {
+                                printError("The function Character'Val can only be applied to an integer", valeur.getChildren().get(0));
+                                return "Character";
+                            }
+                            return "Character";
+                        } catch (NumberFormatException e1) {
+                            if (!test_expression_arithmetique(valeur.getChildren().get(0), tds)) {
+                                printError("The function Character'Val can only be applied to an integer", valeur.getChildren().get(0));
+                            }
+                            return "Character";
+                        }
+                    }
                     controleSemantiqueAccessVariable(valeur, tds);
                     return " ";
                 }
@@ -1009,6 +1025,17 @@ public class SemanticControls {
             };
         }catch (Exception e){
             return type_valeur(currentNode, tds);
+        }
+    }
+
+    public static void controlesSemantiquesPut(Node node, Tds tds){
+        Node param1 = node.getChild(1);
+        if (node.getChildren().size() >= 3){
+            printError("Too many parameters for the function Put expected : 1 parameter and got " + (node.getChildren().size() - 1), node);
+        }
+        String type_valeur = type_valeur(param1, tds);
+        if (!type_valeur.equalsIgnoreCase("integer") && !type_valeur.equalsIgnoreCase("Character")){
+            printError("The parameter of the function Put must be an integer or a Character", param1);
         }
     }
 

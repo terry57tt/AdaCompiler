@@ -444,6 +444,7 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
             case CALL -> {
                 if (node.getChildren().get(0).getValue().equalsIgnoreCase("Put")) {
+                    controlesSemantiquesPut(node, tds);
                     return;
                 }
                 controleSemantiqueAppelFonction(node, tds);
