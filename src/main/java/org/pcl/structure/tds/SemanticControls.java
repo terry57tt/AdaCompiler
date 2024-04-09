@@ -792,7 +792,14 @@ public class SemanticControls {
             for (Node child : children) {
                 test_condition_booleene(child, tds);
             }
-        } else if (condition.getValue().equalsIgnoreCase("NOT")) {
+        }
+        else if(condition.getValue().equalsIgnoreCase("AND THEN") || condition.getValue().equalsIgnoreCase("OR ELSE")){
+            List<Node> children = condition.getChildren();
+            for (Node child : children) {
+                test_condition_booleene(child, tds);
+            }
+        }
+        else if (condition.getValue().equalsIgnoreCase("NOT")) {
             List<Node> children = condition.getChildren();
             for (Node child : children) {
                 test_condition_booleene(child, tds);

@@ -326,6 +326,13 @@ public class Node {
                 this.type = NodeType.DECL_VAR;
             case "call":
                 this.type = NodeType.CALL;
+                break;
+            case "and then":
+                this.type = NodeType.AND_THEN;
+                break;
+            case "or else":
+                this.type = NodeType.OR_ELSE;
+                break;
             default:
                 break;
         }
