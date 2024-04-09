@@ -1572,7 +1572,8 @@ public class Grammar {
 
 
                     //if parent contains terme, add parent's first child to current node's children (first child)
-                    if (currentNode.getParent().getValue().contains("nodeTerme") && !currentNode.isMeaningful()) {
+                    if ((currentNode.getParent().getValue().contains("nodeTerme") || currentNode.getParent().getValue().contains("nodeExpr"))
+                            && !currentNode.isMeaningful()) {
                         currentNode.getParent().getChildren().get(0).setParent(currentNode);
                         currentNode.getChildren().add(0, currentNode.getParent().getChildren().get(0));
                         currentNode.getParent().getChildren().remove(0);
@@ -1776,6 +1777,18 @@ public class Grammar {
                             || currentNode.getParent().getValue().equals("procedure")
                             )){
                 currentNode.setValue("variable");
+            }
+            if(currentNode.getValue().equals("nodePrioriteAnd2")){
+                currentNode.setValue(currentNode.getToken().getValue());
+            }
+            if(currentNode.getValue().equals("nodePrioriteAnd2Then")){
+                currentNode.setValue(currentNode.getToken().getValue() + " then");
+            }
+            if(currentNode.getValue().equals("nodePrioriteOr2") && currentNode.getToken() != null){
+                currentNode.setValue(currentNode.getToken().getValue());
+            }
+            if(currentNode.getValue().equals("nodePrioriteOr2Else")){
+                currentNode.setValue(currentNode.getToken().getValue() + " else");
             }
 
 
@@ -2205,13 +2218,46 @@ public class Grammar {
             if (currentNode.getValue().equalsIgnoreCase("return") && currentNode.getToken().getType() == TokenType.KEYWORD
                     && isNodePreviousToken(currentNode, "then") && isNodeNextToken(currentNode, ";")
                     && currentNode.getParent().getChildren().size() >= 2) {
-                System.out.println(currentNode);
                 int index = currentNode.indexInBrothers();
                 currentNode.deleteFromParent();
                 currentNode.getParent().getChildren().get(index - 1).addChild(currentNode);
             }
 
 
+            //PrioriteAnd2 : case "and" (not and then)
+            if (currentNode.getValue().equals("nodePrioriteAnd2") && currentNode.firstChild().getValue().equals("nodePrioriteAnd")
+                    && currentNode.firstChild().getChild(1).getValue().equals("and")) {
+                currentNode.firstChild().getChild(1).deleteFromParentTransferringChildTokenToParent();
+                currentNode.addChild(1, currentNode.firstChild().firstChild());
+                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
+                currentNode.setMeaningful(true);
+            }
+            // "and then"
+            if (currentNode.getValue().equals("nodePrioriteAnd2") && currentNode.getChild(1).getValue().equals("then")){
+                currentNode.setValue("nodePrioriteAnd2Then");
+                currentNode.getChild(1).deleteFromParent();
+            }
+
+            //PrioriteOr2 : case "or" (not or else)
+            if (currentNode.getValue().equals("nodePrioriteOr2") && currentNode.firstChild().getValue().equals("nodePrioriteOr")
+                    && currentNode.firstChild().getChild(1).getValue().equals("or")) {
+                currentNode.firstChild().getChild(1).deleteFromParentTransferringChildTokenToParent();
+                currentNode.addChild(1, currentNode.firstChild().firstChild());
+                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
+                currentNode.setMeaningful(true);
+            }
+            // "or else"
+            if (currentNode.getValue().equals("nodePrioriteOr2") && currentNode.getChild(1).getValue().equals("else")){
+                currentNode.setValue("nodePrioriteOr2Else");
+                currentNode.getChild(1).deleteFromParent();
+            }
+            // not
+            if (currentNode.getValue().equalsIgnoreCase("nodeTerme2")
+                    && currentNode.firstChild().getValue().equalsIgnoreCase("not") && currentNode.firstChild().getToken().getType() == TokenType.KEYWORD){
+                currentNode.firstChild().deleteFromParentTransferringChildTokenToParent();
+                currentNode.setValue(currentNode.getToken().getValue());
+                currentNode.setMeaningful(true);
+            }
 
 
 
