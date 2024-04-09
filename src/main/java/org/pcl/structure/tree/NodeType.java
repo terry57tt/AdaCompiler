@@ -57,4 +57,6 @@ public enum NodeType {
     DECLARATION,
     COMPARATOR,
     CALL,
+    AND_THEN,
+    OR_ELSE
 }
