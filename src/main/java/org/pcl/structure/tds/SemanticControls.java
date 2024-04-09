@@ -732,7 +732,7 @@ public class SemanticControls {
             if(symbol == null) symbol = tds.getSymbol(child.getValue(), SymbolType.PARAM);
             if(symbol == null) symbol = tds.getSymbol(child.getValue(), SymbolType.FUNCTION);
             if(symbol != null && child.getToken() != null && child.getToken().getType() == TokenType.IDENTIFIER && symbol.getType() != SymbolType.FUNCTION) {
-                printError(child.getValue() + " do not do anything.", child);
+                printError("The variable " + child.getValue() + " do not do anything.", child);
             } else if (symbol == null && child.getToken() != null && child.getToken().getType() == TokenType.IDENTIFIER){
                 printError("The variable " + child.getValue() + " has not been declared", child);
             } else if (symbol != null && symbol.getType() == SymbolType.FUNCTION){
