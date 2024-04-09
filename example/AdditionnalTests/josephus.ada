@@ -11,6 +11,12 @@ procedure josephus is
       L: Node;
    begin
       L.Value := V;
+      put(L.val);
+      put(L.Value);
+      put(L);
+      put(V);
+      put(2);
+      put('h');
       L.Prev := L;
       L.Next := L;
       return L;
@@ -31,9 +37,14 @@ procedure josephus is
 
    procedure PrintInt(N: Integer) is
       C: Integer := N + 10;
+      A : Character;
    begin
       if N > 9 then PrintInt(N / 10); end if;
-      Put(Character'Val(48 + C));
+      Put(Character'Val(48 + 'h'));
+      put(N);
+      A := Character'Val(48 + N rem 10);
+      put(A);
+      put(character'val(48 + N rem 10));
    end;
 
    -- affiche la Nodee l, supposée bien formée (et non null)
