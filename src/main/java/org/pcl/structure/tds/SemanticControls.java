@@ -926,6 +926,7 @@ public class SemanticControls {
 
     private static String type_valeur(Node valeur, Tds tds) {
         List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
+        List<NodeType> comparator = Arrays.asList(new NodeType[]{NodeType.EQUAL, NodeType.SLASH_EQUAL, NodeType.SUPERIOR, NodeType.SUPERIOR_EQUAL, NodeType.INFERIOR, NodeType.INFERIOR_EQUAL, NodeType.COMPARATOR, NodeType.AND, NodeType.OR});
         if (valeur.getType() == NodeType.POINT){
             return getTypeNoeudPoint(valeur, tds);
         }
@@ -950,7 +951,11 @@ public class SemanticControls {
             } else if (operators.contains(valeur.getType())) {
                 if (test_expression_arithmetique(valeur, tds)) return "integer";
                 return "operator";
-            } else {
+            } else if (comparator.contains(valeur.getType())) {
+                test_condition_booleene(valeur, tds);
+                return "boolean";
+            }
+            else {
                 Symbol symbol = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_ACCESS);
                 Symbol symbol2 = tds.getSymbol(valeur.getValue(), SymbolType.TYPE_RECORD);
                 if (symbol != null) {
