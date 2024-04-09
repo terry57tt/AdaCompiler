@@ -719,7 +719,8 @@ public class SemanticControls {
 
     public static void controleSemantiqueFonctionStatement(Node call_node, Tds tds){
         currentSemanticControl = "controleSemantiqueFonctionStatement";
-        if(call_node.getParent().getType() == NodeType.BODY){
+        Symbol function_symbol = tds.getSymbol(call_node.getChildren().get(0).getValue(), SymbolType.FUNCTION);
+        if(call_node.getParent().getType() == NodeType.BODY && function_symbol != null){
             printError("Cannot use call to function \""+ call_node.firstChild() +"\" as a statement", call_node);
         }
     }
