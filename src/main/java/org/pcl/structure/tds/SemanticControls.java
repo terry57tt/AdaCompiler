@@ -10,6 +10,7 @@ import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static org.pcl.structure.tds.Semantic.typeEnCoursDeDeclaration;
 
@@ -856,7 +857,18 @@ public class SemanticControls {
 
                 printError("The condition is not a valid boolean expression because the operands are not integers: " + left.getValue() + " " + right.getValue(), left);
             }
-        } else {
+        } else if(condition.getType() != null){
+            if(condition.getType().equals(NodeType.CALL)){
+                FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(condition.getChildren().get(0).getValue(), SymbolType.FUNCTION);
+                if(!functionSymbol.getReturnType().equalsIgnoreCase("boolean")){
+                    printError("The condition is not a valid boolean expression because the function return type is not a boolean: " + functionSymbol.getReturnType(), condition);
+                } else {
+                    return;
+                }
+            }
+        }
+
+        else {
             printError("The condition is not a valid boolean expression", condition);
         }
     }
