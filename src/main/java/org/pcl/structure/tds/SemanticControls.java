@@ -725,6 +725,22 @@ public class SemanticControls {
         }
     }
 
+    public static void controleSemantiqueBodyStatement(Node body_node, Tds tds){
+        currentSemanticControl = "controleSemantiqueBodyStatement";
+        for (Node child : body_node.getChildren()){
+            Symbol symbol = tds.getSymbol(child.getValue(), SymbolType.VARIABLE);
+            if(symbol == null) symbol = tds.getSymbol(child.getValue(), SymbolType.PARAM);
+            if(symbol == null) symbol = tds.getSymbol(child.getValue(), SymbolType.FUNCTION);
+            if(symbol != null && child.getToken() != null && child.getToken().getType() == TokenType.IDENTIFIER && symbol.getType() != SymbolType.FUNCTION) {
+                printError(child.getValue() + " do not do anything.", child);
+            } else if (symbol == null && child.getToken() != null && child.getToken().getType() == TokenType.IDENTIFIER){
+                printError("The variable " + child.getValue() + " has not been declared", child);
+            } else if (symbol != null && symbol.getType() == SymbolType.FUNCTION){
+                printError("Cannot use call to function \""+ child.getValue() +"\" as a statement", child);
+            }
+        }
+    }
+
     /**
      * Vérifier que le noeud à gauche existe, si existe récupérer tous les champs, regarder si celui de droite est dedans
      */
