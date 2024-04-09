@@ -86,8 +86,8 @@ vérifier que la valeur affecté correspond au type de déclaration
             }
 
             case BODY -> {
-                fillTDsChild(node, tds);
                 controleSemantiqueBodyStatement(node, tds);
+                fillTDsChild(node, tds);
             }
 
             case PROGRAM -> {
