@@ -405,10 +405,11 @@ public class SemanticControls {
                 String mode = ((FunctionSymbol) function_symbol).getParameters().get(i - 1).getMode();
                 if(mode.equals("in out")){
                     Symbol childSymbol = tds.getSymbol(children.get(i).getValue(), SymbolType.VARIABLE);
+                    if(childSymbol == null) childSymbol = tds.getSymbol(children.get(i).getValue(), SymbolType.PARAM);
                     if(!children.get(i).getValue().equals(".") && childSymbol == null){
                         printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_name.getValue() + "\" is \" in out \". Expected a variable or an x.f expression.", children.get(i));
                     }
-                    if(childSymbol != null){
+                    if(childSymbol != null && childSymbol.getType() == SymbolType.VARIABLE){
                         VariableSymbol variableSymbol = (VariableSymbol) childSymbol;
                         if(variableSymbol.isForVariable()){
                             printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_name.getValue() + "\" is \" in out \". Expected a variable or an x.f expression, but got a for loop counter", children.get(i));
@@ -461,10 +462,11 @@ public class SemanticControls {
                 String mode = ((ProcedureSymbol) procedure_symbol).getParameters().get(i - 1).getMode();
                 if(mode.equals("in out")){
                     Symbol childSymbol = tds.getSymbol(children.get(i).getValue(), SymbolType.VARIABLE);
+                    if(childSymbol == null) childSymbol = tds.getSymbol(children.get(i).getValue(), SymbolType.PARAM);
                     if(!children.get(i).getValue().equals(".") && childSymbol == null){
                         printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_proc.getChildren().get(0).getValue() + "\" is \" in out \". Expected a variable or an x.f expression.", children.get(i));
                     }
-                    if(childSymbol != null){
+                    if(childSymbol != null && childSymbol.getType() == SymbolType.VARIABLE){
                         VariableSymbol variableSymbol = (VariableSymbol) childSymbol;
                         if(variableSymbol.isForVariable()){
                             printError("The mode of the parameter number "+ i +" \"" + children.get(i).getValue() + "\" in the call \"" + call_proc.getChildren().get(0).getValue() + "\" is \" in out \". Expected a variable or an x.f expression, but got a for loop counter", children.get(i));
@@ -505,10 +507,11 @@ public class SemanticControls {
                 if(symbolVar != null) {
                     test_in_out(variable.firstChild(), tds);
                 }
-
+                ParamSymbol symbolParam = (ParamSymbol) symbolVar;
                 String typeNoeudPoint = getTypeNoeudPoint(variable, tds);
                 String type_valeur = type_valeur(valeur, tds);
                 if (!typeNoeudPoint.equalsIgnoreCase(type_valeur)) {
+                    if(symbolParam != null && symbolParam.getMode().equals("in")) return;
                     printError("Mismatch type : " + typeNoeudPoint + " and " +  type_valeur , variable);
                 }
             }
