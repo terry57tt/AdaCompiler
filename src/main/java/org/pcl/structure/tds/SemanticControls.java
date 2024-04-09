@@ -376,6 +376,7 @@ public class SemanticControls {
      */
     public static void controleSemantiqueAppelFonction(Node call_func, Tds tds) {
         currentSemanticControl = "controleSemantiqueAppelFonction";
+        List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
         List<Node> children = call_func.getChildren();
         Node call_name = children.get(0);
 
@@ -401,13 +402,15 @@ public class SemanticControls {
         } else {
             for (int i = 1; i < children.size(); i++) {
 
+
                 String value_type = type_valeur(children.get(i), tds);
                 if (value_type.equals(" ")) continue;
                 String expected_type;
                 expected_type = ((FunctionSymbol) function_symbol).getParameters().get(i - 1).getType_variable();
-                if (!value_type.equalsIgnoreCase(expected_type)) {
-                    printError("The type of the parameter \"" + children.get(i) + "\" in the call \"" + call_name.getValue() + "\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_name);
+                if (!value_type.equalsIgnoreCase(expected_type) && !value_type.equals("operator")) {
+                    printError("The type of the parameter \"" + children.get(i).getValue() + "\" in the call \"" + call_name.getValue() + "\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_name);
                 }
+
             }
         }
 
@@ -445,8 +448,8 @@ public class SemanticControls {
                 if (value_type.equals(" ")) continue;
                 String expected_type;
                 expected_type = ((ProcedureSymbol) procedure_symbol).getParameters().get(i - 1).getType_variable();
-                if (!value_type.equalsIgnoreCase(expected_type)) {
-                    printError("The type of the parameter \"" + call_proc.getChildren().get(i) + "\" in the call \""
+                if (!value_type.equalsIgnoreCase(expected_type) && !value_type.equals("operator")) {
+                    printError("The type of the parameter \"" + call_proc.getChildren().get(i).getValue() + "\" in the call \""
                             + call_proc.getChildren().get(0).getValue() + "\" doesn't match the type of the parameter in the declaration. Expected " + expected_type + " but got " + value_type, call_proc.getChildren().get(0));
                 }
             }
@@ -494,7 +497,9 @@ public class SemanticControls {
             if(paramSymbol.getMode().equals("in out")) {
                 String type_valeur = type_valeur(valeur, tds);
                 if (!type_valeur.equalsIgnoreCase(type_valeur(variable, tds))){
-                    printError("Mismatch type for parameter " + variable.getValue() + " : " + (paramSymbol).getType_variable() + " and " + valeur, variable);
+                    if(!operators.contains(valeur.getType())){
+                        printError("Mismatch type for parameter " + variable.getValue() + " : " + (paramSymbol).getType_variable() + " and " + valeur.getValue(), variable);
+                    }
                 }
             }
             return;
