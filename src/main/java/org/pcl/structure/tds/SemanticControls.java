@@ -723,6 +723,8 @@ public class SemanticControls {
         if(call_node.getParent().getType() == NodeType.BODY && function_symbol != null){
             printError("Cannot use call to function \""+ call_node.firstChild() +"\" as a statement", call_node);
         }
+        Symbol proc_symbol = tds.getSymbol(call_node.getChildren().get(0).getValue(), SymbolType.PROCEDURE);
+        if(proc_symbol != null) controleSemantiqueAppelProcedure(call_node, tds);
     }
 
     public static void controleSemantiqueBodyStatement(Node body_node, Tds tds){
