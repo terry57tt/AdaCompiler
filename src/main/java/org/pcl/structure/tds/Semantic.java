@@ -75,13 +75,18 @@ vérifier que la valeur affecté correspond au type de déclaration
         if (node.getType() == null) return;
 
         switch (node.getType()) {
-            case FILE, DECLARATION, BODY, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, BEGIN,
+            case FILE, DECLARATION, COMPARATOR, IDENTIFIER, INTEGER, CHARACTER, NEW, CHAR_VAL, BEGIN,
                     NOT, IN, INOUT, MODE, VIRGULE, PARAMETERS, MULTIPLE_PARAM, TRUE, FALSE,
                     NULL, INITIALIZATION, FIELD, IS-> fillTDsChild(node, tds);
 
             case ADDITION, SUBSTRACTION, MULTIPLY, DIVIDE, REM, OR, AND,
                     EQUAL, SLASH_EQUAL, SUPERIOR, SUPERIOR_EQUAL, INFERIOR_EQUAL, INFERIOR -> {
                 controleSemantiqueOperateur(node, tds);
+                fillTDsChild(node, tds);
+            }
+
+            case BODY -> {
+                controleSemantiqueBodyStatement(node, tds);
                 fillTDsChild(node, tds);
             }
 
@@ -448,6 +453,7 @@ vérifier que la valeur affecté correspond au type de déclaration
                     return;
                 }
                 if(node.getParent().getType() == NodeType.BODY){
+
                     controleSemantiqueFonctionStatement(node, tds);
                     return;
                 }

@@ -723,6 +723,24 @@ public class SemanticControls {
         if(call_node.getParent().getType() == NodeType.BODY && function_symbol != null){
             printError("Cannot use call to function \""+ call_node.firstChild() +"\" as a statement", call_node);
         }
+        Symbol proc_symbol = tds.getSymbol(call_node.getChildren().get(0).getValue(), SymbolType.PROCEDURE);
+        if(proc_symbol != null) controleSemantiqueAppelProcedure(call_node, tds);
+    }
+
+    public static void controleSemantiqueBodyStatement(Node body_node, Tds tds){
+        currentSemanticControl = "controleSemantiqueBodyStatement";
+        for (Node child : body_node.getChildren()){
+            Symbol symbol = tds.getSymbol(child.getValue(), SymbolType.VARIABLE);
+            if(symbol == null) symbol = tds.getSymbol(child.getValue(), SymbolType.PARAM);
+            if(symbol == null) symbol = tds.getSymbol(child.getValue(), SymbolType.FUNCTION);
+            if(symbol != null && child.getToken() != null && child.getToken().getType() == TokenType.IDENTIFIER && symbol.getType() != SymbolType.FUNCTION) {
+                printError("The variable " + child.getValue() + " do not do anything.", child);
+            } else if (symbol == null && child.getToken() != null && child.getToken().getType() == TokenType.IDENTIFIER){
+                printError("The variable " + child.getValue() + " has not been declared", child);
+            } else if (symbol != null && symbol.getType() == SymbolType.FUNCTION){
+                printError("Cannot use call to function \""+ child.getValue() +"\" as a statement", child);
+            }
+        }
     }
 
     /**
