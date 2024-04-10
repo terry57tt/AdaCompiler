@@ -950,6 +950,12 @@ public class SemanticControls {
                     return;
                 }
             }
+        } else if(tds.getSymbol(condition.getValue()).getType() == SymbolType.PARAM){
+            if(((ParamSymbol) tds.getSymbol(condition.getValue())).getType_variable().equalsIgnoreCase("boolean")){
+                return;
+            } else {
+                printError("The condition is not a valid boolean expression because the parameter is not a boolean: " + condition.getValue(), condition);
+            }
         }
 
         else {
