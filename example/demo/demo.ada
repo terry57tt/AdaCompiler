@@ -3,7 +3,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 procedure Pascal is
    N: integer := 4;
    index: Integer := 0;
-   car: char;
+   car: character;
    type List is record
       Value: Integer;
       Next: List;
@@ -13,7 +13,7 @@ procedure Pascal is
 
    function Get(L: in List; I: in out Integer) return Integer is
        ai2: Integer;
-       c : char;
+       c : character;
    begin
       ai1 := 0;
       c := 'c';
