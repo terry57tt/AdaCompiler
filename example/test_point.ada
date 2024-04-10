@@ -72,7 +72,7 @@ begin
    end if;
 
    -- Test valide: Imbrication profonde avec fonction
-   test := Create_T(Create_S('2', Create_R('b', 'c'), 'd'), 'e').G.D.A;
+   test := Create_T(Create_S('2', Create_R('b', 'c'), 'd', 'F'), 'e').G.D.A;
 
    -- Test valide: Imbrication profonde avec fonction
    test := Create_T(Create_S('a', Create_R('b', 'c'), 'd'), 'e').G.D.B;

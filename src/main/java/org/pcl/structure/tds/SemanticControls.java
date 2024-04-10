@@ -1088,6 +1088,10 @@ public class SemanticControls {
                     return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
                 } else {
                     if (valeur.getType() == NodeType.CALL){
+                        if (valeur.getParent().getType() == NodeType.CALL){
+                            controleSemantiqueAppelFonction(valeur, tds);
+                            return ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                        }
                         return ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
                     }
                     if (valeur.getValue().equalsIgnoreCase("Character'Val")){
