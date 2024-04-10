@@ -4,12 +4,11 @@ procedure Pascal is
    N: integer := 4;
    index: Integer := 0;
    car: char;
-   type Node;
-   type List is access Node;
-   type Node is record
+   type List is record
       Value: Integer;
       Next: List;
    end record;
+   R : List;
 
 
    function Get(L: in List; I: in out Integer) return Integer is
@@ -23,10 +22,10 @@ procedure Pascal is
       I := 'a';
 
       if I = 0 then return L.val; end if;
-      return Get(L, I - 1);
+      return Get(L, I + I);
    end;
 
-   procedure Set(L: in out List; I, V: in Integer) is
+   procedure Set(L: in out List; I, V: Integer) is
     ab1: Integer;
    begin
       ab1 := 'c';
@@ -46,7 +45,7 @@ procedure Pascal is
 begin
    for i in 0 .. N-1 loop
       car := Set(R, i, 'z');
-      car := Get(R);
+      N := Get(R, R.val);
       i := 3;
       compute_row(i);
    end loop;

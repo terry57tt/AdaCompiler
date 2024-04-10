@@ -2,9 +2,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Pascal is
 
-   type Node;
-   type List is access Node;
-   type Node is record
+   type List is record
       Value: Integer;
       Next: List;
    end record;

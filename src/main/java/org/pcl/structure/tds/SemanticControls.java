@@ -1050,6 +1050,7 @@ public class SemanticControls {
                             return "Character";
                         }
                     }
+                    if (valeur.getValue().equalsIgnoreCase("null")){ return "null"; }
                     controleSemantiqueAccessVariable(valeur, tds);
                     return " ";
                 }
@@ -1125,6 +1126,11 @@ public class SemanticControls {
                 }
                 else {
                     String type_valeur = type_valeur(child.getChildren().get(0), tds);
+                    TypeRecordSymbol structureSymbol = ((TypeRecordSymbol) tds.getSymbol(type_retour, SymbolType.TYPE_RECORD));
+                    if (structureSymbol != null){
+                        String test_structure = structureSymbol.getNom();
+                        if (type_valeur.equalsIgnoreCase("null") && !test_structure.equalsIgnoreCase("null")) return;
+                    }
                     if (!type_retour.equalsIgnoreCase(type_valeur)) {
                     printError("The return type of the function is not the same as the declared return type : expected " + type_retour + " and got " + type_valeur, child);
                     }

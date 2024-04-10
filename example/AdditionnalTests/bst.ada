@@ -38,7 +38,7 @@ procedure BST is
    end;
    procedure PrintBool(b: boolean) is
    begin
-      if B then Put('T'); else Put('F'); end if;
+      if b then Put('T'); else Put('F'); end if;
    end;
    procedure Print(B: in BST) is
    begin
