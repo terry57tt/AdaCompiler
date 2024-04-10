@@ -876,7 +876,26 @@ public class SemanticControls {
             Node right = children.get(1);
             // in a while or if condition
             if (condition.getValue().equalsIgnoreCase("=") || condition.getValue().equalsIgnoreCase("/=")) {
+
+                // special cases for null
+                if(return_type_node(left,tds).equalsIgnoreCase("null")){
+                    if(return_type_node(right,tds).equalsIgnoreCase("null")) return; // case null = null
+                    if(return_type_node(right,tds).equalsIgnoreCase("integer") || return_type_node(right,tds).equalsIgnoreCase("boolean") || return_type_node(right,tds).equalsIgnoreCase("Character")){
+                        printError("The condition is not a valid boolean expression because "+ return_type_node(right,tds) + " cannot be compared to null", right);
+                    } else{
+                        return;
+                    }
+                };
+                if(return_type_node(right,tds).equalsIgnoreCase("null")){
+                    if(return_type_node(left,tds).equalsIgnoreCase("integer") || return_type_node(left,tds).equalsIgnoreCase("boolean") || return_type_node(left,tds).equalsIgnoreCase("Character")){
+                        printError("The condition is not a valid boolean expression because "+ return_type_node(left,tds) + " cannot be compared to null", left);
+                    } else {
+                        return;
+                    }
+                };
+
                 if(return_type_node(left,tds).equalsIgnoreCase("point") || return_type_node(right,tds).equalsIgnoreCase("point")) return;
+
                 // cas ou les types ne correspondent pas
                 if (!return_type_node(left,tds).equalsIgnoreCase(return_type_node(right,tds))) {
                     printError("The condition is not a valid boolean expression because the operands are not of the same type: " + left.getValue() + " " + right.getValue(), left);
