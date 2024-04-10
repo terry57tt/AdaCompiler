@@ -50,7 +50,7 @@ begin
    -- Tests sans affichage
 
    -- Test valide: Accès à un champ d'une structure retournée par une fonction (devrait réussir)
-   test := Create_S('a', Create_R('x', 'y'), 'z').D.A;
+   test := Create_S('a', Create_R('x', 'y'), 'z').D.G;
 
    -- Test invalide: Accès à un champ inexistant (devrait échouer)
    test := Create_S('a', Create_R('x', 'y'), 'z').Z;
@@ -72,11 +72,11 @@ begin
    end if;
 
    -- Test valide: Imbrication profonde avec fonction
-   test := Create_T(Create_S('2', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.A;
+   test := Create_T(Create_S('2', Create_R('b', 'c'), 'd'), 'e').G.D.A;
 
    -- Test valide: Imbrication profonde avec fonction
-   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.B;
+   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd'), 'e').G.D.B;
 
    -- Test invalide: Imbrication profonde avec fonction
-   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd', Empty_S), 'e').G.D.H;
+   test := Create_T(Create_S('a', Create_R('b', 'c'), 'd'), 'e').G.D.H;
 end Record_Test;
