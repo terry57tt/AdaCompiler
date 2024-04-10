@@ -563,6 +563,12 @@ public class SemanticControls {
                     if (typeNoeudPoint.equals(" ")) return;
                     printError("Mismatch type for variable " + symbol.getName() + " : " + variableSymbol.getType_variable() + " and " +  typeNoeudPoint, variable);
                 }
+            }else if(valeur.getValue().equalsIgnoreCase("null")){ // variable doit etre un pointeur
+                if(((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("integer")||((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("boolean")||((VariableSymbol) symbol).getType_variable().equalsIgnoreCase("character")){
+                    printError("The variable " + variable.getValue() + " is not a pointer", variable);
+                } else {
+                    return;
+                }
             }
             else {
                 String type_valeur = type_valeur(valeur, tds);
