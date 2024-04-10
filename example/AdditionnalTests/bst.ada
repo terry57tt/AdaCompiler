@@ -12,7 +12,7 @@ procedure BST is
    -- insertion utilisant le passage par référence
    procedure Add(X: Integer; B: in out BST) is
    begin
-      if B = null then B := new Node; B.Value := X; return; end if;
+      if B = null then B := Node; B.Value := X; return; end if;
       if X < B.Value then
          Add(X, B.Left);
       elsif X > B.Value then
@@ -26,9 +26,8 @@ procedure BST is
          return Mem(X, B.Left);
       elsif X > B.Value then
          return Mem(X, B.Right);
-      else
-         return True;
       end if;
+      return True;
    end;
    procedure PrintInt(N: Integer) is
       C: Integer := N rem 10;
@@ -54,19 +53,18 @@ procedure BST is
    B: BST;
 begin
    B := null;
-   Print(B); New_Line;
+   Print(B);
    Add(5, B);
-   Print(B); New_Line;
+   Print(B);
    Add(2, B);
-   Print(B); New_Line;
+   Print(B);
    Add(7, B);
-   Print(B); New_Line;
+   Print(B);
    for I in 1 .. 10 loop
       PrintBool(Mem(I, B));
       Add(I, B);
    end loop;
-   New_Line;
-   Print(B); New_Line;
+   Print(B);
 end;
 
 --  Local Variables:
