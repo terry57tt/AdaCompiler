@@ -171,7 +171,13 @@ public class SemanticControls {
         if (point.getChildren().get(0).getType() != NodeType.POINT){
             if (point.getChildren().get(0).getType() == NodeType.CALL){
                 controleSemantiqueAppelFonction(point.getChildren().get(0), tds);
-                String returnType = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getChildren().get(0).getValue(), SymbolType.FUNCTION);
+                //String returnType = ((FunctionSymbol) tds.getSymbol(point.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                if (functionSymbol == null) {
+                    printError("Function is not declared", point);
+                    return " ";
+                }
+                String returnType = functionSymbol.getReturnType();
                 Node field = point.getChildren().get(1);
                 Symbol symbolStructure = tds.getSymbol(returnType, SymbolType.TYPE_RECORD);
                 if (symbolStructure == null) {

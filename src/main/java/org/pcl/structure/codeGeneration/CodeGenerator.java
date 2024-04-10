@@ -1,5 +1,6 @@
 package org.pcl.structure.codeGeneration;
 
+import org.pcl.OutputGenerator;
 import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.SyntaxTree;
