@@ -374,6 +374,16 @@ public class Node {
         node.token = this.token;
     }
 
+    /** return the first child of the node with the correct value  else NULL */
+    public Node getChild(String value) {
+        for (Node child : this.children) {
+            if (child.getValue().equalsIgnoreCase(value)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
     public int indexInBrothers(){
         return this.parent.children.indexOf(this);
     }

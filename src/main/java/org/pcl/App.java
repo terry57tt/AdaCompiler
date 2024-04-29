@@ -4,6 +4,7 @@ package org.pcl;
 import org.pcl.grammaire.Grammar;
 import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.Graph;
+import org.pcl.structure.codeGeneration.CodeGenerator;
 import org.pcl.structure.tds.*;
 import org.pcl.structure.tds.SemanticControls;
 import org.pcl.structure.tree.SyntaxTree;
@@ -19,7 +20,6 @@ import static org.pcl.ColorAnsiCode.ANSI_RESET;
 public class App {
 
     public static void main(String[] args) throws IOException {
-
 
         if (args.length == 0) {
             System.out.println(ANSI_RED + "No files to compile.\n" +
@@ -80,6 +80,7 @@ public class App {
             Semantic semantic = new Semantic(tree);
             semantic.getGlobalTds().fillAllDeplTds();
             semantic.getGlobalTds().displayWithChild();
+            new CodeGenerator(tree, semantic.getGlobalTds());
         }
     }
 
