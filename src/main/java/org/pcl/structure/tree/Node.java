@@ -377,7 +377,7 @@ public class Node {
     /** return the first child of the node with the correct value  else NULL */
     public Node getChild(String value) {
         for (Node child : this.children) {
-            if (child.getValue().equalsIgnoreCase(value)) {
+            if (child.getType().toString().equalsIgnoreCase(value)) {
                 return child;
             }
         }

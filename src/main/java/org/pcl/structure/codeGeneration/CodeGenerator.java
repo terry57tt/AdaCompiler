@@ -146,6 +146,13 @@ public class CodeGenerator {
         Node comparator = node.getChild("comparator");
         Node body = node.getChild("body");
 
+        if (comparator == null) {
+            throw new IllegalArgumentException("No comparator found in while node");
+        }
+        if (body == null) {
+            throw new IllegalArgumentException("No body found in while node");
+        }
+
         write("; ---  WHILE generation for " + whileLabel + number + " ---");
         write(whileLabel + number);
         incrementTabulation();
