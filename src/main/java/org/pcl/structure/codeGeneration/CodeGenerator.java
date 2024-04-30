@@ -18,6 +18,7 @@ public class CodeGenerator {
     private final String whileLabel = "While";
     private final String endLabel = "End";
     private int whileCounter = 0;
+    private int shift = 0;
 
 
     public CodeGenerator(SyntaxTree ast, Tds tds) throws IOException {
@@ -63,8 +64,11 @@ public class CodeGenerator {
                     generateCallFunctionProcedure(node);
                     break;
                 case COMPARATOR:
+                    // pour l'instant, résultat à la base de la pile
+                    write("; ---  BOOLEAN evaluation ---");
                     generateBoolean(node);
-                    break;
+                    write("; --- END BOOLEAN evaluation ---");
+                    return;
                 case EXPRESSION, ELSIF, REVERSE, BEGIN, RETURN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT,
                      NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECL_VAR, RECORD, ACCESS, IS, TYPE, VIRGULE, BODY, FILE, IDENTIFIER, PROGRAM:
                     // NO ACTION
@@ -82,7 +86,54 @@ public class CodeGenerator {
     }
 
     private void generateBoolean(Node node) throws IOException {
-        //TODO ici de ce que j'avais pensé c'est tu fais les comp etc et le résultat si je m'abuse y'a le système de flag qui le save
+        Node left = node.getChildren().get(0);
+        Node right = node.getChildren().get(1);
+
+        switch (node.getValue()){
+            case "=" :
+                write("MOV R1, #" + left.getValue()); // On met les valeurs a comparer dans les registres
+                write("MOV R2, #" + right.getValue());
+                write("CMP R1, R2"); // On compare les valeurs
+                write("SUB R13, R13, #4"); // On décrémente le pointeur de pile
+                write("MOVEQ   R3, #1"); // 1 si égalité
+                write("MOVNE   R3, #0"); // 0 sinon
+                shift = shift-4;
+                write("STR   R3, [R11, #"+ shift +"]"); // On stocke le résultat de la comparaison en pile
+
+                return;
+            case "<" :
+                break;
+            case "<=" :
+                break;
+            case ">" :
+                break;
+            case ">=" :
+                break;
+            case "and" :
+                generateBoolean(left);
+                generateBoolean(right);
+                write("LDR R1, [R11, #"+shift+"]"); // On récupère les valeurs de la pile
+                shift = shift+4;
+                write("LDR R2, [R11, #"+shift+"]");
+
+                write("AND R3, R1, R2"); // On fait le ET logique
+                write("STR R3, [R11, #" + shift + "]"); // On stocke le résultat en pile (on décale de 8 car on a déjà stocké le résultat de la première comparaison)
+                write("ADD R13, R13, #4"); // On incrémente le pointeur de pile
+                return;
+            case "or" :
+                generateBoolean(left);
+                generateBoolean(right);
+                write("LDR R1, [R11, #"+shift+"]"); // On récupère les valeurs de la pile
+                shift = shift+4;
+                write("LDR R2, [R11, #"+shift+"]");
+
+                write("ORR R3, R1, R2"); // On fait le OU logique
+                write("STR R3, [R11, #" + shift + "]"); // On stocke le résultat en pile (on décale de 8 car on a déjà stocké le résultat de la première comparaison)
+                write("ADD R13, R13, #4"); // On incrémente le pointeur de pile
+                return;
+            default:
+                break;
+        }
     }
 
     private void generateArithmetic(Node node) throws IOException {
