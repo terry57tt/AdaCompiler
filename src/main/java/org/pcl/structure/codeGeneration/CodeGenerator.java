@@ -90,27 +90,29 @@ public class CodeGenerator {
     }
 
     private void generateWhile(Node node) throws IOException {
+        int number = whileCounter;
+        whileCounter++;
         Node comparator = node.getChild("comparator");
         Node body = node.getChild("body");
 
-        write("; ---  WHILE generation for " + whileLabel + whileCounter + " ---");
-        write(whileLabel + whileCounter);
+        write("; ---  WHILE generation for " + whileLabel + number + " ---");
+        write(whileLabel + number);
         incrementTabulation();
         write("; condition");
 
         generateCode(comparator);
 
-        write("BEQ " + whileLabel + endLabel + whileCounter + " ; exit while if condition is false");
+        write("BEQ " + whileLabel + endLabel + number + " ; exit while if condition is false");
         write("");
         write("; body of while");
 
         generateCode(body);
 
-        write("BL " + whileLabel + whileCounter + " ; continue iteration in while");
+        write("BL " + whileLabel + number + " ; continue iteration in while");
         decrementTabulation();
-        write(whileLabel + endLabel + whileCounter);
-        write("; --- END WHILE generation for " + whileLabel + whileCounter + " ---");
-        whileCounter++;
+        write(whileLabel + endLabel + number);
+        write("; --- END WHILE generation for " + whileLabel + number + " ---");
+
     }
 
     private void generateIf(Node node) throws IOException {
