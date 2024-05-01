@@ -1045,7 +1045,7 @@ public class SemanticControls {
         return false;
     }
 
-    private static String type_valeur(Node valeur, Tds tds) {
+    public static String type_valeur(Node valeur, Tds tds) {
         List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
         List<NodeType> comparator = Arrays.asList(new NodeType[]{NodeType.EQUAL, NodeType.SLASH_EQUAL, NodeType.SUPERIOR, NodeType.SUPERIOR_EQUAL, NodeType.INFERIOR, NodeType.INFERIOR_EQUAL, NodeType.COMPARATOR, NodeType.AND, NodeType.OR});
         if (valeur.getType() == NodeType.POINT){

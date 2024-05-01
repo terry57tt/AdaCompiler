@@ -1,13 +1,20 @@
 package org.pcl.structure.codeGeneration;
 
 import org.pcl.OutputGenerator;
+import org.pcl.structure.tds.FunctionSymbol;
+import org.pcl.structure.tds.ParamSymbol;
+import org.pcl.structure.tds.Symbol;
 import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.Node;
+import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.pcl.OutputGenerator.*;
+import static org.pcl.structure.tds.SemanticControls.type_valeur;
 import static org.pcl.structure.tree.NodeType.SUBSTRACTION;
 import static org.pcl.structure.tree.NodeType.SUPERIOR;
 
@@ -61,7 +68,7 @@ public class CodeGenerator {
                     generateDeclVar(node);
                     break;
                 case CALL:
-                    generateCallFunctionProcedure(node);
+                    generateCallFunctionProcedure(node, tds);
                     break;
                 case COMPARATOR:
                     // pour l'instant, résultat à la base de la pile
@@ -190,15 +197,101 @@ public class CodeGenerator {
     }
 
     private void generateDeclFunction(Node node) throws IOException {
-        //TODO
+        String nom_fonction = node.getChildren().get(0).getValue();
+        write(nom_fonction.toUpperCase()); // Label de la fonction en majuscule
+        incrementTabulation();
+        write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
+        write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la fonction");
+        List<Node> children = node.getChildren();
+        if (children.get(2).getType() == NodeType.BODY) {
+            Node body = children.get(2);
+            generateCode(body);
+        }
+        else {
+            if (children.get(2).getType() == NodeType.DECLARATION) {
+                Node declaration = children.get(2);
+                generateCode(declaration);
+                Node body = children.get(3);
+                generateCode(body);
+            } else {
+                Node body = children.get(2);
+                generateCode(body);
+            }
+        }
+        write("MOV r13, r11 ; Restaurer le pointeur de pile original");
+        write("LDMFD r13!, {r11, PC} ; Restaurer les registres et retourner");
+        decrementTabulation();
     }
 
     private void generateDeclProcedure(Node node) throws IOException {
-        //TODO
+        String nom_procedure = node.getChildren().get(0).getValue();
+        write(nom_procedure.toUpperCase()); // Label de la procédure en majuscule
+        incrementTabulation();
+        write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
+        write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la procédure");
+        List<Node> children = node.getChildren();
+        if (children.get(2).getType() == NodeType.BODY) {
+            Node body = children.get(2);
+            generateCode(body);
+        }
+        else {
+            if (children.get(2).getType() == NodeType.DECLARATION) {
+                Node declaration = children.get(2);
+                generateCode(declaration);
+                Node body = children.get(3);
+                generateCode(body);
+            } else {
+                Node body = children.get(2);
+                generateCode(body);
+            }
+        }
+        write("MOV r13, r11 ; Restaurer le pointeur de pile original");
+        write("LDMFD r13!, {r11, PC} ; Restaurer les registres et retourner");
+        decrementTabulation();
     }
 
-    private void generateCallFunctionProcedure(Node node) throws IOException {
-        //TODO
+    private void generateCallFunctionProcedure(Node node, Tds tds) throws IOException {
+        /* Quand j'appelle une fonction ou une procédure, je dois garder une place pour la valeur de retour si c'est une fonction
+        et également sauvegardé les paramètres puis le chainage statique, puis le chainage dynamique, puis l'adresse de retour
+        * */
+        List<NodeType> operators = Arrays.asList(new NodeType[]{NodeType.ADDITION, NodeType.SUBSTRACTION, NodeType.MULTIPLY, NodeType.DIVIDE, NodeType.REM});
+        List<NodeType> comparator = Arrays.asList(new NodeType[]{NodeType.EQUAL, NodeType.SLASH_EQUAL, NodeType.SUPERIOR, NodeType.SUPERIOR_EQUAL, NodeType.INFERIOR, NodeType.INFERIOR_EQUAL, NodeType.COMPARATOR, NodeType.AND, NodeType.OR});
+        List<Node> children = node.getChildren();
+        String nom_fonction = node.getChildren().get(0).getValue();
+        int shift = 0;
+        for (int i = 1; i < children.size(); i++) {
+            String value_type = type_valeur(children.get(i), tds);
+            if (value_type.equalsIgnoreCase("integer")) {
+                write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+                write("MOV R0, #" + children.get(i).getValue());
+                write("STR r0, [r13] ; Empiler le paramètre " + i);
+            }
+            else if (value_type.equalsIgnoreCase("character")){
+                write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+                write("Char" + children.get(i).getValue().toUpperCase() + "  DCD  " + (int)children.get(i).getValue().charAt(0) + " ; '" + children.get(i).getValue() + "' en ASCII");
+                write("LDR R0, =Char" + children.get(i).getValue().toUpperCase());
+                write("LDR r0, [r0]");
+                write("STR r0, [r13] ; Empiler le paramètre " + i);
+            }
+            else if (operators.contains(children.get(i).getType())){
+                write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+                generateArithmetic(children.get(i));
+                write("STR r0, [r13] ; Empiler le paramètre \" + i");
+            }
+            else if (comparator.contains(children.get(i).getType())){
+                write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+                generateBoolean(children.get(i));
+                write("STR r0, [r13] ; Empiler le paramètre \" + i");
+            }
+            else if (value_type.equalsIgnoreCase(" ")){
+                //c'est une variable donc faut la chercher par la fonction accessVariable
+                write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+                generateAccessVariable(children.get(i));
+                write("STR r0, [r13] ; Empiler le paramètre \" + i");
+            }
+            write("; TODO : Chainage statique");
+            write("BL " + nom_fonction.toUpperCase());
+        }
     }
 
 
