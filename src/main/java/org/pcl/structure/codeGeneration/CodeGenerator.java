@@ -97,46 +97,54 @@ public class CodeGenerator {
         Node right = node.getChildren().get(1);
 
         switch (node.getValue()){
-            case "=" :
-                write("MOV R1, #" + left.getValue()); // On met les valeurs a comparer dans les registres
-                write("MOV R2, #" + right.getValue());
-                write("CMP R1, R2"); // On compare les valeurs
-                write("SUB R13, R13, #4"); // On décrémente le pointeur de pile
-                write("MOVEQ   R3, #1"); // 1 si égalité
-                write("MOVNE   R3, #0"); // 0 sinon
-                shift = shift-4;
-                write("STR   R3, [R11, #"+ shift +"]"); // On stocke le résultat de la comparaison en pile
-
+            case "=":
+            case "<":
+            case "<=":
+            case ">":
+            case ">=":
+                write("MOV R1, #" + left.getValue()); // Valeur de gauche
+                write("MOV R2, #" + right.getValue()); // Valeur de droite
+                write("CMP R1, R2"); // Comparaison
+                write("SUB R13, R13, #4"); // Décrémenter le pointeur de pile (on va mettre flag en pile)
+                switch (node.getValue()){
+                    case "=":
+                        write("MOVEQ   R3, #1"); // on met 1 si retourne vrai
+                        write("MOVNE   R3, #0"); // 0 sinon
+                        break;
+                    case "<":
+                        write("MOVLT   R3, #1");
+                        write("MOVGE   R3, #0");
+                        break;
+                    case "<=":
+                        write("MOVLE   R3, #1");
+                        write("MOVGT   R3, #0");
+                        break;
+                    case ">":
+                        write("MOVGT   R3, #1");
+                        write("MOVLE   R3, #0");
+                        break;
+                    case ">=":
+                        write("MOVGE   R3, #1");
+                        write("MOVLT   R3, #0");
+                        break;
+                }
+                shift = shift-4; // déplacement par rapport à R11
+                write("STR   R3, [R11, #"+ shift +"]"); // on met le résultat en pile
                 return;
-            case "<" :
-                break;
-            case "<=" :
-                break;
-            case ">" :
-                break;
-            case ">=" :
-                break;
-            case "and" :
+            case "and":
+            case "or":
                 generateBoolean(left);
                 generateBoolean(right);
-                write("LDR R1, [R11, #"+shift+"]"); // On récupère les valeurs de la pile
-                shift = shift+4;
-                write("LDR R2, [R11, #"+shift+"]");
-
-                write("AND R3, R1, R2"); // On fait le ET logique
-                write("STR R3, [R11, #" + shift + "]"); // On stocke le résultat en pile (on décale de 8 car on a déjà stocké le résultat de la première comparaison)
-                write("ADD R13, R13, #4"); // On incrémente le pointeur de pile
-                return;
-            case "or" :
-                generateBoolean(left);
-                generateBoolean(right);
-                write("LDR R1, [R11, #"+shift+"]"); // On récupère les valeurs de la pile
-                shift = shift+4;
-                write("LDR R2, [R11, #"+shift+"]");
-
-                write("ORR R3, R1, R2"); // On fait le OU logique
-                write("STR R3, [R11, #" + shift + "]"); // On stocke le résultat en pile (on décale de 8 car on a déjà stocké le résultat de la première comparaison)
-                write("ADD R13, R13, #4"); // On incrémente le pointeur de pile
+                write("LDR R1, [R11, #"+shift+"]"); // on récupère le résultat de la première opération
+                shift = shift+4; // (en fait on récupère les deux derniers résultats de la pile)
+                write("LDR R2, [R11, #"+shift+"]"); // on récupère le résultat de la deuxième opération
+                if (node.getValue().equals("and")) {
+                    write("AND R3, R1, R2");
+                } else {
+                    write("ORR R3, R1, R2");
+                }
+                write("STR R3, [R11, #" + shift + "]"); // on remplace les deux résultats par le résultat de l'opération
+                write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
                 return;
             default:
                 break;
