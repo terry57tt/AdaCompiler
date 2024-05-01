@@ -1,20 +1,18 @@
 package org.pcl.structure.codeGeneration;
 
 import org.pcl.OutputGenerator;
-import org.pcl.structure.tds.FunctionSymbol;
-import org.pcl.structure.tds.ParamSymbol;
-import org.pcl.structure.tds.Symbol;
-import org.pcl.structure.tds.Tds;
+import org.pcl.structure.automaton.TokenType;
+import org.pcl.structure.tds.*;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.pcl.OutputGenerator.*;
-import static org.pcl.structure.tds.SemanticControls.type_valeur;
 import static org.pcl.structure.tree.NodeType.SUBSTRACTION;
 import static org.pcl.structure.tree.NodeType.SUPERIOR;
 
@@ -25,6 +23,8 @@ public class CodeGenerator {
     private final String whileLabel = "While";
     private final String endLabel = "End";
     private int whileCounter = 0;
+
+    private int ifCounter = 0;
     private int shift = 0;
 
 
@@ -181,7 +181,96 @@ public class CodeGenerator {
     }
 
     private void generateIf(Node node) throws IOException {
-        //TODO
+        List<Node> children = node.getChildren();
+        Node condition = children.get(0);
+        Node body = children.get(1);
+        List<Node> elseif = new ArrayList<>();
+        Node elsenode = null;
+        if (children.size() > 2){
+            for (int i = 2 ; i < children.size(); i++){
+                if (children.get(i).getType() == NodeType.ELSIF) {
+                    elseif.add(children.get(i));
+                }
+                else if (children.get(i).getType() == NodeType.BODY){
+                    elsenode = children.get(i);
+                }
+            }
+        }
+        write("IF" + ifCounter);
+        generateBoolean(condition);
+        write("LDMFD   r13!, {r0}");
+        write("CMP r0, #0");
+        if (elseif.size() > 0){
+            write("BEQ " + "ElSIF" + ifCounter + "0");
+            generateCode(body);
+            write("B " + "EndIf" + ifCounter);
+            /*
+            * IF CMP r0, #0
+            * BEQ ElSIF0
+            * body du IF
+            * B EndIf0
+            * Calcul de la condition de elsif0
+            * ElSIF0 CMP r0, #0
+            * BEQ ElSIF1
+            * body du ElSIF0
+            * B EndIf0
+            * Calcul de la condition de elsif1
+            * ElSIF1 CMP r0, #0
+            * BEQ ELSE0
+            * body du ElSIF1
+            * B EndIf0
+            * ELSE0 body du ELSE0
+            * EndIf0
+            * */
+            for (int i = 0; i < elseif.size() - 1; i++){
+                Node elseifnode = elseif.get(i);
+                Node elseifcondition = elseifnode.getChildren().get(0);
+                Node elseifbody = elseifnode.getChildren().get(1);
+                write("ElSIF" + ifCounter + i);
+                generateBoolean(elseifcondition);
+                write("LDMFD   r13!, {r0}");
+                write("CMP r0, #0");
+                write("BEQ " + "ELSIF" + ifCounter + (i+1));
+                generateCode(elseifbody);
+                write("B " + "EndIf" + ifCounter);
+            }
+            Node elseifnode = elseif.get(elseif.size() - 1);
+            Node elseifcondition = elseifnode.getChildren().get(0);
+            Node elseifbody = elseifnode.getChildren().get(1);
+            write("ElSIF" + ifCounter + (elseif.size() - 1));
+            generateBoolean(elseifcondition);
+            write("LDMFD   r13!, {r0}");
+            write("CMP r0, #0");
+            if (elsenode != null){
+                write("BEQ " + "ELSE" + ifCounter);
+                generateCode(elseifbody);
+                write("B " + "EndIf" + ifCounter);
+                write("ELSE" + ifCounter);
+                generateCode(elsenode);
+                write("B " + "EndIf" + ifCounter);
+            }
+            else {
+                write("BEQ " + "EndIf" + ifCounter);
+                generateCode(elseifbody);
+                write("B " + "EndIf" + ifCounter);
+            }
+        }
+        else {
+            if (elsenode != null) {
+                write("BEQ " + "Else" + ifCounter);
+                generateCode(body);
+                write("B " + "EndIf" + ifCounter);
+                generateCode(elsenode);
+                ifCounter++;
+            }
+            else {
+                write("BEQ " + "EndIf" + ifCounter);
+                generateCode(body);
+                write("B " + "EndIf" + ifCounter);
+                ifCounter++;
+            }
+        }
+        write ("EndIf" + whileCounter);
     }
 
     private void generateFor(Node node) throws IOException {
@@ -260,7 +349,7 @@ public class CodeGenerator {
         String nom_fonction = node.getChildren().get(0).getValue();
         int shift = 0;
         for (int i = 1; i < children.size(); i++) {
-            String value_type = type_valeur(children.get(i), tds);
+            String value_type = type_valeur(children.get(i));
             if (value_type.equalsIgnoreCase("integer")) {
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 write("MOV R0, #" + children.get(i).getValue());
@@ -276,17 +365,20 @@ public class CodeGenerator {
             else if (operators.contains(children.get(i).getType())){
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateArithmetic(children.get(i));
+                write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
             else if (comparator.contains(children.get(i).getType())){
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateBoolean(children.get(i));
+                write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
             else if (value_type.equalsIgnoreCase(" ")){
                 //c'est une variable donc faut la chercher par la fonction accessVariable
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateAccessVariable(children.get(i));
+                write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
             write("; TODO : Chainage statique");
@@ -307,4 +399,33 @@ public class CodeGenerator {
     private void generateAccessVariable(Node node) throws IOException {
         //TODO
     }
+
+    public static String type_valeur(Node valeur) {
+        try {
+            if (valeur.getValue().equalsIgnoreCase("-") && valeur.getChildren().size() == 1) {
+                Integer.parseInt(valeur.getChildren().get(0).getValue());
+                return "integer";
+            }
+            Integer.parseInt(valeur.getValue());
+            if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
+                return "Character";
+            }
+            return "integer";
+        } catch (NumberFormatException e) {
+            String valueStr = valeur.getValue().toLowerCase();
+            if (valueStr.equalsIgnoreCase("true") || valueStr.equalsIgnoreCase("false")) {
+                return "boolean";
+            } else if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
+                return "Character";
+            }
+            else {
+                if (valeur.getValue().equalsIgnoreCase("Character'Val")){
+                        return "Character";
+                }
+                if (valeur.getValue().equalsIgnoreCase("null")){ return "null"; }
+                return " ";
+            }
+            }
+        }
 }
+
