@@ -28,6 +28,7 @@ public class CodeGenerator {
 
     private int whileCounter = 0;
     private int ifCounter = 0;
+    private int forCounter = 0;
     private int shift = 0;
 
 
@@ -71,7 +72,7 @@ public class CodeGenerator {
                     generateDeclVar(node);
                     break;
                 case CALL:
-//                    generateCallFunctionProcedure(node, tds);
+                    generateCallFunctionProcedure(node, tds);
                     break;
                 case COMPARATOR:
                     // pour l'instant, résultat à la base de la pile
@@ -286,8 +287,6 @@ public class CodeGenerator {
         // Node trueCase = node.getChildren().get(1); // noeud du cas vrai
         // Node falseCase = node.getChildren().get(2); // noeud du cas faux
 
-        // /* TODO gérer le cas elsif */
-
         // int number = ifCounter;
         // ifCounter++;
 
@@ -307,7 +306,63 @@ public class CodeGenerator {
     }
 
     private void generateFor(Node node) throws IOException {
-        //TODO
+        //Empiler la borne inf, puis la borne sup, puis l'incrément
+        List<Node> children = node.getChildren();
+        String variable_compteur = children.get(0).getValue();
+        String direction = children.get(1).getValue();
+        Node borne_inf = children.get(2);
+        Node borne_sup = children.get(3);
+        Node body = children.get(4);
+
+        //aller chercher la valeur de la borne inf
+        String type_borne_inf = type_valeur(borne_inf);
+        if (borne_inf.getValue().equalsIgnoreCase(" ")) {
+            //c'est une variable donc faut la chercher par la fonction accessVariable
+            generateAccessVariable(borne_inf);
+            write("LDMFD   r13!, {r0}");
+            write("STMFD r13!, {r0}");
+        }
+        else if (type_borne_inf.equalsIgnoreCase("integer")) {
+            write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+            write("MOV R0, #" + borne_inf.getValue());
+            write("STR r0, [r13] ; Empiler la borne inf");
+        }
+        String type_borne_sup = type_valeur(borne_sup);
+        if (borne_sup.getValue().equalsIgnoreCase(" ")) {
+            //c'est une variable donc faut la chercher par la fonction accessVariable
+            generateAccessVariable(borne_sup);
+            write("LDMFD   r13!, {r0}");
+            write("STMFD r13!, {r0}");
+        }
+        else if (type_borne_sup.equalsIgnoreCase("integer")) {
+            write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+            write("MOV R0, #" + borne_sup.getValue());
+            write("STR r0, [r13] ; Empiler la borne sup");
+        }
+        //initialisation : on met dans la pile : borne inf, borne sup, compteur initialisé à borne inf
+        if (direction.equalsIgnoreCase("reverse")) {
+            write("LDR r0, [r13, #4] ; Récupérer la borne sup");
+            write("STMFD r13!, {r0} ;empiler l'increment qui demarre à la borne sup (reverse)");
+        } else {
+            write("LDR r0, [r13, #8] ; Récupérer la borne inf");
+            write("STMFD r13!, {r0} ;empiler l'incrément qui démarre à la borne inf");
+        }
+        //Pour le for
+        write("FOR" + forCounter);
+        write("LDR r0, [r13] ; Récupérer le compteur");
+        write("LDR r1, [r13, #4] ; Récupérer la borne sup");
+        write("CMP r0, r1");
+        write("BEQ end_for" + forCounter);
+        generateCode(body);
+        write("LDR r0, [r13] ; Récupérer le compteur");
+        if (direction.equalsIgnoreCase("reverse")) {
+            write("ADD r0, r0, #1 ; Incrémenter le compteur");
+        } else {
+            write("SUB r0, r0, #1 ; Décrémenter le compteur");
+        }
+        write("STR r0, [r13] ; Sauvegarder le compteur");
+        write("B FOR" + forCounter);
+        write("end_for" + forCounter);
     }
 
     private void generateMultiply(Node node) throws IOException {
