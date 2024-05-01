@@ -37,6 +37,8 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
+        generateMultiplyFunction();
+        generateDivideFunction();
         generateCode(ast.getRootNode());
     }
 
@@ -188,12 +190,75 @@ public class CodeGenerator {
         //TODO
     }
 
-    private void generateMultiply(Node node) throws IOException {
-        //TODO
+    private void generateMultiplyFunction() throws IOException {
+        // only multiply two integers
+            write("; --- MULTIPLICATION function (to be add at the beginning of the file)" + " ---");
+            write("; R0 = result , R1 = left operand, R2 = right operand");
+            write("mul"); //multiplication function : to be called with "BNE mul"
+            incrementTabulation();
+            write("STMFA SP!, {R1,R2}");
+            write("MOV R0, #0");
+            decrementTabulation();
+            write("mul_loop");
+            incrementTabulation();
+            write("LSRS R2, R2, #1");
+            write("ADDCS   R0, R0, R1");
+            write("LSL R1, R1, #1");
+            write("TST R2, R2");
+            write("BNE mul_loop");
+            write("LDMFA SP!, {R1,R2}");
+            write("LDR PC, [R13, #-4]!");
+            decrementTabulation();
+            write("; --- END MULTIPLICATION function ---");
     }
 
-    private void generateDivide(Node node) throws IOException {
-        //TODO
+    private void generateDivideFunction() throws IOException {
+        write("; --- DIVISION function (to be add at the beginning of the file)" + " ---");
+        write("; R0 = result , R1 = left operand, R2 = right operand");
+        write("div"); //division function : to be called with "BNE mul"
+        incrementTabulation();
+        write("STMFA SP!, {R2-R5}");
+        write("MOV     R0, #0");
+        write("MOV     R3, #0");
+        write("CMP     R1, #0");
+        write("RSBLT   R1, R1, #0");
+        write("EORLT   R3, R3, #1");
+        write("CMP     R2, #0");
+        write("RSBLT   R2, R2, #0");
+        write("EORLT   R3, R3, #1");
+        write("MOV     R4, R2");
+        write("MOV     R5, #1");
+        decrementTabulation();
+        write("div_max");
+        incrementTabulation();
+        write("LSL     R4, R4, #1");
+        write("LSL     R5, R5, #1");
+        write("CMP     R4, R1");
+        write("BLE     div_max");
+        decrementTabulation();
+        write("div_loop");
+        incrementTabulation();
+        write("LSR R4, R4, #1");
+        write("LSR R5, R5, #1");
+        write("CMP R4, R1");
+        write("BGT div_loop");
+        write("ADD R0, R0, R5");
+        write("SUB R1, R1, R4");
+        write("CMP R1, R2");
+        write("BGE div_loop");
+        write("CMP R3, #1");
+        write("BNE div_exit");
+        write("CMP R1, #0");
+        write("ADDNE R0, R0, #1");
+        write("RSB R0, R0, #0");
+        write("RSB R1, R1, #0");
+        write("ADDNE R1, R1, R2");
+        decrementTabulation();
+        write("div_exit");
+        incrementTabulation();
+        write("LDMFA SP!, {R2-R5}");
+        write("LDR PC, [R13, #-4]!");
+        decrementTabulation();
     }
 
     private void generateDeclFunction(Node node) throws IOException {
