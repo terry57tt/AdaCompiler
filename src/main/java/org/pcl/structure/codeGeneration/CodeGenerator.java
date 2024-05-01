@@ -1,6 +1,7 @@
 package org.pcl.structure.codeGeneration;
 
 import org.pcl.OutputGenerator;
+import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tds.FunctionSymbol;
 import org.pcl.structure.tds.ParamSymbol;
 import org.pcl.structure.tds.Symbol;
@@ -143,8 +144,78 @@ public class CodeGenerator {
         }
     }
 
+    /** Wrapper to print comment in ASM file*/
     private void generateArithmetic(Node node) throws IOException {
-        //TODO
+        write("; ---  ARITHMETIC evaluation ---");
+        generateArithmeticRecursif(node);
+        write("; --- END ARITHMETIC evaluation ---");
+    }
+
+    private void generateArithmeticRecursif(Node node) throws IOException {
+
+        if (node.getValue().equalsIgnoreCase("-") || node.getValue().equalsIgnoreCase("+")
+                || node.getValue().equalsIgnoreCase("*") || node.getValue().equalsIgnoreCase("/")
+                || node.getValue().equalsIgnoreCase("REM"))
+        {
+
+            generateArithmeticRecursif( node.getChildren().get(0));
+            generateArithmeticRecursif(node.getChildren().get(1));
+
+            write("; Right Operand");
+            write("LDR R2, [R13] ; Get the value of right operand");
+            write("SUB R13, R13, #4 ; Decrement the stack pointer");
+
+            write("; Left Operand");
+            write("LDR R1, [R13] ; Get the value of left operand");
+            write("SUB R13, R13, #4 ; Decrement the stack pointer");
+
+
+
+
+            switch (node.getValue().toUpperCase()) {
+                case "+":
+                    write("; Perform the addition");
+                    write("ADD R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile
+                    return;
+                case "-":
+                    write("; Perform the substraction");
+                    write("SUB R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile;
+                    return;
+                case "*":
+                    //TODO
+                    write("; Perform the multiplication");
+                    write("MUL R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile
+                    return;
+                case "/":
+                    //TODO
+                    write("; Perform the division");
+                    write("SDIV R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("SUB R13, R13, #4"); // On décale le pointeur de pile;
+                    return;
+                case "REM":
+                    //TODO
+                    write("; Perform the modulo");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile;
+                    return;
+                default:
+            }
+        }
+
+        if (node.getToken().getType().equals(TokenType.NUMBER)) {
+            write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
+            write("STR R0, [R13, #4]");
+            write("ADD R13, R13, #4");
+        } else {
+            generateAccessVariable(node);
+        }
     }
 
     private void generateWhile(Node node) throws IOException {
@@ -302,6 +373,7 @@ public class CodeGenerator {
 
     private void generateAffectationVar(Node node) throws IOException {
         //TODO
+        generateArithmetic(node.getChild(1));
     }
 
     private void generateAccessVariable(Node node) throws IOException {
