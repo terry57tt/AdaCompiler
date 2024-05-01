@@ -23,8 +23,13 @@ public class CodeGenerator {
     Tds tds;
 
     private final String whileLabel = "While";
-    private final String endLabel = "End";
+
+    private final String ifLabel = "If";
+    private final String endLabelWhile = "EndWhile";
+    private final String endLabelIf = "End";
+
     private int whileCounter = 0;
+    private int ifCounter = 0;
     private int shift = 0;
 
 
@@ -54,7 +59,7 @@ public class CodeGenerator {
                     break;
                 case IF:
                     generateIf(node);
-                    break;
+                    return;
                 case FOR:
                     generateFor(node);
                     break;
@@ -175,7 +180,7 @@ public class CodeGenerator {
 
         generateCode(comparator);
 
-        write("BEQ " + whileLabel + endLabel + number + " ; exit while if condition is false");
+        write("BEQ " + whileLabel + endLabelWhile + number + " ; exit while if condition is false");
         write("");
         write("; body of while");
 
@@ -183,13 +188,29 @@ public class CodeGenerator {
 
         write("BL " + whileLabel + number + " ; continue iteration in while");
         decrementTabulation();
-        write(whileLabel + endLabel + number);
+        write(whileLabel + endLabelWhile + number);
         write("; --- END WHILE generation for " + whileLabel + number + " ---");
 
     }
 
     private void generateIf(Node node) throws IOException {
-        //TODO
+        Node comparator = node.getChildren().get(0); // noeud de comparaison
+        Node trueCase = node.getChildren().get(1); // noeud du cas vrai
+        Node falseCase = node.getChildren().get(2); // noeud du cas faux
+
+        write("; ---  IF generation ---");
+        generateBoolean(comparator);
+        write("LDR R0, [R11, #-4]"); // on récupère le résultat de la comparaison (base de la pile)
+        write("CMP R0, #1"); // on compare le résultat avec 1
+        write("BEQ " + ifLabel + ifCounter); // si vrai, on va au cas vrai
+        if (falseCase != null) {
+            generateCode(falseCase);
+        }
+        write("B " + endLabelIf + ifCounter); // on saute le cas vrai
+        write(ifLabel + ifCounter);
+        generateCode(trueCase);
+        write(endLabelIf + ifCounter);
+        write("; --- END IF generation ---");
     }
 
     private void generateFor(Node node) throws IOException {
