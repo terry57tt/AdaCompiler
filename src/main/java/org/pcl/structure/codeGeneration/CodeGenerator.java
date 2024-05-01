@@ -2,11 +2,6 @@ package org.pcl.structure.codeGeneration;
 
 import org.pcl.OutputGenerator;
 import org.pcl.structure.automaton.TokenType;
-import org.pcl.structure.tds.*;
-import org.pcl.structure.automaton.TokenType;
-import org.pcl.structure.tds.FunctionSymbol;
-import org.pcl.structure.tds.ParamSymbol;
-import org.pcl.structure.tds.Symbol;
 import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
@@ -18,8 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.pcl.OutputGenerator.*;
-import static org.pcl.structure.tree.NodeType.SUBSTRACTION;
-import static org.pcl.structure.tree.NodeType.SUPERIOR;
 
 public class CodeGenerator {
     SyntaxTree ast;
