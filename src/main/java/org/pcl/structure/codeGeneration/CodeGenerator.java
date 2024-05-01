@@ -73,7 +73,7 @@ public class CodeGenerator {
                     generateDeclVar(node);
                     break;
                 case CALL:
-                    generateCallFunctionProcedure(node, tds);
+//                    generateCallFunctionProcedure(node, tds);
                     break;
                 case COMPARATOR:
                     // pour l'instant, résultat à la base de la pile
@@ -198,18 +198,23 @@ public class CodeGenerator {
         Node trueCase = node.getChildren().get(1); // noeud du cas vrai
         Node falseCase = node.getChildren().get(2); // noeud du cas faux
 
+        /* TODO gérer le cas elsif */
+
+        int number = ifCounter;
+        ifCounter++;
+
         write("; ---  IF generation ---");
         generateBoolean(comparator);
         write("LDR R0, [R11, #-4]"); // on récupère le résultat de la comparaison (base de la pile)
         write("CMP R0, #1"); // on compare le résultat avec 1
-        write("BEQ " + ifLabel + ifCounter); // si vrai, on va au cas vrai
+        write("BEQ " + ifLabel + number); // si vrai, on va au cas vrai
         if (falseCase != null) {
             generateCode(falseCase);
         }
-        write("B " + endLabelIf + ifCounter); // on saute le cas vrai
-        write(ifLabel + ifCounter);
+        write("B " + endLabelIf + number); // on saute le cas vrai
+        write(ifLabel + number);
         generateCode(trueCase);
-        write(endLabelIf + ifCounter);
+        write(endLabelIf + number);
         write("; --- END IF generation ---");
     }
 
