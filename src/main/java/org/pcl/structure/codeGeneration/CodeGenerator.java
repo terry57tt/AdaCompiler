@@ -494,6 +494,11 @@ public class CodeGenerator {
             write("mul"); //multiplication function : to be called with "BL mul"
             incrementTabulation();
             write("STMFD SP!, {LR, R1,R2}");
+            write("MOV R11, R13");
+            write("LDR R2,[R13] ; load right operand in R2 (top of the pile)");
+            write("ADD R13, R13, #4 ; increment the stack pointer");
+            write("LDR R1,[R13] ; load left operand in R1 (top of the pile)");
+            write("ADD R13, R13, #4 ; increment the stack pointer");
             write("MOV R0, #0");
             decrementTabulation();
             write("mul_loop");
@@ -503,8 +508,10 @@ public class CodeGenerator {
             write("LSL R1, R1, #1");
             write("TST R2, R2");
             write("BNE mul_loop");
+            write("SUB R13, R13, #4 ; decrement the stack pointer to put the return value");
+            write("STR R0, [R13] ; store the result in the stack");
+            write("MOV R13, R11 ; restore the stack pointer at the end of the function");
             write("LDMFD SP!, {PC, R1,R2}");
-            write("LDR PC, [R13, #-4]!");
             decrementTabulation();
             write("; --- END MULTIPLICATION function ---");
     }
@@ -516,23 +523,28 @@ public class CodeGenerator {
         write("div"); //division function : to be called with "BL mul"
         incrementTabulation();
         write("STMFD SP!, {LR, R2-R5}");
-        write("MOV     R0, #0");
-        write("MOV     R3, #0");
-        write("CMP     R1, #0");
-        write("RSBLT   R1, R1, #0");
-        write("EORLT   R3, R3, #1");
-        write("CMP     R2, #0");
-        write("RSBLT   R2, R2, #0");
-        write("EORLT   R3, R3, #1");
-        write("MOV     R4, R2");
-        write("MOV     R5, #1");
+        write("MOV R11, R13 ; save the stack pointer");
+        write("LDR R2,[R13] ; load right operand in R2 (top of the pile)");
+        write("ADD R13, R13, #4 ; increment the stack pointer");
+        write("LDR R1,[R13] ; load left operand in R1 (top of the pile)");
+        write("ADD R13, R13, #4 ; increment the stack pointer");
+        write("MOV R0, #0");
+        write("MOV R3, #0");
+        write("CMP R1, #0");
+        write("RSBLT R1, R1, #0");
+        write("EORLT R3, R3, #1");
+        write("CMP R2, #0");
+        write("RSBLT R2, R2, #0");
+        write("EORLT R3, R3, #1");
+        write("MOV R4, R2");
+        write("MOV R5, #1");
         decrementTabulation();
         write("div_max");
         incrementTabulation();
-        write("LSL     R4, R4, #1");
-        write("LSL     R5, R5, #1");
-        write("CMP     R4, R1");
-        write("BLE     div_max");
+        write("LSL R4, R4, #1");
+        write("LSL R5, R5, #1");
+        write("CMP R4, R1");
+        write("BLE div_max");
         decrementTabulation();
         write("div_loop");
         incrementTabulation();
@@ -554,8 +566,12 @@ public class CodeGenerator {
         decrementTabulation();
         write("div_exit");
         incrementTabulation();
+        write("SUB R13, R13, #4 ; decrement the stack pointer");
+        write("STR R0, [R13] ; store the result in the stack");
+        write("SUB R13, R13, #4 ; decrement the stack pointer");
+        write("STR R1, [R13] ; store the remainder in the stack");
+        write("MOV R13, R11 ; restore the stack pointer at the end of the function");
         write("LDMFD SP!, {PC, R2-R5}");
-        write("LDR PC, [R13, #-4]!");
         decrementTabulation();
     }
 
