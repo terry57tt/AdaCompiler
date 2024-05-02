@@ -1,6 +1,7 @@
 package org.pcl.structure.codeGeneration;
 
 import org.pcl.OutputGenerator;
+import org.pcl.structure.tds.*;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.Node;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.pcl.OutputGenerator.*;
+import static org.pcl.structure.tree.NodeType.*;
 
 public class CodeGenerator {
     SyntaxTree ast;
@@ -39,6 +41,8 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
+        generateMultiplyFunction();
+        generateDivideFunction();
         generateCode(ast.getRootNode());
     }
 
@@ -66,7 +70,7 @@ public class CodeGenerator {
                 case AFFECTATION:
                     generateAffectationVar(node);
                     break;
-                case DECLARATION:
+                case DECL_VAR:
                     generateDeclVar(node);
                     break;
                 case CALL:
@@ -82,7 +86,7 @@ public class CodeGenerator {
                     generateReturn(node);
                     break;
                 case EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT, BODY,
-                     NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECL_VAR, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER, PROGRAM:
+                        NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECLARATION, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER, PROGRAM:
                     // NO ACTION
                     break;
                 default:
@@ -500,12 +504,76 @@ public class CodeGenerator {
         forCounter++;
     }
 
-    private void generateMultiply(Node node) throws IOException {
-        //TODO
+    private void generateMultiplyFunction() throws IOException {
+        // only multiply two integers
+            write("; --- MULTIPLICATION function (to be add at the beginning of the file)" + " ---");
+            write("; R0 = result , R1 = left operand, R2 = right operand");
+            write("mul"); //multiplication function : to be called with "BL mul"
+            incrementTabulation();
+            write("STMFD SP!, {LR, R1,R2}");
+            write("MOV R0, #0");
+            decrementTabulation();
+            write("mul_loop");
+            incrementTabulation();
+            write("LSRS R2, R2, #1");
+            write("ADDCS   R0, R0, R1");
+            write("LSL R1, R1, #1");
+            write("TST R2, R2");
+            write("BNE mul_loop");
+            write("LDMFD SP!, {PC, R1,R2}");
+            write("LDR PC, [R13, #-4]!");
+            decrementTabulation();
+            write("; --- END MULTIPLICATION function ---");
     }
 
-    private void generateDivide(Node node) throws IOException {
-        //TODO
+    private void generateDivideFunction() throws IOException {
+        write("; --- DIVISION function (to be add at the beginning of the file)" + " ---");
+        write("; R1 = left operand, R2 = right operand");
+        write("; at the end : R0 = result, R1 = remainder");
+        write("div"); //division function : to be called with "BL mul"
+        incrementTabulation();
+        write("STMFD SP!, {LR, R2-R5}");
+        write("MOV     R0, #0");
+        write("MOV     R3, #0");
+        write("CMP     R1, #0");
+        write("RSBLT   R1, R1, #0");
+        write("EORLT   R3, R3, #1");
+        write("CMP     R2, #0");
+        write("RSBLT   R2, R2, #0");
+        write("EORLT   R3, R3, #1");
+        write("MOV     R4, R2");
+        write("MOV     R5, #1");
+        decrementTabulation();
+        write("div_max");
+        incrementTabulation();
+        write("LSL     R4, R4, #1");
+        write("LSL     R5, R5, #1");
+        write("CMP     R4, R1");
+        write("BLE     div_max");
+        decrementTabulation();
+        write("div_loop");
+        incrementTabulation();
+        write("LSR R4, R4, #1");
+        write("LSR R5, R5, #1");
+        write("CMP R4, R1");
+        write("BGT div_loop");
+        write("ADD R0, R0, R5");
+        write("SUB R1, R1, R4");
+        write("CMP R1, R2");
+        write("BGE div_loop");
+        write("CMP R3, #1");
+        write("BNE div_exit");
+        write("CMP R1, #0");
+        write("ADDNE R0, R0, #1");
+        write("RSB R0, R0, #0");
+        write("RSB R1, R1, #0");
+        write("ADDNE R1, R1, R2");
+        decrementTabulation();
+        write("div_exit");
+        incrementTabulation();
+        write("LDMFD SP!, {PC, R2-R5}");
+        write("LDR PC, [R13, #-4]!");
+        decrementTabulation();
     }
 
     private void generateDeclFunction(Node node) throws IOException {
@@ -612,16 +680,71 @@ public class CodeGenerator {
 
 
     private void generateDeclVar(Node node) throws IOException {
-        //TODO
+
+        Symbol symbol = tds.getSymbol(node.getChildren().get(0).getValue());
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + node.getChildren().get(0).getValue());
+        }
+        else {
+            int depl = symbol.getDeplacement();
+            write("; --- DECLARATION of variable " + symbol.getName() + " ---");
+            write("SUB R13, R13, #"+ depl+" ; On incrémente SP pour laisser de la place pour la variable");
+            write("; --- END DECLARATION of variable " + symbol.getName() + " ---");
+        }
+
+        if(node.getParent().getType() == NodeType.AFFECTATION){
+            // case declaration with affectation
+            String valeur_affectation = node.getParent().getChild(1).getValue();
+            int int_affectation = Integer.parseInt(valeur_affectation);
+            write("; --- AFFECTATION of variable " + node.getChild(0).getValue() + " ---");
+            write("LDR R7, =" + int_affectation + " ; LDR au lieu de MOV car MOV ne permet pas la gestion des nombres de plus de 8 bits");
+            write("ADD R8, R12, #0" + " ; R8 := @x");
+            write("STR R7, [R8]" + " ; variable := " + int_affectation);
+            write("; --- END AFFECTATION of variable " + node.getChild(0).getValue() + " ---");
+        }
     }
 
     private void generateAffectationVar(Node node) throws IOException {
-        //TODO
+        // case : affectation of an integer
+        //TODO case : affectation of a character
+        if(node.firstChild().getType() != DECL_VAR){
+            // case : affectation of a local variable not in a declaration
+            Symbol symbol = tds.getSymbol(node.getChild(0).getChild(0).getValue());
+            if (symbol == null) {
+                throw new IllegalArgumentException("Symbol not found in tds : " + node.getChild(0).getChild(0).getValue());
+            }
+            else {
+                //local variable case
+                int depl = symbol.getDeplacement();
+                write("; --- AFFECTATION of variable " + symbol.getName() + " ---");
+                write("LDR R7, =" + node.getChild(1).getValue() + " ; LDR au lieu de MOV car MOV ne permet pas la gestion des nombres de plus de 8 bits");
+                write("STR R7, [R12, #"+ depl+"]" + " ; variable := " + node.getChild(1).getValue());
+                write("; --- END AFFECTATION of variable " + symbol.getName() + " ---");
+            }
+            //TODO : non local variable
+        }
+        //TODO : arithmetic
         generateArithmetic(node.getChild(1));
     }
 
-    private void generateAccessVariable(Node node) throws IOException {
-        //TODO
+    private void generateAccessVariable(Node nodeToAccess) throws IOException {
+        // nodeToAccess = node of the variable to access
+        Node node = nodeToAccess;
+        //searching for the tds (imbrication and region number) of the nodeToAccess
+        while(node.getParent().getType() != NodeType.FILE || node.getParent().getType() != NodeType.DECL_FUNC || node.getParent().getType() != NodeType.DECL_PROC){
+            node = node.getParent();
+        }
+        if(node.getParent().getType() == NodeType.DECL_FUNC){
+            FunctionSymbol currentTds = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+
+        } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+            ProcedureSymbol currentTds = (ProcedureSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+
+
+        } else if (node.getParent().getType() == NodeType.FILE) {
+            int current_imbrication = 0;
+            int current_region = 0;
+        }
     }
 
     public static String type_valeur(Node valeur) {
