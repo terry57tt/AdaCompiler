@@ -81,11 +81,7 @@ public class CodeGenerator {
                 case RETURN:
                     generateReturn(node);
                     break;
-                case BODY:
-                    for (Node child : node.getChildren()) {
-                        generateCode(child);
-                    }
-                case EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT,
+                case EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT, BODY,
                      NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECL_VAR, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER, PROGRAM:
                     // NO ACTION
                     break;
@@ -336,7 +332,7 @@ public class CodeGenerator {
         write("LDMFD   r13!, {r0}");
         write("CMP r0, #0");
         if (elseif.size() > 0){
-            write("BEQ " + "ElSIF" + ifCounter + "0");
+            write("BEQ " + "ELSIF" + ifCounter + "0");
             generateCode(body);
             write("B " + "EndIf" + ifCounter);
             /*
@@ -361,7 +357,7 @@ public class CodeGenerator {
                 Node elseifnode = elseif.get(i);
                 Node elseifcondition = elseifnode.getChildren().get(0);
                 Node elseifbody = elseifnode.getChildren().get(1);
-                write("ElSIF" + ifCounter + i);
+                write("ELSIF" + ifCounter + i);
                 generateBoolean(elseifcondition);
                 write("LDMFD   r13!, {r0}");
                 write("CMP r0, #0");
@@ -372,7 +368,7 @@ public class CodeGenerator {
             Node elseifnode = elseif.get(elseif.size() - 1);
             Node elseifcondition = elseifnode.getChildren().get(0);
             Node elseifbody = elseifnode.getChildren().get(1);
-            write("ElSIF" + ifCounter + (elseif.size() - 1));
+            write("ELSIF" + ifCounter + (elseif.size() - 1));
             generateBoolean(elseifcondition);
             write("LDMFD   r13!, {r0}");
             write("CMP r0, #0");
@@ -396,16 +392,15 @@ public class CodeGenerator {
                 generateCode(body);
                 write("B " + "EndIf" + ifCounter);
                 generateCode(elsenode);
-                ifCounter++;
             }
             else {
                 write("BEQ " + "EndIf" + ifCounter);
                 generateCode(body);
                 write("B " + "EndIf" + ifCounter);
-                ifCounter++;
             }
         }
-        write ("EndIf" + whileCounter);
+        write ("EndIf" + ifCounter);
+        ifCounter++;
         // Node comparator = node.getChildren().get(0); // noeud de comparaison
         // Node trueCase = node.getChildren().get(1); // noeud du cas vrai
         // Node falseCase = node.getChildren().get(2); // noeud du cas faux
