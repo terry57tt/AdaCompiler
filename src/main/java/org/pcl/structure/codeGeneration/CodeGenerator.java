@@ -2,11 +2,14 @@ package org.pcl.structure.codeGeneration;
 
 import org.pcl.OutputGenerator;
 import org.pcl.structure.tds.*;
+import org.pcl.structure.automaton.TokenType;
+import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,8 +22,14 @@ public class CodeGenerator {
     Tds tds;
 
     private final String whileLabel = "While";
-    private final String endLabel = "End";
+
+    private final String ifLabel = "If";
+    private final String endLabelWhile = "EndWhile";
+    private final String endLabelIf = "End";
+
     private int whileCounter = 0;
+    private int ifCounter = 0;
+    private int forCounter = 0;
     private int shift = 0;
 
 
@@ -52,7 +61,7 @@ public class CodeGenerator {
                     break;
                 case IF:
                     generateIf(node);
-                    break;
+                    return;
                 case FOR:
                     generateFor(node);
                     break;
@@ -74,8 +83,11 @@ public class CodeGenerator {
                     generateBoolean(node);
                     write("; --- END BOOLEAN evaluation ---");
                     return;
-                case EXPRESSION, ELSIF, REVERSE, BEGIN, RETURN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT,
-                        NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECLARATION, RECORD, ACCESS, IS, TYPE, VIRGULE, BODY, FILE, IDENTIFIER, PROGRAM:
+                case RETURN:
+                    generateReturn(node);
+                    break;
+                case EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT, BODY,
+                        NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECLARATION, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER, PROGRAM:
                     // NO ACTION
                     break;
                 default:
@@ -90,59 +102,185 @@ public class CodeGenerator {
         }
     }
 
+    private void generateReturn(Node node) throws IOException {
+        //Quand on voit un return, soit on return un char, un int, un bool, une expression arithmétique, une expression booléenne,
+        //une variable, un appel de fonction fonction ou de procédure.
+        //La pile : valeur de retour, chainage statique, chainage dynamique, adresse de retour donc on doit sauvegarder la valeur de retour à r11
+        List<Node> children = node.getChildren();
+        if (children.size() == 1) {
+            String value_type = type_valeur(children.get(0));
+            if (value_type.equalsIgnoreCase("integer")) {
+                write("MOV R0, #" + children.get(0).getValue());
+                write("STR R0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+            }
+            else if (value_type.equalsIgnoreCase("character")) {
+                write("Char" + children.get(0).getValue().toUpperCase() + "  DCD  " + (int)children.get(0).getValue().charAt(0) + " ; '" + children.get(0).getValue() + "' en ASCII");
+                write("LDR R0, =Char" + children.get(0).getValue().toUpperCase());
+                write("LDR r0, [r0]");
+                write("STR r0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+            }
+            else if (value_type.equalsIgnoreCase("boolean")) {
+                write("MOV R0, #" + children.get(0).getValue());
+                write("STR R0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+            }
+            else if (value_type.equalsIgnoreCase("null")) {
+                write("MOV R0, #0");
+                write("STR R0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+            }
+            else if (value_type.equalsIgnoreCase(" ")) {
+                generateAccessVariable(children.get(0));
+                write("LDMFD   r13!, {r0}");
+                write("STR r0, [R11, #4] ; Sauvegarder la valeur de retour");
+            }
+            else {
+                write("BL " + children.get(0).getValue().toUpperCase());
+            }
+        }
+        else {
+            if (children.get(0).getType() == NodeType.ADDITION || children.get(0).getType() == NodeType.SUBSTRACTION || children.get(0).getType() == NodeType.MULTIPLY || children.get(0).getType() == NodeType.DIVIDE || children.get(0).getType() == NodeType.REM) {
+                generateArithmetic(children.get(0));
+                write("LDMFD   r13!, {r0}");
+                write("STR r0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+            }
+            else if (children.get(0).getType() == NodeType.COMPARATOR) {
+                generateBoolean(children.get(0));
+                write("LDMFD   r13!, {r0}");
+                write("STR r0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+            }
+        }
+    }
+
     private void generateBoolean(Node node) throws IOException {
         Node left = node.getChildren().get(0);
         Node right = node.getChildren().get(1);
 
         switch (node.getValue()){
-            case "=" :
-                write("MOV R1, #" + left.getValue()); // On met les valeurs a comparer dans les registres
-                write("MOV R2, #" + right.getValue());
-                write("CMP R1, R2"); // On compare les valeurs
-                write("SUB R13, R13, #4"); // On décrémente le pointeur de pile
-                write("MOVEQ   R3, #1"); // 1 si égalité
-                write("MOVNE   R3, #0"); // 0 sinon
-                shift = shift-4;
-                write("STR   R3, [R11, #"+ shift +"]"); // On stocke le résultat de la comparaison en pile
-
+            case "=":
+            case "<":
+            case "<=":
+            case ">":
+            case ">=":
+                write("MOV R1, #" + left.getValue()); // Valeur de gauche
+                write("MOV R2, #" + right.getValue()); // Valeur de droite
+                write("CMP R1, R2"); // Comparaison
+                write("SUB R13, R13, #4"); // Décrémenter le pointeur de pile (on va mettre flag en pile)
+                switch (node.getValue()){
+                    case "=":
+                        write("MOVEQ   R3, #1"); // on met 1 si retourne vrai
+                        write("MOVNE   R3, #0"); // 0 sinon
+                        break;
+                    case "<":
+                        write("MOVLT   R3, #1");
+                        write("MOVGE   R3, #0");
+                        break;
+                    case "<=":
+                        write("MOVLE   R3, #1");
+                        write("MOVGT   R3, #0");
+                        break;
+                    case ">":
+                        write("MOVGT   R3, #1");
+                        write("MOVLE   R3, #0");
+                        break;
+                    case ">=":
+                        write("MOVGE   R3, #1");
+                        write("MOVLT   R3, #0");
+                        break;
+                }
+                shift = shift-4; // déplacement par rapport à R11
+                write("STR   R3, [R11, #"+ shift +"]"); // on met le résultat en pile
                 return;
-            case "<" :
-                break;
-            case "<=" :
-                break;
-            case ">" :
-                break;
-            case ">=" :
-                break;
-            case "and" :
+            case "and":
+            case "or":
                 generateBoolean(left);
                 generateBoolean(right);
-                write("LDR R1, [R11, #"+shift+"]"); // On récupère les valeurs de la pile
-                shift = shift+4;
-                write("LDR R2, [R11, #"+shift+"]");
-
-                write("AND R3, R1, R2"); // On fait le ET logique
-                write("STR R3, [R11, #" + shift + "]"); // On stocke le résultat en pile (on décale de 8 car on a déjà stocké le résultat de la première comparaison)
-                write("ADD R13, R13, #4"); // On incrémente le pointeur de pile
-                return;
-            case "or" :
-                generateBoolean(left);
-                generateBoolean(right);
-                write("LDR R1, [R11, #"+shift+"]"); // On récupère les valeurs de la pile
-                shift = shift+4;
-                write("LDR R2, [R11, #"+shift+"]");
-
-                write("ORR R3, R1, R2"); // On fait le OU logique
-                write("STR R3, [R11, #" + shift + "]"); // On stocke le résultat en pile (on décale de 8 car on a déjà stocké le résultat de la première comparaison)
-                write("ADD R13, R13, #4"); // On incrémente le pointeur de pile
+                write("LDR R1, [R11, #"+shift+"]"); // on récupère le résultat de la première opération
+                shift = shift+4; // (en fait on récupère les deux derniers résultats de la pile)
+                write("LDR R2, [R11, #"+shift+"]"); // on récupère le résultat de la deuxième opération
+                if (node.getValue().equals("and")) {
+                    write("AND R3, R1, R2");
+                } else {
+                    write("ORR R3, R1, R2");
+                }
+                write("STR R3, [R11, #" + shift + "]"); // on remplace les deux résultats par le résultat de l'opération
+                write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
                 return;
             default:
                 break;
         }
     }
 
+    /** Wrapper to print comment in ASM file*/
     private void generateArithmetic(Node node) throws IOException {
-        //TODO
+        write("; ---  ARITHMETIC evaluation ---");
+        generateArithmeticRecursif(node);
+        write("; --- END ARITHMETIC evaluation ---");
+    }
+
+    private void generateArithmeticRecursif(Node node) throws IOException {
+
+        if (node.getValue().equalsIgnoreCase("-") || node.getValue().equalsIgnoreCase("+")
+                || node.getValue().equalsIgnoreCase("*") || node.getValue().equalsIgnoreCase("/")
+                || node.getValue().equalsIgnoreCase("REM"))
+        {
+
+            generateArithmeticRecursif( node.getChildren().get(0));
+            generateArithmeticRecursif(node.getChildren().get(1));
+
+            write("; Right Operand");
+            write("LDR R2, [R13] ; Get the value of right operand");
+            write("SUB R13, R13, #4 ; Decrement the stack pointer");
+
+            write("; Left Operand");
+            write("LDR R1, [R13] ; Get the value of left operand");
+            write("SUB R13, R13, #4 ; Decrement the stack pointer");
+
+
+
+
+            switch (node.getValue().toUpperCase()) {
+                case "+":
+                    write("; Perform the addition");
+                    write("ADD R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile
+                    return;
+                case "-":
+                    write("; Perform the substraction");
+                    write("SUB R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile;
+                    return;
+                case "*":
+                    //TODO
+                    write("; Perform the multiplication");
+                    write("MUL R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile
+                    return;
+                case "/":
+                    //TODO
+                    write("; Perform the division");
+                    write("SDIV R0, R1, R2");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("SUB R13, R13, #4"); // On décale le pointeur de pile;
+                    return;
+                case "REM":
+                    //TODO
+                    write("; Perform the modulo");
+                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4"); // On décale le pointeur de pile;
+                    return;
+                default:
+            }
+        }
+
+        if (node.getToken().getType().equals(TokenType.NUMBER)) {
+            write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
+            write("STR R0, [R13, #4]");
+            write("ADD R13, R13, #4");
+        } else {
+            generateAccessVariable(node);
+        }
     }
 
     private void generateWhile(Node node) throws IOException {
@@ -165,7 +303,7 @@ public class CodeGenerator {
 
         generateCode(comparator);
 
-        write("BEQ " + whileLabel + endLabel + number + " ; exit while if condition is false");
+        write("BEQ " + whileLabel + endLabelWhile + number + " ; exit while if condition is false");
         write("");
         write("; body of while");
 
@@ -173,17 +311,181 @@ public class CodeGenerator {
 
         write("BL " + whileLabel + number + " ; continue iteration in while");
         decrementTabulation();
-        write(whileLabel + endLabel + number);
+        write(whileLabel + endLabelWhile + number);
         write("; --- END WHILE generation for " + whileLabel + number + " ---");
 
     }
 
     private void generateIf(Node node) throws IOException {
-        //TODO
+        List<Node> children = node.getChildren();
+        Node condition = children.get(0);
+        Node body = children.get(1);
+        List<Node> elseif = new ArrayList<>();
+        Node elsenode = null;
+        if (children.size() > 2){
+            for (int i = 2 ; i < children.size(); i++){
+                if (children.get(i).getType() == NodeType.ELSIF) {
+                    elseif.add(children.get(i));
+                }
+                else if (children.get(i).getType() == NodeType.BODY){
+                    elsenode = children.get(i);
+                }
+            }
+        }
+        write("IF" + ifCounter);
+        generateBoolean(condition);
+        write("LDMFD   r13!, {r0}");
+        write("CMP r0, #0");
+        if (elseif.size() > 0){
+            write("BEQ " + "ELSIF" + ifCounter + "0");
+            generateCode(body);
+            write("B " + "EndIf" + ifCounter);
+            /*
+            * IF CMP r0, #0
+            * BEQ ElSIF0
+            * body du IF
+            * B EndIf0
+            * Calcul de la condition de elsif0
+            * ElSIF0 CMP r0, #0
+            * BEQ ElSIF1
+            * body du ElSIF0
+            * B EndIf0
+            * Calcul de la condition de elsif1
+            * ElSIF1 CMP r0, #0
+            * BEQ ELSE0
+            * body du ElSIF1
+            * B EndIf0
+            * ELSE0 body du ELSE0
+            * EndIf0
+            * */
+            for (int i = 0; i < elseif.size() - 1; i++){
+                Node elseifnode = elseif.get(i);
+                Node elseifcondition = elseifnode.getChildren().get(0);
+                Node elseifbody = elseifnode.getChildren().get(1);
+                write("ELSIF" + ifCounter + i);
+                generateBoolean(elseifcondition);
+                write("LDMFD   r13!, {r0}");
+                write("CMP r0, #0");
+                write("BEQ " + "ELSIF" + ifCounter + (i+1));
+                generateCode(elseifbody);
+                write("B " + "EndIf" + ifCounter);
+            }
+            Node elseifnode = elseif.get(elseif.size() - 1);
+            Node elseifcondition = elseifnode.getChildren().get(0);
+            Node elseifbody = elseifnode.getChildren().get(1);
+            write("ELSIF" + ifCounter + (elseif.size() - 1));
+            generateBoolean(elseifcondition);
+            write("LDMFD   r13!, {r0}");
+            write("CMP r0, #0");
+            if (elsenode != null){
+                write("BEQ " + "ELSE" + ifCounter);
+                generateCode(elseifbody);
+                write("B " + "EndIf" + ifCounter);
+                write("ELSE" + ifCounter);
+                generateCode(elsenode);
+                write("B " + "EndIf" + ifCounter);
+            }
+            else {
+                write("BEQ " + "EndIf" + ifCounter);
+                generateCode(elseifbody);
+                write("B " + "EndIf" + ifCounter);
+            }
+        }
+        else {
+            if (elsenode != null) {
+                write("BEQ " + "Else" + ifCounter);
+                generateCode(body);
+                write("B " + "EndIf" + ifCounter);
+                generateCode(elsenode);
+            }
+            else {
+                write("BEQ " + "EndIf" + ifCounter);
+                generateCode(body);
+                write("B " + "EndIf" + ifCounter);
+            }
+        }
+        write ("EndIf" + ifCounter);
+        ifCounter++;
+        // Node comparator = node.getChildren().get(0); // noeud de comparaison
+        // Node trueCase = node.getChildren().get(1); // noeud du cas vrai
+        // Node falseCase = node.getChildren().get(2); // noeud du cas faux
+
+        // int number = ifCounter;
+        // ifCounter++;
+
+        // write("; ---  IF generation ---");
+        // generateBoolean(comparator);
+        // write("LDR R0, [R11, #-4]"); // on récupère le résultat de la comparaison (base de la pile)
+        // write("CMP R0, #1"); // on compare le résultat avec 1
+        // write("BEQ " + ifLabel + number); // si vrai, on va au cas vrai
+        // if (falseCase != null) {
+        //     generateCode(falseCase);
+        // }
+        // write("B " + endLabelIf + number); // on saute le cas vrai
+        // write(ifLabel + number);
+        // generateCode(trueCase);
+        // write(endLabelIf + number);
+        // write("; --- END IF generation ---");
     }
 
     private void generateFor(Node node) throws IOException {
-        //TODO
+        //Empiler la borne inf, puis la borne sup, puis l'incrément
+        List<Node> children = node.getChildren();
+        String variable_compteur = children.get(0).getValue();
+        String direction = children.get(1).getValue();
+        Node borne_inf = children.get(2);
+        Node borne_sup = children.get(3);
+        Node body = children.get(4);
+
+        //aller chercher la valeur de la borne inf
+        String type_borne_inf = type_valeur(borne_inf);
+        if (borne_inf.getValue().equalsIgnoreCase(" ")) {
+            //c'est une variable donc faut la chercher par la fonction accessVariable
+            generateAccessVariable(borne_inf);
+            write("LDMFD   r13!, {r0}");
+            write("STMFD r13!, {r0}");
+        }
+        else if (type_borne_inf.equalsIgnoreCase("integer")) {
+            write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+            write("MOV R0, #" + borne_inf.getValue());
+            write("STR r0, [r13] ; Empiler la borne inf");
+        }
+        String type_borne_sup = type_valeur(borne_sup);
+        if (borne_sup.getValue().equalsIgnoreCase(" ")) {
+            //c'est une variable donc faut la chercher par la fonction accessVariable
+            generateAccessVariable(borne_sup);
+            write("LDMFD   r13!, {r0}");
+            write("STMFD r13!, {r0}");
+        }
+        else if (type_borne_sup.equalsIgnoreCase("integer")) {
+            write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
+            write("MOV R0, #" + borne_sup.getValue());
+            write("STR r0, [r13] ; Empiler la borne sup");
+        }
+        //initialisation : on met dans la pile : borne inf, borne sup, compteur initialisé à borne inf
+        if (direction.equalsIgnoreCase("reverse")) {
+            write("LDR r0, [r13, #4] ; Récupérer la borne sup");
+            write("STMFD r13!, {r0} ;empiler l'increment qui demarre à la borne sup (reverse)");
+        } else {
+            write("LDR r0, [r13, #8] ; Récupérer la borne inf");
+            write("STMFD r13!, {r0} ;empiler l'incrément qui démarre à la borne inf");
+        }
+        //Pour le for
+        write("FOR" + forCounter);
+        write("LDR r0, [r13] ; Récupérer le compteur");
+        write("LDR r1, [r13, #4] ; Récupérer la borne sup");
+        write("CMP r0, r1");
+        write("BEQ end_for" + forCounter);
+        generateCode(body);
+        write("LDR r0, [r13] ; Récupérer le compteur");
+        if (direction.equalsIgnoreCase("reverse")) {
+            write("ADD r0, r0, #1 ; Incrémenter le compteur");
+        } else {
+            write("SUB r0, r0, #1 ; Décrémenter le compteur");
+        }
+        write("STR r0, [r13] ; Sauvegarder le compteur");
+        write("B FOR" + forCounter);
+        write("end_for" + forCounter);
     }
 
     private void generateMultiplyFunction() throws IOException {
@@ -322,7 +624,7 @@ public class CodeGenerator {
         String nom_fonction = node.getChildren().get(0).getValue();
         int shift = 0;
         for (int i = 1; i < children.size(); i++) {
-            String value_type = type_valeur(children.get(i), tds);
+            String value_type = type_valeur(children.get(i));
             if (value_type.equalsIgnoreCase("integer")) {
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 write("MOV R0, #" + children.get(i).getValue());
@@ -338,17 +640,20 @@ public class CodeGenerator {
             else if (operators.contains(children.get(i).getType())){
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateArithmetic(children.get(i));
+                write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
             else if (comparator.contains(children.get(i).getType())){
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateBoolean(children.get(i));
+                write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
             else if (value_type.equalsIgnoreCase(" ")){
                 //c'est une variable donc faut la chercher par la fonction accessVariable
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateAccessVariable(children.get(i));
+                write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
             write("; TODO : Chainage statique");
@@ -402,7 +707,8 @@ public class CodeGenerator {
             }
             //TODO : non local variable
         }
-
+        //TODO : arithmetic
+        generateArithmetic(node.getChild(1));
     }
 
     private void generateAccessVariable(Node nodeToAccess) throws IOException {
@@ -426,4 +732,33 @@ public class CodeGenerator {
         }
 
     }
+
+    public static String type_valeur(Node valeur) {
+        try {
+            if (valeur.getValue().equalsIgnoreCase("-") && valeur.getChildren().size() == 1) {
+                Integer.parseInt(valeur.getChildren().get(0).getValue());
+                return "integer";
+            }
+            Integer.parseInt(valeur.getValue());
+            if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
+                return "Character";
+            }
+            return "integer";
+        } catch (NumberFormatException e) {
+            String valueStr = valeur.getValue().toLowerCase();
+            if (valueStr.equalsIgnoreCase("true") || valueStr.equalsIgnoreCase("false")) {
+                return "boolean";
+            } else if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
+                return "Character";
+            }
+            else {
+                if (valeur.getValue().equalsIgnoreCase("Character'Val")){
+                        return "Character";
+                }
+                if (valeur.getValue().equalsIgnoreCase("null")){ return "null"; }
+                return " ";
+            }
+            }
+        }
 }
+
