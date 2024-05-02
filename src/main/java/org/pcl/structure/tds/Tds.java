@@ -209,6 +209,19 @@ public class Tds {
         }
         return null;
     }
+
+    public Tds getTDSfromSymbol(String SymbolName) {
+        for (Symbol symbol : symbols) {
+            if (symbol.getName().equalsIgnoreCase(SymbolName)) {
+                return this;
+            }
+        }
+        if (parent != null) {
+            return parent.getTDSfromSymbol(SymbolName);
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         System.out.println("\n");

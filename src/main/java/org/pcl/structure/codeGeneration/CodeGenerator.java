@@ -8,6 +8,7 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
+import javax.lang.model.util.AbstractAnnotationValueVisitor14;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,8 +42,17 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
+        write("BL 0passFunDecl");
+        write("");
+        write("");
         generateMultiplyFunction();
+        write("");
+        write("");
         generateDivideFunction();
+        write("");
+        write("");
+        write("0passFunDecl");
+        write("; ----- MAIN program -----");
         generateCode(ast.getRootNode());
     }
 
@@ -295,12 +305,15 @@ public class CodeGenerator {
             throw new IllegalArgumentException("No body found in while node");
         }
 
+
+
         write("; ---  WHILE generation for " + whileLabel + number + " ---");
         write(whileLabel + number);
         incrementTabulation();
         write("; condition");
 
         generateCode(comparator);
+
 
         write("BEQ " + whileLabel + endLabelWhile + number + " ; exit while if condition is false");
         write("");
@@ -707,7 +720,9 @@ public class CodeGenerator {
             //TODO : non local variable
         }
         //TODO : arithmetic
-        generateArithmetic(node.getChild(1));
+        //generateArithmetic(node.getChild(1));
+        // dépile résultat
+
     }
 
     private void generateAccessVariable(Node nodeToAccess) throws IOException {
