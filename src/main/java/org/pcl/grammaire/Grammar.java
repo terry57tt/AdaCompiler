@@ -1497,8 +1497,8 @@ public class Grammar {
         meaningfulNode();
         reduceChains();
         meaningfulNode2();
-        renameNodes();
-        reduceChains();
+        //renameNodes();
+        //reduceChains();
     }
     public void meaningfulNode() {
         // browse through tree and convert meaningful non terminal and terminal nodes to meaningful nodes
@@ -2086,7 +2086,9 @@ public class Grammar {
             if(currentNode.getToken() != null && currentNode.getToken().getType() == TokenType.IDENTIFIER && isNodeNextToken(currentNode, ";")
                     && !currentNode.getParent().getValue().equals(":=")
                     && !currentNode.getParent().getValue().equals("call")
-                    && !isNodePreviousToken(currentNode, "end")){
+                    && !isNodePreviousToken(currentNode, "end")
+                    && !currentNode.getParent().getValue().contains("nodeDecl")
+                    && !currentNode.getParent().getValue().contains("param")){
                 Node newNode = new Node("call");
                 newNode.setMeaningful(true);
                 currentNode.getParent().addChild(newNode);
