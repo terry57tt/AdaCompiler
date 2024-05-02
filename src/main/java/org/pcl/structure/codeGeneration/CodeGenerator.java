@@ -427,10 +427,22 @@ public class CodeGenerator {
         //Empiler la borne inf, puis la borne sup, puis l'incrément
         List<Node> children = node.getChildren();
         String variable_compteur = children.get(0).getValue();
-        String direction = children.get(1).getValue();
-        Node borne_inf = children.get(2);
-        Node borne_sup = children.get(3);
-        Node body = children.get(4);
+        String direction;
+        Node borne_inf;
+        Node borne_sup;
+        Node body;
+        if (children.get(2).getValue().equalsIgnoreCase("reverse")) {
+            direction = "reverse";
+            borne_inf = children.get(3);
+            borne_sup = children.get(4);
+            body = children.get(5);
+        }
+        else {
+            direction = "in";
+            borne_inf = children.get(2);
+            borne_sup = children.get(3);
+            body = children.get(4);
+        }
 
         //aller chercher la valeur de la borne inf
         String type_borne_inf = type_valeur(borne_inf);
@@ -459,28 +471,33 @@ public class CodeGenerator {
         }
         //initialisation : on met dans la pile : borne inf, borne sup, compteur initialisé à borne inf
         if (direction.equalsIgnoreCase("reverse")) {
-            write("LDR r0, [r13, #4] ; Récupérer la borne sup");
+            write("LDR r0, [r13] ; Récupérer la borne sup");
             write("STMFD r13!, {r0} ;empiler l'increment qui demarre à la borne sup (reverse)");
         } else {
-            write("LDR r0, [r13, #8] ; Récupérer la borne inf");
+            write("LDR r0, [r13, #4] ; Récupérer la borne inf");
             write("STMFD r13!, {r0} ;empiler l'incrément qui démarre à la borne inf");
         }
         //Pour le for
         write("FOR" + forCounter);
         write("LDR r0, [r13] ; Récupérer le compteur");
-        write("LDR r1, [r13, #4] ; Récupérer la borne sup");
+        if (direction.equalsIgnoreCase("reverse")) {
+            write("LDR r1, [r13, #8] ; Récupérer borne inf");
+        } else {
+            write("LDR r1, [r13, #4] ; Récupérer borne sup");
+        }
         write("CMP r0, r1");
         write("BEQ end_for" + forCounter);
         generateCode(body);
         write("LDR r0, [r13] ; Récupérer le compteur");
         if (direction.equalsIgnoreCase("reverse")) {
-            write("ADD r0, r0, #1 ; Incrémenter le compteur");
-        } else {
             write("SUB r0, r0, #1 ; Décrémenter le compteur");
+        } else {
+            write("ADD r0, r0, #1 ; Incrémenter le compteur");
         }
         write("STR r0, [r13] ; Sauvegarder le compteur");
         write("B FOR" + forCounter);
         write("end_for" + forCounter);
+        forCounter++;
     }
 
     private void generateMultiply(Node node) throws IOException {
