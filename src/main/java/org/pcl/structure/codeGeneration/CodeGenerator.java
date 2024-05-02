@@ -168,10 +168,18 @@ public class CodeGenerator {
     }
 
     private void generateBoolean(Node node) throws IOException {
+        if(node.getValue().equalsIgnoreCase("not")) {
+            generateBoolean(node.getChildren().get(0));
+            write("LDR R0, [R13]");
+            write("EOR R0, R0, #1 ; NOT logique");
+            write("STR R0, [R13] ; NOT résultat en sommet de pile");
+            return;
+        }
+
         if(node.getValue().equalsIgnoreCase("true") || node.getValue().equalsIgnoreCase("false")) {
             write("MOV R0, #" + (node.getValue().equalsIgnoreCase("true") ? "1" : "0"));
             write("SUB R13, R13, #4");
-            write("STR R0, [R13]");
+            write("STR R0, [R13] ; " + node.getValue() + " en sommet de pile");
             return;
         }
 
@@ -187,8 +195,8 @@ public class CodeGenerator {
             case "<=":
             case ">":
             case ">=":
-                write("MOV R1, #" + leftValue); // Valeur de gauche
-                write("MOV R2, #" + rightValue); // Valeur de droite
+                write("MOV R1, #" + leftValue+" ; valeur de gauche de la comparaison"); // Valeur de gauche
+                write("MOV R2, #" + rightValue+" ; valeur de droite de la comparaison"); // Valeur de droite
                 write("CMP R1, R2"); // Comparaison
                 write("SUB R13, R13, #4"); // Décrémenter le pointeur de pile (on va mettre flag en pile)
                 switch (node.getValue()){
@@ -213,21 +221,21 @@ public class CodeGenerator {
                         write("MOVLT   R3, #0");
                         break;
                 }
-                write("STR   R3, [R13]"); // on met le résultat en sommet de pile
+                write("STR   R3, [R13] ; resultat de la comparaison en sommet de pile"); // on met le résultat en sommet de pile
                 return;
             case "and":
             case "or":
                 generateBoolean(left);
                 generateBoolean(right);
-                write("LDR R1, [R13]"); // on récupère le résultat de la première opération
+                write("LDR R1, [R13] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
                 write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
-                write("LDR R2, [R13]"); // on récupère le résultat de la deuxième opération
+                write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
                 if (node.getValue().equals("and")) {
-                    write("AND R3, R1, R2");
+                    write("AND R3, R1, R2 ; ET logique");
                 } else {
-                    write("ORR R3, R1, R2");
+                    write("ORR R3, R1, R2 ; OU logique");
                 }
-                write("STR R3, [R13]"); // on remplace les deux résultats par le résultat de l'opération
+                write("STR R3, [R13] ; resultat de la comparaison en sommet de pile"); // on remplace les deux résultats par le résultat de l'opération
                 return;
             default:
                 System.out.println("Erreur : opérateur non reconnu");
