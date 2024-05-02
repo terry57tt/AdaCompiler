@@ -2082,7 +2082,17 @@ public class Grammar {
                     currentNode.deleteChildren();
                     currentNode.addChild(newNode);
             }
-
+            // function and procedure call without parameters
+            if(currentNode.getToken() != null && currentNode.getToken().getType() == TokenType.IDENTIFIER && isNodeNextToken(currentNode, ";")
+                    && !currentNode.getParent().getValue().equals(":=")
+                    && !currentNode.getParent().getValue().equals("call")
+                    && !isNodePreviousToken(currentNode, "end")){
+                Node newNode = new Node("call");
+                newNode.setMeaningful(true);
+                currentNode.getParent().addChild(newNode);
+                currentNode.deleteFromParent();
+                newNode.addChild(currentNode);
+            }
 
             //function call parameters
             if (currentNode.getValue().contains("nodeIntr") && currentNode.getParent().getValue().equals("call")) {
