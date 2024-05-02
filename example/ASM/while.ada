@@ -1,9 +1,8 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Main is
-    index : Integer;
 begin
-   while index < 10 loop
-      index := index + 1;
+   while 1 > 10 loop
+        put("H");
    end loop;
 end Main;

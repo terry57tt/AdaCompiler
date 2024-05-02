@@ -31,6 +31,7 @@ public class CodeGenerator {
     private int whileCounter = 0;
     private int ifCounter = 0;
     private int forCounter = 0;
+    private int declFuncProcCounter = 0;
 
     public CodeGenerator(SyntaxTree ast, Tds tds) throws IOException {
         if (ast == null || tds == null) {
@@ -41,17 +42,17 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
-//        write("BL 0passFunDecl");
-//        write("");
-//        write("");
-//        generateMultiplyFunction();
-//        write("");
-//        write("");
-//        generateDivideFunction();
-//        write("");
-//        write("");
-//        write("0passFunDecl");
-//        write("; ----- MAIN program -----");
+        write("BL program2mainProcedure");
+        write("");
+        write("");
+        generateMultiplyFunction();
+        write("");
+        write("");
+        generateDivideFunction();
+        write("");
+        write("");
+        write("program2mainProcedure");
+        write("; ----- MAIN program -----");
         generateCode(ast.getRootNode());
     }
 
@@ -62,10 +63,16 @@ public class CodeGenerator {
         if(node.getType() != null) {
             switch (node.getType()) {
                 case DECL_PROC:
+                    write("BL decl" + declFuncProcCounter + "Procedure");
                     generateDeclProcedure(node);
+                    write("decl" + declFuncProcCounter + "Procedure");
+                    declFuncProcCounter++;
                     break;
                 case DECL_FUNC:
+                    write("BL decl" + declFuncProcCounter + "Function");
                     generateDeclFunction(node);
+                    write("decl" + declFuncProcCounter + "Function");
+                    declFuncProcCounter++;
                     break;
                 case IF:
 //                    generateIf(node);
@@ -95,15 +102,14 @@ public class CodeGenerator {
                 case RETURN:
                     generateReturn(node);
                     break;
-                case EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT, BODY,
-                        NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECLARATION, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER, PROGRAM:
+                case BODY, EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT,
+                        NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECLARATION, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER:
                     // NO ACTION
                     break;
                 default:
                     throw new IllegalArgumentException("NodeType inconnu : " + node.getType());
             }
         }
-
         if (node.getChildren() != null) {
             for (Node child : node.getChildren()) {
                 generateCode(child);
@@ -369,7 +375,9 @@ public class CodeGenerator {
         write("; condition");
 
         generateCode(comparator);
-
+        write("LDR R0, [R13] ; Get the boolean value");
+        write("SUB R13, R13, #4 ; Decrement the stack pointer");
+        write("CMP R0, #0");
 
         write("BEQ " + whileLabel + endLabelWhile + number + " ; exit while if condition is false");
         write("");
