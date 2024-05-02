@@ -42,7 +42,9 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
+        write("STR_OUT      FILL    0x1000");
         write("BL program2mainProcedure");
+        generateDeclPrint();
         write("");
         write("");
         generateMultiplyFunction();
@@ -761,6 +763,10 @@ public class CodeGenerator {
         List<NodeType> comparator = Arrays.asList(new NodeType[]{NodeType.EQUAL, NodeType.SLASH_EQUAL, NodeType.SUPERIOR, NodeType.SUPERIOR_EQUAL, NodeType.INFERIOR, NodeType.INFERIOR_EQUAL, NodeType.COMPARATOR, NodeType.AND, NodeType.OR});
         List<Node> children = node.getChildren();
         String nom_fonction = node.getChildren().get(0).getValue();
+        if ( nom_fonction.equalsIgnoreCase("PUT")) {
+            generateCodePut(node);
+            return;
+        }
         int shift = 0;
         for (int i = 1; i < children.size(); i++) {
             String value_type = type_valeur(children.get(i));
@@ -966,6 +972,39 @@ public class CodeGenerator {
 
     }
 
+    private void generateCodePut(Node node) throws IOException {
+        Node value = node.getChild(1);
+        write("; --- PUT generation ---");
+        if (value.getToken().getType().equals(TokenType.NUMBER)) {
+            write("MOV R0, #" + value.getValue());
+            write("addr0 FILL 12");
+            write("LDR R3, =addr0");
+            write("BL to_ascii");
+            write("LDR R0, =addr0");
+            write("BL println");
+            return;
+        }
+        if (value.getToken().getType().equals(TokenType.CHARACTER)){
+            write("MOV R0, #" + (int)value.getValue().charAt(0));
+        }
+        else {
+            //c'est une variable donc faut la chercher par la fonction accessVariable
+            generateAccessVariable(value);
+            write("LDMFD   r13!, {r0}");
+        }
+        write("SUB SP, SP, #4   ; réservez 4 octets pour la valeur (ou plus)");
+        write("MOV R1, #0");
+        write("STR R1, [SP]");
+        write("SUB SP, SP, #4   ; réservez 4 octets pour la valeur (ou plus)");
+        write("STR R0, [SP]     ; stockez la valeur");
+        write("MOV R0, SP       ; adresse de la valeur (ici SP, mais peut être n'importe quelle adresse)");
+        write("BL println");
+        write("ADD SP, SP, #8   ; libérez la pile");
+
+
+        write("; --- END PUT generation ---");
+    }
+
     public static String type_valeur(Node valeur) {
         try {
             if (valeur.getValue().equalsIgnoreCase("-") && valeur.getChildren().size() == 1) {
@@ -993,5 +1032,127 @@ public class CodeGenerator {
             }
             }
         }
+
+    private void generateDeclPrint() throws IOException {
+        write("; --- PRINT function (to be add at the beginning of the file)" + " ---");
+        write(" println");
+        incrementTabulation();
+        write("STMFD   SP!, {LR, R0-R3}");
+        write(" MOV     R3, R0");
+        write(" LDR     R1, =STR_OUT ; address of the output buffer");
+        decrementTabulation();
+        write("PRINTLN_LOOP");
+        incrementTabulation();
+        write("LDRB    R2, [R0], #1");
+        write(" STRB    R2, [R1], #1");
+        write(" TST     R2, R2");
+        write(" BNE     PRINTLN_LOOP");
+        write(" MOV     R2, #10");
+        write(" STRB    R2, [R1, #-1]");
+        write(" MOV     R2, #0");
+        write(" STRB    R2, [R1]");
+        write("");
+        write("");
+        write(" ;       clear the output buffer");
+        write(" LDR     R1, =STR_OUT");
+        write(" MOV     R0, R3");
+        decrementTabulation();
+        write(" CLEAN");
+        incrementTabulation();
+        write("LDRB    R2, [R0], #1");
+        write(" MOV     R3, #0");
+        write(" STRB    R3, [R1], #1");
+        write(" TST     R2, R2");
+        write(" BNE     CLEAN");
+        write(" ;       clear 3 more");
+        write(" STRB    R3, [R1], #1");
+        write(" STRB    R3, [R1], #1");
+        write(" STRB    R3, [R1], #1");
+        write("");
+        write(" LDMFD   SP!, {PC, R0-R3}");
+
+        decrementTabulation();
+        write("to_ascii");
+        incrementTabulation();
+        write("STMFD   SP!, {LR, R4-R7}");
+        write(" ; make it positive");
+        write(" MOV R7, R0");
+        write(" CMP     R0, #0");
+        write(" MOVGE   R6, R0");
+        write(" RSBLT   R6, R0, #0");
+        write(" MOV     R0, R6");
+        write("");
+        write(" MOV     R4, #0 ; Initialize digit counter");
+        write("");
+        decrementTabulation();
+        write(" to_ascii_loop");
+        incrementTabulation();
+        write("MOV     R1, R0");
+        write(" MOV     R2, #10");
+        write(" BL      div32 ; R0 = R0 / 10, R1 = R0 % 10");
+        write(" ADD     R1, R1, #48 ; Convert digit to ASCII");
+        write(" STRB    R1, [R3, R4] ; Store the ASCII digit");
+        write(" ADD     R4, R4, #1 ; Increment digit counter");
+        write(" CMP     R0, #0");
+        write(" BNE     to_ascii_loop");
+        write("");
+        write(" ; add the sign if it was negative");
+        write(" CMP     R7, #0");
+        write(" MOVGE   R1, #0");
+        write(" MOVLT   R1, #45");
+        write(" STRB    R1, [R3, R4]");
+        write(" ADD     R4, R4, #1");
+        write("");
+        write(" LDMFD   SP!, {PC, R4-R7}");
+
+        decrementTabulation();
+        write("div32");
+        incrementTabulation();
+        write("STMFD   SP!, {LR, R2-R5}");
+        write("MOV     R0, #0");
+        write("MOV     R3, #0");
+        write("CMP     R1, #0");
+        write("RSBLT   R1, R1, #0");
+        write("EORLT   R3, R3, #1");
+        write("CMP     R2, #0");
+        write("RSBLT   R2, R2, #0");
+        write("EORLT   R3, R3, #1");
+        write("MOV     R4, R2");
+        write("MOV     R5, #1");
+        decrementTabulation();
+        write("div32_max");
+        incrementTabulation();
+        write("LSL     R4, R4, #1");
+        write("LSL     R5, R5, #1");
+        write("CMP     R4, R1");
+        write("BLE     div32_max");
+        decrementTabulation();
+        write("div32_loop");
+        incrementTabulation();
+        write(" LSR     R4, R4, #1");
+        write("LSR     R5, R5, #1");
+        write("CMP     R4,R1");
+        write("BGT     div32_loop");
+        write("ADD     R0, R0, R5");
+        write("SUB     R1, R1, R4");
+        write("CMP     R1, R2");
+        write("BGE     div32_loop");
+        write("CMP     R3, #1");
+        write("BNE     div32_exit");
+        write("CMP     R1, #0");
+        write("ADDNE   R0, R0, #1");
+        write("RSB     R0, R0, #0");
+        write("RSB     R1, R1, #0");
+        write("ADDNE   R1, R1, R2");
+        decrementTabulation();
+        write("div32_exit");
+        incrementTabulation();
+        write("CMP     R0, #0");
+        write("ADDEQ   R1, R1, R4");
+        write("LDMFD   SP!, {PC, R2-R5}");
+
+        write("; --- END PRINT function (to be add at the beginning of the file)" + " ---");
+
+    }
 }
 

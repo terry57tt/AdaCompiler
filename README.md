@@ -45,6 +45,12 @@ gradlew.bat test --tests ProjectConfigurationTest
 gradlew.bat  tasks
 ```
 
+# Execute the print ASM program
+```shell
+# in root project PCL
+java -jar pcl-run.jar output.s
+```
+
 # Environment
 - Gradle Groovy
 - Java

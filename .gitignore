@@ -334,3 +334,4 @@ $RECYCLE.BIN/
 .idea
 .gradle
 output.s
+output.s_log.xml
