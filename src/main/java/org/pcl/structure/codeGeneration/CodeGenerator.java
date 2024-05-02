@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.pcl.OutputGenerator.*;
-import static org.pcl.structure.tds.SemanticControls.type_valeur;
 import static org.pcl.structure.tree.NodeType.*;
 
 public class CodeGenerator {
@@ -714,7 +713,6 @@ public class CodeGenerator {
     private void generateAccessVariable(Node nodeToAccess) throws IOException {
         // nodeToAccess = node of the variable to access
         Node node = nodeToAccess;
-
         //searching for the tds (imbrication and region number) of the nodeToAccess
         while(node.getParent().getType() != NodeType.FILE || node.getParent().getType() != NodeType.DECL_FUNC || node.getParent().getType() != NodeType.DECL_PROC){
             node = node.getParent();
@@ -730,7 +728,6 @@ public class CodeGenerator {
             int current_imbrication = 0;
             int current_region = 0;
         }
-
     }
 
     public static String type_valeur(Node valeur) {
