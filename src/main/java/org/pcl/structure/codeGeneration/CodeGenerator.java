@@ -8,6 +8,7 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
+import javax.lang.model.util.AbstractAnnotationValueVisitor14;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,8 +30,6 @@ public class CodeGenerator {
     private int whileCounter = 0;
     private int ifCounter = 0;
     private int forCounter = 0;
-    private int shift = 0;
-
 
     public CodeGenerator(SyntaxTree ast, Tds tds) throws IOException {
         if (ast == null || tds == null) {
@@ -41,8 +40,17 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
+        write("BL 0passFunDecl");
+        write("");
+        write("");
         generateMultiplyFunction();
+        write("");
+        write("");
         generateDivideFunction();
+        write("");
+        write("");
+        write("0passFunDecl");
+        write("; ----- MAIN program -----");
         generateCode(ast.getRootNode());
     }
 
@@ -149,9 +157,37 @@ public class CodeGenerator {
         }
     }
 
+    private String convertValue(String value) {
+        if ("true".equalsIgnoreCase(value)) {
+            return "1";
+        } else if ("false".equalsIgnoreCase(value)) {
+            return "0";
+        } else {
+            return value;
+        }
+    }
+
     private void generateBoolean(Node node) throws IOException {
+        if(node.getValue().equalsIgnoreCase("not")) {
+            generateBoolean(node.getChildren().get(0));
+            write("LDR R0, [R13]");
+            write("EOR R0, R0, #1 ; NOT logique");
+            write("STR R0, [R13] ; NOT résultat en sommet de pile");
+            return;
+        }
+
+        if(node.getValue().equalsIgnoreCase("true") || node.getValue().equalsIgnoreCase("false")) {
+            write("MOV R0, #" + (node.getValue().equalsIgnoreCase("true") ? "1" : "0"));
+            write("SUB R13, R13, #4");
+            write("STR R0, [R13] ; " + node.getValue() + " en sommet de pile");
+            return;
+        }
+
         Node left = node.getChildren().get(0);
         Node right = node.getChildren().get(1);
+
+        String leftValue = convertValue(left.getValue());
+        String rightValue = convertValue(right.getValue());
 
         switch (node.getValue()){
             case "=":
@@ -159,8 +195,8 @@ public class CodeGenerator {
             case "<=":
             case ">":
             case ">=":
-                write("MOV R1, #" + left.getValue()); // Valeur de gauche
-                write("MOV R2, #" + right.getValue()); // Valeur de droite
+                write("MOV R1, #" + leftValue+" ; valeur de gauche de la comparaison"); // Valeur de gauche
+                write("MOV R2, #" + rightValue+" ; valeur de droite de la comparaison"); // Valeur de droite
                 write("CMP R1, R2"); // Comparaison
                 write("SUB R13, R13, #4"); // Décrémenter le pointeur de pile (on va mettre flag en pile)
                 switch (node.getValue()){
@@ -185,25 +221,24 @@ public class CodeGenerator {
                         write("MOVLT   R3, #0");
                         break;
                 }
-                shift = shift-4; // déplacement par rapport à R11
-                write("STR   R3, [R11, #"+ shift +"]"); // on met le résultat en pile
+                write("STR   R3, [R13] ; resultat de la comparaison en sommet de pile"); // on met le résultat en sommet de pile
                 return;
             case "and":
             case "or":
                 generateBoolean(left);
                 generateBoolean(right);
-                write("LDR R1, [R11, #"+shift+"]"); // on récupère le résultat de la première opération
-                shift = shift+4; // (en fait on récupère les deux derniers résultats de la pile)
-                write("LDR R2, [R11, #"+shift+"]"); // on récupère le résultat de la deuxième opération
-                if (node.getValue().equals("and")) {
-                    write("AND R3, R1, R2");
-                } else {
-                    write("ORR R3, R1, R2");
-                }
-                write("STR R3, [R11, #" + shift + "]"); // on remplace les deux résultats par le résultat de l'opération
+                write("LDR R1, [R13] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
                 write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
+                write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
+                if (node.getValue().equals("and")) {
+                    write("AND R3, R1, R2 ; ET logique");
+                } else {
+                    write("ORR R3, R1, R2 ; OU logique");
+                }
+                write("STR R3, [R13] ; resultat de la comparaison en sommet de pile"); // on remplace les deux résultats par le résultat de l'opération
                 return;
             default:
+                System.out.println("Erreur : opérateur non reconnu");
                 break;
         }
     }
@@ -295,12 +330,15 @@ public class CodeGenerator {
             throw new IllegalArgumentException("No body found in while node");
         }
 
+
+
         write("; ---  WHILE generation for " + whileLabel + number + " ---");
         write(whileLabel + number);
         incrementTabulation();
         write("; condition");
 
         generateCode(comparator);
+
 
         write("BEQ " + whileLabel + endLabelWhile + number + " ; exit while if condition is false");
         write("");
@@ -431,10 +469,22 @@ public class CodeGenerator {
         //Empiler la borne inf, puis la borne sup, puis l'incrément
         List<Node> children = node.getChildren();
         String variable_compteur = children.get(0).getValue();
-        String direction = children.get(1).getValue();
-        Node borne_inf = children.get(2);
-        Node borne_sup = children.get(3);
-        Node body = children.get(4);
+        String direction;
+        Node borne_inf;
+        Node borne_sup;
+        Node body;
+        if (children.get(2).getValue().equalsIgnoreCase("reverse")) {
+            direction = "reverse";
+            borne_inf = children.get(3);
+            borne_sup = children.get(4);
+            body = children.get(5);
+        }
+        else {
+            direction = "in";
+            borne_inf = children.get(2);
+            borne_sup = children.get(3);
+            body = children.get(4);
+        }
 
         //aller chercher la valeur de la borne inf
         String type_borne_inf = type_valeur(borne_inf);
@@ -463,28 +513,33 @@ public class CodeGenerator {
         }
         //initialisation : on met dans la pile : borne inf, borne sup, compteur initialisé à borne inf
         if (direction.equalsIgnoreCase("reverse")) {
-            write("LDR r0, [r13, #4] ; Récupérer la borne sup");
+            write("LDR r0, [r13] ; Récupérer la borne sup");
             write("STMFD r13!, {r0} ;empiler l'increment qui demarre à la borne sup (reverse)");
         } else {
-            write("LDR r0, [r13, #8] ; Récupérer la borne inf");
+            write("LDR r0, [r13, #4] ; Récupérer la borne inf");
             write("STMFD r13!, {r0} ;empiler l'incrément qui démarre à la borne inf");
         }
         //Pour le for
         write("FOR" + forCounter);
         write("LDR r0, [r13] ; Récupérer le compteur");
-        write("LDR r1, [r13, #4] ; Récupérer la borne sup");
+        if (direction.equalsIgnoreCase("reverse")) {
+            write("LDR r1, [r13, #8] ; Récupérer borne inf");
+        } else {
+            write("LDR r1, [r13, #4] ; Récupérer borne sup");
+        }
         write("CMP r0, r1");
         write("BEQ end_for" + forCounter);
         generateCode(body);
         write("LDR r0, [r13] ; Récupérer le compteur");
         if (direction.equalsIgnoreCase("reverse")) {
-            write("ADD r0, r0, #1 ; Incrémenter le compteur");
-        } else {
             write("SUB r0, r0, #1 ; Décrémenter le compteur");
+        } else {
+            write("ADD r0, r0, #1 ; Incrémenter le compteur");
         }
         write("STR r0, [r13] ; Sauvegarder le compteur");
         write("B FOR" + forCounter);
         write("end_for" + forCounter);
+        forCounter++;
     }
 
     private void generateMultiplyFunction() throws IOException {
@@ -723,7 +778,9 @@ public class CodeGenerator {
             //TODO : non local variable
         }
         //TODO : arithmetic
-        generateArithmetic(node.getChild(1));
+        //generateArithmetic(node.getChild(1));
+        // dépile résultat
+
     }
 
     private void generateAccessVariable(Node nodeToAccess) throws IOException {
