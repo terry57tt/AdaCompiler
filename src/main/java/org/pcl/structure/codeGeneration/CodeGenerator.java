@@ -41,17 +41,17 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
-        write("BL 0passFunDecl");
-        write("");
-        write("");
-        generateMultiplyFunction();
-        write("");
-        write("");
-        generateDivideFunction();
-        write("");
-        write("");
-        write("0passFunDecl");
-        write("; ----- MAIN program -----");
+//        write("BL 0passFunDecl");
+//        write("");
+//        write("");
+//        generateMultiplyFunction();
+//        write("");
+//        write("");
+//        generateDivideFunction();
+//        write("");
+//        write("");
+//        write("0passFunDecl");
+//        write("; ----- MAIN program -----");
         generateCode(ast.getRootNode());
     }
 
@@ -68,8 +68,9 @@ public class CodeGenerator {
                     generateDeclFunction(node);
                     break;
                 case IF:
-                    generateIf(node);
-                    return;
+//                    generateIf(node);
+//                    return;
+                    break;
                 case FOR:
                     generateFor(node);
                     break;
@@ -83,7 +84,7 @@ public class CodeGenerator {
                     generateDeclVar(node);
                     break;
                 case CALL:
-                    generateCallFunctionProcedure(node, tds);
+//                    generateCallFunctionProcedure(node, tds);
                     break;
                 case COMPARATOR:
                     // pour l'instant, résultat à la base de la pile
@@ -230,9 +231,9 @@ public class CodeGenerator {
         Node right = node.getChildren().get(1);
         generateBoolean(left);
         generateBoolean(right);
-        write("LDR R1, [R13] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
-        write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
+        write("LDR R1, [R13, #4] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
         write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
+        write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
 
         switch (value){
             case "=":
