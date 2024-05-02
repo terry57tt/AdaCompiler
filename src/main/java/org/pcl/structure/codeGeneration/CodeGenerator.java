@@ -3,7 +3,6 @@ package org.pcl.structure.codeGeneration;
 import org.pcl.OutputGenerator;
 import org.pcl.structure.tds.*;
 import org.pcl.structure.automaton.TokenType;
-import org.pcl.structure.tds.Tds;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
@@ -21,6 +20,8 @@ public class CodeGenerator {
     SyntaxTree ast;
     Tds tds;
 
+    /* Valeur arbitraire pour représenter le null */
+    private final String nullValue = "256";
     private final String whileLabel = "While";
 
     private final String ifLabel = "If";
@@ -40,17 +41,17 @@ public class CodeGenerator {
         this.tds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
-        write("BL 0passFunDecl");
-        write("");
-        write("");
-        generateMultiplyFunction();
-        write("");
-        write("");
-        generateDivideFunction();
-        write("");
-        write("");
-        write("0passFunDecl");
-        write("; ----- MAIN program -----");
+//        write("BL 0passFunDecl");
+//        write("");
+//        write("");
+//        generateMultiplyFunction();
+//        write("");
+//        write("");
+//        generateDivideFunction();
+//        write("");
+//        write("");
+//        write("0passFunDecl");
+//        write("; ----- MAIN program -----");
         generateCode(ast.getRootNode());
     }
 
@@ -67,8 +68,9 @@ public class CodeGenerator {
                     generateDeclFunction(node);
                     break;
                 case IF:
-                    generateIf(node);
-                    return;
+//                    generateIf(node);
+//                    return;
+                    break;
                 case FOR:
                     generateFor(node);
                     break;
@@ -82,7 +84,7 @@ public class CodeGenerator {
                     generateDeclVar(node);
                     break;
                 case CALL:
-                    generateCallFunctionProcedure(node, tds);
+//                    generateCallFunctionProcedure(node, tds);
                     break;
                 case COMPARATOR:
                     // pour l'instant, résultat à la base de la pile
@@ -168,7 +170,30 @@ public class CodeGenerator {
     }
 
     private void generateBoolean(Node node) throws IOException {
-        if(node.getValue().equalsIgnoreCase("not")) {
+        String value = node.getValue();
+
+        if (node.getValue().equalsIgnoreCase("-") || node.getValue().equalsIgnoreCase("+")
+                || node.getValue().equalsIgnoreCase("*") || node.getValue().equalsIgnoreCase("/")
+                || node.getValue().equalsIgnoreCase("REM"))
+        {
+            generateArithmetic(node);
+            return;
+        }
+
+        // case : variable --> generateAccessVariable
+        // case : function call --> generateCallFunctionProcedure
+
+        // si c'est un nombre, on le met en sommet de pile
+        try {
+            Integer.parseInt(value);
+            write("MOV R0, #" + value);
+            write("SUB R13, R13, #4");
+            write("STR R0, [R13] ; " + value + " en sommet de pile");
+            return;
+        } catch (NumberFormatException ignored) {}
+
+        // si "not", on fait le not de la valeur en sommet de pile
+        if(value.equalsIgnoreCase("not")) {
             generateBoolean(node.getChildren().get(0));
             write("LDR R0, [R13]");
             write("EOR R0, R0, #1 ; NOT logique");
@@ -176,71 +201,77 @@ public class CodeGenerator {
             return;
         }
 
-        if(node.getValue().equalsIgnoreCase("true") || node.getValue().equalsIgnoreCase("false")) {
-            write("MOV R0, #" + (node.getValue().equalsIgnoreCase("true") ? "1" : "0"));
-            write("SUB R13, R13, #4");
-            write("STR R0, [R13] ; " + node.getValue() + " en sommet de pile");
+        // si signe négatif, on prend l'opposé de la valeur en sommet de pile
+        if(value.equalsIgnoreCase("-")) {
+            generateBoolean(node.getChildren().get(0));
+            write("LDR R0, [R13]");
+            write("RSB R0, R0, #0 ; opposé");
+            write("STR R0, [R13] ; opposé en sommet de pile");
             return;
         }
 
+        // si "true" ou "false", on met 1 ou 0 en sommet de pile
+        if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+            write("MOV R0, #" + (value.equalsIgnoreCase("true") ? "1" : "0"));
+            write("SUB R13, R13, #4");
+            write("STR R0, [R13] ; " + value + " en sommet de pile");
+            return;
+        }
+
+        // si "null", on met NULL en sommet de pile
+        if(value.equalsIgnoreCase("null")) {
+            write("MOV R0, #" + nullValue);
+            write("SUB R13, R13, #4");
+            write("STR R0, [R13] ; NULL en sommet de pile");
+            return;
+        }
+
+        // cas où on a un opérateur de comparaison
         Node left = node.getChildren().get(0);
         Node right = node.getChildren().get(1);
+        generateBoolean(left);
+        generateBoolean(right);
+        write("LDR R1, [R13, #4] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
+        write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
+        write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
 
-        String leftValue = convertValue(left.getValue());
-        String rightValue = convertValue(right.getValue());
-
-        switch (node.getValue()){
+        switch (value){
             case "=":
+                write("CMP R1, R2; comparaison \""+ value +"\"");
+                write("MOVEQ   R3, #1"); // on met 1 si retourne vrai
+                write("MOVNE   R3, #0"); // 0 sinon
+                break;
             case "<":
+                write("CMP R1, R2; comparaison \""+ value +"\"");
+                write("MOVLT   R3, #1");
+                write("MOVGE   R3, #0");
+                break;
             case "<=":
+                write("CMP R1, R2; comparaison \""+ value +"\"");
+                write("MOVLE   R3, #1");
+                write("MOVGT   R3, #0");
+                break;
             case ">":
+                write("CMP R1, R2; comparaison \""+ value +"\"");
+                write("MOVGT   R3, #1");
+                write("MOVLE   R3, #0");
+                break;
             case ">=":
-                write("MOV R1, #" + leftValue+" ; valeur de gauche de la comparaison"); // Valeur de gauche
-                write("MOV R2, #" + rightValue+" ; valeur de droite de la comparaison"); // Valeur de droite
-                write("CMP R1, R2"); // Comparaison
-                write("SUB R13, R13, #4"); // Décrémenter le pointeur de pile (on va mettre flag en pile)
-                switch (node.getValue()){
-                    case "=":
-                        write("MOVEQ   R3, #1"); // on met 1 si retourne vrai
-                        write("MOVNE   R3, #0"); // 0 sinon
-                        break;
-                    case "<":
-                        write("MOVLT   R3, #1");
-                        write("MOVGE   R3, #0");
-                        break;
-                    case "<=":
-                        write("MOVLE   R3, #1");
-                        write("MOVGT   R3, #0");
-                        break;
-                    case ">":
-                        write("MOVGT   R3, #1");
-                        write("MOVLE   R3, #0");
-                        break;
-                    case ">=":
-                        write("MOVGE   R3, #1");
-                        write("MOVLT   R3, #0");
-                        break;
-                }
-                write("STR   R3, [R13] ; resultat de la comparaison en sommet de pile"); // on met le résultat en sommet de pile
-                return;
+                write("CMP R1, R2; comparaison \""+ value +"\"");
+                write("MOVGE   R3, #1");
+                write("MOVLT   R3, #0");
+                break;
             case "and":
+                write("AND R3, R1, R2 ; ET logique");
+                break;
             case "or":
-                generateBoolean(left);
-                generateBoolean(right);
-                write("LDR R1, [R13] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
-                write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
-                write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
-                if (node.getValue().equals("and")) {
-                    write("AND R3, R1, R2 ; ET logique");
-                } else {
-                    write("ORR R3, R1, R2 ; OU logique");
-                }
-                write("STR R3, [R13] ; resultat de la comparaison en sommet de pile"); // on remplace les deux résultats par le résultat de l'opération
-                return;
+                write("ORR R3, R1, R2 ; OU logique");
+                break;
             default:
                 System.out.println("Erreur : opérateur non reconnu");
                 break;
         }
+        write("STR R3, [R13] ; resultat de la comparaison en sommet de pile"); // on remplace les deux résultats par le résultat de l'opération
     }
 
     /** Wrapper to print comment in ASM file*/
