@@ -1497,8 +1497,8 @@ public class Grammar {
         meaningfulNode();
         reduceChains();
         meaningfulNode2();
-        //renameNodes();
-        //reduceChains();
+        renameNodes();
+        reduceChains();
     }
     public void meaningfulNode() {
         // browse through tree and convert meaningful non terminal and terminal nodes to meaningful nodes
