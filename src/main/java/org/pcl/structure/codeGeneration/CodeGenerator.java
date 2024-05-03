@@ -69,7 +69,6 @@ public class CodeGenerator {
             return;
         }
         this.tds = globalTds;
-        System.out.println("Node type : " + node.getType());
         if(node.getType() != null) {
             switch (node.getType()) {
                 case DECL_PROC:
@@ -109,7 +108,9 @@ public class CodeGenerator {
                     write("; --- END BOOLEAN evaluation ---");
                     return;
                 case RETURN:
-                    generateReturn(node);
+                    if (node.getParent().getType() != NodeType.DECL_PROC && node.getParent().getType() != NodeType.DECL_FUNC) {
+                        generateReturn(node);
+                    }
                     break;
                 case BODY, EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT,
                         NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECLARATION, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER:
@@ -383,14 +384,20 @@ public class CodeGenerator {
                 default:
             }
         }
-
-        if (node.getToken().getType().equals(TokenType.NUMBER)) {
+        if (node.getType() == NodeType.CALL) {
+            generateCallFunctionProcedure(node);
+            mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue());
+            write("STR R0, [R13]");
+            write("SUB R13, R13, #4");
+        }
+        else if (node.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
             write("SUB R13, R13, #4");
             write("STR R0, [R13]");
         } else {
             generateAccessVariable(node);
         }
+        //TODO : cas où on a un appel de fonction
     }
 
     private void generateWhile(Node node) throws IOException {
@@ -797,6 +804,7 @@ public class CodeGenerator {
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
+            write("SUB r13, r13, #4 ; laisser place pour la valeur de retour");
             write("; TODO : Chainage statique");
             write("BL " + nom_fonction.toUpperCase());
         }
@@ -805,17 +813,10 @@ public class CodeGenerator {
 
 
     private void generateDeclVar(Node node) throws IOException {
-
-        Symbol symbol = tds.getSymbol(node.getChildren().get(0).getValue());
-        if (symbol == null) {
-            throw new IllegalArgumentException("Symbol not found in tds : " + node.getChildren().get(0).getValue());
-        }
-        else {
-            int depl = symbol.getDeplacement();
-            write("; --- DECLARATION of variable " + symbol.getName() + " ---");
-            write("SUB R13, R13, #4 ; place dans la pile pour la variable " + symbol.getName());
-            write("; --- END DECLARATION of variable " + symbol.getName() + " ---");
-        }
+        String nom_variable = node.getChildren().get(0).getValue();
+        write("; --- DECLARATION of variable " + nom_variable + " ---");
+        write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
+        write("; --- END DECLARATION of variable " + nom_variable + " ---");
 
         if(node.getParent().getType() == NodeType.AFFECTATION){
             // case declaration with affectation
@@ -835,7 +836,7 @@ public class CodeGenerator {
         int currentImbrication = 0;
         int varImbrication = 0;
         Tds varTds = null;
-        Tds currentTds = null;
+        Tds currentTds = tds;
 
         //searching for the tds (imbrication number) of the varToAffect
         while(varToAffect.getParent() != null && varToAffect.getType() != NodeType.FILE && varToAffect.getType() != NodeType.DECL_FUNC && varToAffect.getType() != NodeType.DECL_PROC){
@@ -863,16 +864,24 @@ public class CodeGenerator {
 //        if(varToAffect.getType() == FILE){
 //            varImbrication = 0;
 //        } else {
-            Symbol varSymbol = tds.getSymbol(node.firstChild().getValue());
+        Symbol varSymbol;
+        if (node.firstChild().getType() != DECL_VAR) {
+            varSymbol = currentTds.getSymbol(node.firstChild().getValue());
             if(varSymbol == null){
-                System.out.println("coucou");
                 throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
             }
-            varTds = tds.getTDSfromSymbol(varSymbol.getName());
+            varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
             varImbrication = varTds.getImbrication();
+        }
+        else {
+            varSymbol = currentTds.getSymbol(node.firstChild().getChildren().get(0).getValue());
+            if(varSymbol == null){
+                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
+            }
+            varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
+            varImbrication = varTds.getImbrication();
+        }
 //        }
-
-        if(currentTds == null) currentTds = tds;
 
         // case : affectation of an integer
         if(node.firstChild().getType() != DECL_VAR){
@@ -923,7 +932,7 @@ public class CodeGenerator {
         Node node = nodeToAccess;
         int currentImbrication = 0;
         int varImbrication;
-        Tds currentTds = null;
+        Tds currentTds = tds;
         //searching for the tds (imbrication number) of the nodeToAccess
         while(node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC){
             node = node.getParent();
@@ -1155,6 +1164,18 @@ public class CodeGenerator {
 
         write("; --- END PRINT function (to be add at the beginning of the file)" + " ---");
 
+    }
+
+    private void mettre_valeur_retour_en_registre_apres_appel(String nom_registre, String nom_fonction) throws IOException {
+        //mettre la valeur de retour dans un registre après un appel de fonction
+        Symbol symbol = tds.getSymbol(nom_fonction);
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + nom_fonction);
+        }
+        int nb_parametres = ((FunctionSymbol) symbol).getNbParameters();
+        write("LDR " + nom_registre + ", [R13]");
+        write("ADD R13, R13, #4 ; depiler la valeur de retour");
+        write("ADD R13, R13, #" + (4 * nb_parametres) + " ; depiler les parametres de la fonction");
     }
 }
 
