@@ -40,6 +40,9 @@ public class ProcedureSymbol extends Symbol {
         }
 
         public int getNbParameters() {
+            if (parameters == null) {
+                return 0;
+            }
             return parameters.size();
         }
 
