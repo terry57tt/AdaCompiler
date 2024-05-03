@@ -55,6 +55,7 @@ public class CodeGenerator {
         write("");
         write("program2mainProcedure");
         write("; ----- MAIN program -----");
+        write("MOV R11, R13");
         generateCode(ast.getRootNode());
     }
 
@@ -86,7 +87,6 @@ public class CodeGenerator {
                     generateWhile(node);
                     return;
                 case AFFECTATION:
-                    generateArithmetic(node.getChild(1));
                     generateAffectationVar(node);
                     break;
                 case DECL_VAR:
@@ -815,10 +815,9 @@ public class CodeGenerator {
             throw new IllegalArgumentException("Symbol not found in tds : " + node.getChildren().get(0).getValue());
         }
         else {
-            System.out.println("Symbol found in tds : " + symbol.getName() + " with deplacement " + symbol.getDeplacement());
             int depl = symbol.getDeplacement();
             write("; --- DECLARATION of variable " + symbol.getName() + " ---");
-            write("SUB R13, R13, #"+ depl+" ; On incrémente SP pour laisser de la place pour la variable");
+            write("SUB R13, R13, #4 ; place dans la pile pour la variable " + symbol.getName());
             write("; --- END DECLARATION of variable " + symbol.getName() + " ---");
         }
 
@@ -839,34 +838,38 @@ public class CodeGenerator {
         Node varToAffect = node.getChild(0);
         int currentImbrication = 0;
         int varImbrication;
-        //searching for the tds (imbrication number) of the nodeToAccess
-        while(varToAffect.getType() == null|| varToAffect.getType() != NodeType.FILE || varToAffect.getType() != NodeType.DECL_FUNC || varToAffect.getType() != NodeType.DECL_PROC){
+        //searching for the tds (imbrication number) of the varToAffect
+        while(varToAffect.getParent() != null|| varToAffect.getType() != NodeType.FILE || varToAffect.getType() != NodeType.DECL_FUNC || varToAffect.getType() != NodeType.DECL_PROC){
             if(varToAffect.getParent() != null) varToAffect = varToAffect.getParent();
+            if (varToAffect.getParent() == null) break;
         }
-        if(varToAffect.getParent().getType() == null && varToAffect.getParent().getType() == NodeType.FILE){
+        if(varToAffect.getType() == null && varToAffect.getType() == NodeType.FILE){
             varToAffect = varToAffect.getParent();
         }
 
-        if(varToAffect.getParent().getType() != null && varToAffect.getParent().getType() == NodeType.DECL_FUNC){
+        if(varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_FUNC){
             FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(varToAffect.getParent().firstChild().getValue());
             Tds currentTds = tds.getTDSfromSymbol(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
 
-        } else if (varToAffect.getParent().getType() != null && node.getParent().getType() == NodeType.DECL_PROC) {
+        } else if (varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_PROC) {
             ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(varToAffect.getParent().firstChild().getValue());
             Tds currentTds = tds.getTDSfromSymbol(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
 
         //searching for the imbrication number of the declaration of the variable to access
-        Symbol varSymbol = tds.getSymbol(varToAffect.getValue());
-        if(varSymbol == null){
-            throw new IllegalArgumentException("Symbol not found in tds : " + varToAffect.getValue());
-        }
-        System.out.println("varSymbol : " + varSymbol.getName() + " with deplacement " + varSymbol.getDeplacement());
-        Tds varTds = tds.getTDSfromSymbol(varSymbol.getName());
-        varImbrication = varTds.getImbrication();
 
+//        if(varToAffect.getType() == FILE){
+//            varImbrication = 0;
+//        } else {
+            Symbol varSymbol = tds.getSymbol(node.firstChild().getValue());
+            if(varSymbol == null){
+                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getValue());
+            }
+            Tds varTds = tds.getTDSfromSymbol(varSymbol.getName());
+            varImbrication = varTds.getImbrication();
+//        }
 
         // case : affectation of an integer
         if(node.firstChild().getType() != DECL_VAR){
@@ -883,8 +886,7 @@ public class CodeGenerator {
                     generateArithmetic(node.getChild(1));
                     write("LDR R7, [R13] ; Get the value of the result of generateArithmetic");
                     write("ADD R13, R13, #4 ; Increment the stack pointer for deletion of the result of generateArithmetic");
-                    //modify the value of the non local variable
-                    write("STR R7, [R11, #-" + depl + "]" + " ; variable := " + node.getChild(1).getValue());
+                    write("STR R7, [R11, #" + (-depl) + "]" + " ; variable := " + node.getChild(1).getValue());
                     write("; --- END AFFECTATION of variable " + symbol.getName() + " ---");
                 } else {
                     //non local variable case
@@ -909,15 +911,11 @@ public class CodeGenerator {
             }
         }
         //TODO : arithmetic
-        //generateArithmetic(node.getChild(1));
-        // dépile résultat
-
         //TODO case : affectation of a character
     }
 
     private void generateAccessVariable(Node nodeToAccess) throws IOException {
         //put at the bottom of the stack : the value of the variable to access
-
         // nodeToAccess = node of the variable to access
         Node node = nodeToAccess;
         int currentImbrication = 0;
