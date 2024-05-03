@@ -2,13 +2,15 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Main is
    a : Integer;
-begin
+
    procedure Simple_Procedure is
+     b : Integer := 1;
    begin
-      a:=a+1;
+      b:=b+1;
    end Simple_Procedure;
 
    function fonction_param(a: Integer; b: Integer) return Integer is
+     c : Integer;
    begin
       Simple_Procedure;
       return 0;

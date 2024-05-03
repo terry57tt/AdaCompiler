@@ -222,6 +222,21 @@ public class Tds {
         return null;
     }
 
+    public Tds getTDSfonction(String functionName) {
+        if (this.name.equalsIgnoreCase(functionName)) {
+            return this;
+        }
+        else {
+            for (Tds tds : child) {
+                Tds res = tds.getTDSfonction(functionName);
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         System.out.println("\n");

@@ -19,6 +19,10 @@ import static org.pcl.structure.tree.NodeType.*;
 public class CodeGenerator {
     SyntaxTree ast;
     Tds tds;
+    Tds globalTds;
+
+    int imbrication = 0;
+    int region = 0;
 
     /* Valeur arbitraire pour représenter le null */
     private final String nullValue = "256";
@@ -40,6 +44,7 @@ public class CodeGenerator {
 
         this.ast = ast;
         this.tds = tds;
+        this.globalTds = tds;
         OutputGenerator.resetFile();
         OutputGenerator.resetTabulation();
         write("STR_OUT      FILL    0x1000");
@@ -63,6 +68,8 @@ public class CodeGenerator {
         if (node == null) {
             return;
         }
+        this.tds = globalTds;
+        System.out.println("Node type : " + node.getType());
         if(node.getType() != null) {
             switch (node.getType()) {
                 case DECL_PROC:
@@ -93,7 +100,7 @@ public class CodeGenerator {
                     generateDeclVar(node);
                     break;
                 case CALL:
-                    generateCallFunctionProcedure(node, tds);
+                    generateCallFunctionProcedure(node);
                     break;
                 case COMPARATOR:
                     // pour l'instant, résultat à la base de la pile
@@ -755,7 +762,7 @@ public class CodeGenerator {
         decrementTabulation();
     }
 
-    private void generateCallFunctionProcedure(Node node, Tds tds) throws IOException {
+    private void generateCallFunctionProcedure(Node node) throws IOException {
         /* Quand j'appelle une fonction ou une procédure, je dois garder une place pour la valeur de retour si c'est une fonction
         et également sauvegardé les paramètres puis le chainage statique, puis le chainage dynamique, puis l'adresse de retour
         * */
@@ -837,24 +844,28 @@ public class CodeGenerator {
         // part non local variable to affect
         Node varToAffect = node.getChild(0);
         int currentImbrication = 0;
-        int varImbrication;
+        int varImbrication = 0;
+        Tds varTds = null;
+        Tds currentTds = null;
+
         //searching for the tds (imbrication number) of the varToAffect
-        while(varToAffect.getParent() != null|| varToAffect.getType() != NodeType.FILE || varToAffect.getType() != NodeType.DECL_FUNC || varToAffect.getType() != NodeType.DECL_PROC){
+        while(varToAffect.getParent() != null && varToAffect.getType() != NodeType.FILE && varToAffect.getType() != NodeType.DECL_FUNC && varToAffect.getType() != NodeType.DECL_PROC){
             if(varToAffect.getParent() != null) varToAffect = varToAffect.getParent();
             if (varToAffect.getParent() == null) break;
         }
+
         if(varToAffect.getType() == null && varToAffect.getType() == NodeType.FILE){
             varToAffect = varToAffect.getParent();
         }
 
         if(varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_FUNC){
-            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(varToAffect.getParent().firstChild().getValue());
-            Tds currentTds = tds.getTDSfromSymbol(functionSymbol.getName());
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(varToAffect.firstChild().getValue());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
 
         } else if (varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_PROC) {
-            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(varToAffect.getParent().firstChild().getValue());
-            Tds currentTds = tds.getTDSfromSymbol(procedureSymbol.getName());
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(varToAffect.firstChild().getValue());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
 
@@ -863,18 +874,19 @@ public class CodeGenerator {
 //        if(varToAffect.getType() == FILE){
 //            varImbrication = 0;
 //        } else {
-            Symbol varSymbol = tds.getSymbol(node.firstChild().getValue());
+            Symbol varSymbol = currentTds.getSymbol(node.firstChild().getValue());
             if(varSymbol == null){
-                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getValue());
+                System.out.println("coucou");
+                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
             }
-            Tds varTds = tds.getTDSfromSymbol(varSymbol.getName());
+            varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
             varImbrication = varTds.getImbrication();
 //        }
 
         // case : affectation of an integer
         if(node.firstChild().getType() != DECL_VAR){
             // case : affectation of a local variable not in a declaration
-            Symbol symbol = tds.getSymbol(node.getChild(0).getValue());
+            Symbol symbol = currentTds.getSymbol(node.getChild(0).getValue());
             if (symbol == null) {
                 throw new IllegalArgumentException("Symbol not found in tds : " + node.getChild(0).getChild(0).getValue());
             }
@@ -920,24 +932,25 @@ public class CodeGenerator {
         Node node = nodeToAccess;
         int currentImbrication = 0;
         int varImbrication;
+        Tds currentTds = null;
         //searching for the tds (imbrication number) of the nodeToAccess
-        while(node.getParent().getType() != NodeType.FILE || node.getParent().getType() != NodeType.DECL_FUNC || node.getParent().getType() != NodeType.DECL_PROC){
+        while(node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC){
             node = node.getParent();
         }
         if(node.getParent().getType() == NodeType.DECL_FUNC){
             FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
-            Tds currentTds = tds.getTDSfromSymbol(functionSymbol.getName());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
 
         } else if (node.getParent().getType() == NodeType.DECL_PROC) {
             ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
-            Tds currentTds = tds.getTDSfromSymbol(procedureSymbol.getName());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
 
         //searching for the imbrication number of the declaration of the variable to access
-        Symbol varSymbol = tds.getSymbol(nodeToAccess.getValue());
-        Tds varTds = tds.getTDSfromSymbol(varSymbol.getName());
+        Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
+        Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
         varImbrication = varTds.getImbrication();
 
         if(currentImbrication - varImbrication > 0){
