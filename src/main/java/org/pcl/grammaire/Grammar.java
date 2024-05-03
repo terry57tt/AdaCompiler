@@ -1536,7 +1536,7 @@ public class Grammar {
                             currentNode.getChildren().remove(0); //delete node /
                             currentNode.setValue("nodePrioriteDivision");
                         }
-                        if(currentNode.firstChild().getValue().equals("rem") && currentNode.firstChild().isFinal()){
+                        if(currentNode.firstChild().getValue().equalsIgnoreCase("rem") && currentNode.firstChild().isFinal()){
                             currentNode.getChildren().remove(0); //delete node rem
                             currentNode.setValue("nodePrioriteRem");
                         }
