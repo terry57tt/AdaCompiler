@@ -300,12 +300,12 @@ public class CodeGenerator {
             generateArithmeticRecursif(node.getChildren().get(1));
 
             write("; Right Operand");
+            write("ADD R13, R13, #4 ; increment the stack pointer");
             write("LDR R2, [R13] ; Get the value of right operand");
-            write("SUB R13, R13, #4 ; Decrement the stack pointer");
 
             write("; Left Operand");
+            write("ADD R13, R13, #4 ; increment the stack pointer");
             write("LDR R1, [R13] ; Get the value of left operand");
-            write("SUB R13, R13, #4 ; Decrement the stack pointer");
 
 
 
@@ -314,64 +314,65 @@ public class CodeGenerator {
                 case "+":
                     write("; Perform the addition");
                     write("ADD R0, R1, R2");
-                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
-                    write("ADD R13, R13, #4"); // On décale le pointeur de pile
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
+                    write("SUB R13, R13, #4"); // On décale le pointeur de pile
+
                     return;
                 case "-":
                     write("; Perform the substraction");
                     write("SUB R0, R1, R2");
-                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
-                    write("ADD R13, R13, #4"); // On décale le pointeur de pile;
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
+                    write("SUB R13, R13, #4"); // On décale le pointeur de pile
                     return;
                 case "*":
                     //TODO
-                    write("ADD R13, R13, #4 ; leave value for return");
-                    write("STR R1, [R13, #4] ; left operand"); // On stocke l'op gauche de la comparaison en pile
-                    write("ADD R13, R13, #4; left operand"); // On décale le pointeur de pile
-                    write("STR R2, [R13, #4] ; right operand"); // On stocke l'op droite de la comparaison en pile
-                    write("ADD R13, R13, #4; right operand"); // On décale le pointeur de pile
+                    write("SUB R13, R13, #4 ; leave value for return");
+                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
+                    write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
+                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
+                    write("SUB R13, R13, #4; right operand"); // On décale le pointeur de pile
 
                     write("; Perform the multiplication");
                     write("BL mul");
 
+                    write("ADD R13, R13, #4 ; Increment the stack pointer");
                     write("LDR R0, [R13] ; Get the value of resultat");
-                    write("SUB R13, R13, #4 ; Decrement the stack pointer");
-                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
-                    write("ADD R13, R13, #4"); // On décale le pointeur de pile
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
+                    write("SUB R13, R13, #4"); // On décale le pointeur de pile
                     return;
                 case "/":
                     //TODO
-                    write("ADD R13, R13, #8 ; leave value for return");
-                    write("STR R1, [R13, #4] ; left operand"); // On stocke l'op gauche de la comparaison en pile
-                    write("ADD R13, R13, #4; left operand"); // On décale le pointeur de pile
-                    write("STR R2, [R13, #4] ; right operand"); // On stocke l'op droite de la comparaison en pile
-                    write("ADD R13, R13, #4; right operand"); // On décale le pointeur de pile
+                    write("SUB R13, R13, #8 ; leave value for return");
+                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
+                    write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
+                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
+                    write("SUB R13, R13, #4; right operand"); // On décale le pointeur de pile
 
 
                     write("; Perform the division");
                     write("BL div");
+                    write("ADD R13, R13, #8 ; Increment the stack pointer");
                     write("LDR R0, [R13] ; Get the value of resultat");
-                    write("SUB R13, R13, #8 ; Decrement the stack pointer");
 
-                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     write("SUB R13, R13, #4"); // On décale le pointeur de pile;
                     return;
                 case "REM":
                     //TODO res reminder
-                    write("ADD R13, R13, #8 ; leave value for return");
-                    write("STR R1, [R13, #4] ; left operand"); // On stocke l'op gauche de la comparaison en pile
-                    write("ADD R13, R13, #4; left operand"); // On décale le pointeur de pile
-                    write("STR R2, [R13, #4] ; right operand"); // On stocke l'op droite de la comparaison en pile
-                    write("ADD R13, R13, #4; right operand"); // On décale le pointeur de pile
+                    write("SUB R13, R13, #8 ; leave value for return");
+                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
+                    write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
+                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
+                    write("SUB R13, R13, #4; right operand"); // On décale le pointeur de pile
 
 
                     write("; Perform the modulo");
                     write("BL div");
-                    write("SUB R13, R13, #4 ; Decrement the stack pointer");
+                    write("ADD R13, R13, #4 ; increment the stack pointer");
                     write("LDR R0, [R13] ; Get the value of resultat");
-                    write("SUB R13, R13, #4 ; Decrement the stack pointer");
-                    write("STR R0, [R13, #4]"); // On stocke le résultat de la comparaison en pile
-                    write("ADD R13, R13, #4"); // On décale le pointeur de pile;
+                    write("ADD R13, R13, #4 ; increment the stack pointer");
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
+                    write("SUB R13, R13, #4"); // On décale le pointeur de pile;
                     return;
                 default:
             }
@@ -379,8 +380,8 @@ public class CodeGenerator {
 
         if (node.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
-            write("STR R0, [R13, #4]");
-            write("ADD R13, R13, #4");
+            write("STR R0, [R13]");
+            write("SUB R13, R13, #4");
         } else {
             generateAccessVariable(node);
         }
@@ -408,7 +409,7 @@ public class CodeGenerator {
 
         generateCode(comparator);
         write("LDR R0, [R13] ; Get the boolean value");
-        write("SUB R13, R13, #4 ; Decrement the stack pointer");
+        write("ADD R13, R13, #4 ; increment the stack pointer");
         write("CMP R0, #0");
 
         write("BEQ " + whileLabel + endLabelWhile + number + " ; exit while if condition is false");
