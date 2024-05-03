@@ -839,7 +839,7 @@ public class CodeGenerator {
         int currentImbrication = 0;
         int varImbrication;
         //searching for the tds (imbrication number) of the varToAffect
-        while(varToAffect.getParent() != null|| varToAffect.getType() != NodeType.FILE || varToAffect.getType() != NodeType.DECL_FUNC || varToAffect.getType() != NodeType.DECL_PROC){
+        while(varToAffect.getType() != NodeType.FILE && varToAffect.getType() != NodeType.DECL_FUNC && varToAffect.getType() != NodeType.DECL_PROC){
             if(varToAffect.getParent() != null) varToAffect = varToAffect.getParent();
             if (varToAffect.getParent() == null) break;
         }
@@ -848,12 +848,12 @@ public class CodeGenerator {
         }
 
         if(varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_FUNC){
-            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(varToAffect.getParent().firstChild().getValue());
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(varToAffect.firstChild().getValue());
             Tds currentTds = tds.getTDSfromSymbol(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
 
         } else if (varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_PROC) {
-            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(varToAffect.getParent().firstChild().getValue());
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(varToAffect.firstChild().getValue());
             Tds currentTds = tds.getTDSfromSymbol(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
