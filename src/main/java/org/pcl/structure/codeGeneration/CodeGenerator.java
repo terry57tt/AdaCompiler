@@ -307,12 +307,12 @@ public class CodeGenerator {
             generateArithmeticRecursif(node.getChildren().get(1));
 
             write("; Right Operand");
-            write("ADD R13, R13, #4 ; increment the stack pointer");
             write("LDR R2, [R13] ; Get the value of right operand");
+            write("ADD R13, R13, #4 ; increment the stack pointer");
 
             write("; Left Operand");
-            write("ADD R13, R13, #4 ; increment the stack pointer");
             write("LDR R1, [R13] ; Get the value of left operand");
+            write("ADD R13, R13, #4 ; increment the stack pointer");
 
 
 
@@ -321,64 +321,63 @@ public class CodeGenerator {
                 case "+":
                     write("; Perform the addition");
                     write("ADD R0, R1, R2");
-                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     write("SUB R13, R13, #4"); // On décale le pointeur de pile
-
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     return;
                 case "-":
                     write("; Perform the substraction");
                     write("SUB R0, R1, R2");
-                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     write("SUB R13, R13, #4"); // On décale le pointeur de pile
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     return;
                 case "*":
                     //TODO
                     write("SUB R13, R13, #4 ; leave value for return");
-                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
                     write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
-                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
+                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
                     write("SUB R13, R13, #4; right operand"); // On décale le pointeur de pile
+                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
 
                     write("; Perform the multiplication");
                     write("BL mul");
 
-                    write("ADD R13, R13, #4 ; Increment the stack pointer");
                     write("LDR R0, [R13] ; Get the value of resultat");
-                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4 ; Increment the stack pointer");
                     write("SUB R13, R13, #4"); // On décale le pointeur de pile
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     return;
                 case "/":
                     //TODO
                     write("SUB R13, R13, #8 ; leave value for return");
-                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
                     write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
-                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
+                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
                     write("SUB R13, R13, #4; right operand"); // On décale le pointeur de pile
+                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
 
 
                     write("; Perform the division");
                     write("BL div");
-                    write("ADD R13, R13, #8 ; Increment the stack pointer");
                     write("LDR R0, [R13] ; Get the value of resultat");
+                    write("ADD R13, R13, #8 ; Increment the stack pointer");
 
-                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     write("SUB R13, R13, #4"); // On décale le pointeur de pile;
+                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     return;
                 case "REM":
                     //TODO res reminder
                     write("SUB R13, R13, #8 ; leave value for return");
-                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
                     write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
-                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
+                    write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
                     write("SUB R13, R13, #4; right operand"); // On décale le pointeur de pile
+                    write("STR R2, [R13] ; right operand"); // On stocke l'op droite de la comparaison en pile
 
 
                     write("; Perform the modulo");
                     write("BL div");
-                    write("ADD R13, R13, #4 ; increment the stack pointer");
                     write("LDR R0, [R13] ; Get the value of resultat");
                     write("ADD R13, R13, #4 ; increment the stack pointer");
                     write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4 ; increment the stack pointer");
                     write("SUB R13, R13, #4"); // On décale le pointeur de pile;
                     return;
                 default:
@@ -387,8 +386,8 @@ public class CodeGenerator {
 
         if (node.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
-            write("STR R0, [R13]");
             write("SUB R13, R13, #4");
+            write("STR R0, [R13]");
         } else {
             generateAccessVariable(node);
         }
@@ -629,10 +628,6 @@ public class CodeGenerator {
             incrementTabulation();
             write("STMFD SP!, {LR, R1,R2}");
             write("MOV R11, R13");
-            write("LDR R2,[R13] ; load right operand in R2 (top of the pile)");
-            write("ADD R13, R13, #4 ; increment the stack pointer");
-            write("LDR R1,[R13] ; load left operand in R1 (top of the pile)");
-            write("ADD R13, R13, #4 ; increment the stack pointer");
             write("MOV R0, #0");
             decrementTabulation();
             write("mul_loop");
@@ -642,8 +637,7 @@ public class CodeGenerator {
             write("LSL R1, R1, #1");
             write("TST R2, R2");
             write("BNE mul_loop");
-            write("SUB R13, R13, #4 ; decrement the stack pointer to put the return value");
-            write("STR R0, [R13] ; store the result in the stack");
+            write("STR R0, [R11, #4*3] ; store the result in the stack");
             write("MOV R13, R11 ; restore the stack pointer at the end of the function");
             write("LDMFD SP!, {PC, R1,R2}");
             decrementTabulation();
@@ -658,10 +652,6 @@ public class CodeGenerator {
         incrementTabulation();
         write("STMFD SP!, {LR, R2-R5}");
         write("MOV R11, R13 ; save the stack pointer");
-        write("LDR R2,[R13] ; load right operand in R2 (top of the pile)");
-        write("ADD R13, R13, #4 ; increment the stack pointer");
-        write("LDR R1,[R13] ; load left operand in R1 (top of the pile)");
-        write("ADD R13, R13, #4 ; increment the stack pointer");
         write("MOV R0, #0");
         write("MOV R3, #0");
         write("CMP R1, #0");
@@ -700,10 +690,8 @@ public class CodeGenerator {
         decrementTabulation();
         write("div_exit");
         incrementTabulation();
-        write("SUB R13, R13, #4 ; decrement the stack pointer");
-        write("STR R0, [R13] ; store the result in the stack");
-        write("SUB R13, R13, #4 ; decrement the stack pointer");
-        write("STR R1, [R13] ; store the remainder in the stack");
+        write("STR R0, [R11, #4*6] ; store the result in the stack");
+        write("STR R1, [R11, #4*5] ; store the remainder in the stack");
         write("MOV R13, R11 ; restore the stack pointer at the end of the function");
         write("LDMFD SP!, {PC, R2-R5}");
         decrementTabulation();
@@ -875,14 +863,16 @@ public class CodeGenerator {
 //        if(varToAffect.getType() == FILE){
 //            varImbrication = 0;
 //        } else {
-            Symbol varSymbol = currentTds.getSymbol(node.firstChild().getValue());
+            Symbol varSymbol = tds.getSymbol(node.firstChild().getValue());
             if(varSymbol == null){
                 System.out.println("coucou");
                 throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
             }
-            varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
+            varTds = tds.getTDSfromSymbol(varSymbol.getName());
             varImbrication = varTds.getImbrication();
 //        }
+
+        if(currentTds == null) currentTds = tds;
 
         // case : affectation of an integer
         if(node.firstChild().getType() != DECL_VAR){
