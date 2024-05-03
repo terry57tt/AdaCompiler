@@ -69,7 +69,6 @@ public class CodeGenerator {
             return;
         }
         this.tds = globalTds;
-        System.out.println("Node type : " + node.getType());
         if(node.getType() != null) {
             switch (node.getType()) {
                 case DECL_PROC:
@@ -386,7 +385,13 @@ public class CodeGenerator {
                 default:
             }
         }
-        if (node.getToken().getType().equals(TokenType.NUMBER)) {
+        if (node.getType() == NodeType.CALL) {
+            generateCallFunctionProcedure(node);
+            mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue());
+            write("STR R0, [R13]");
+            write("SUB R13, R13, #4");
+        }
+        else if (node.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
             write("STR R0, [R13]");
             write("SUB R13, R13, #4");
@@ -777,15 +782,6 @@ public class CodeGenerator {
             generateCodePut(node);
             return;
         }
-        Symbol symbol = tds.getSymbol(nom_fonction);
-        if (symbol == null) {
-            throw new IllegalArgumentException("Function or procedure not found in the symbol table");
-        }
-        if (symbol instanceof FunctionSymbol) {
-            FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
-            write("SUB r13, r13, #4 ; Laissez place pour valeur de retour");
-            return;
-        }
         int shift = 0;
         for (int i = 1; i < children.size(); i++) {
             String value_type = type_valeur(children.get(i));
@@ -820,6 +816,7 @@ public class CodeGenerator {
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             }
+            write("SUB r13, r13, #4 ; laisser place pour la valeur de retour");
             write("; TODO : Chainage statique");
             write("BL " + nom_fonction.toUpperCase());
         }
@@ -891,7 +888,6 @@ public class CodeGenerator {
         else {
             varSymbol = currentTds.getSymbol(node.firstChild().getChildren().get(0).getValue());
             if(varSymbol == null){
-                System.out.println("coucou");
                 throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
             }
             varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
@@ -948,7 +944,7 @@ public class CodeGenerator {
         Node node = nodeToAccess;
         int currentImbrication = 0;
         int varImbrication;
-        Tds currentTds = null;
+        Tds currentTds = tds;
         //searching for the tds (imbrication number) of the nodeToAccess
         while(node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC){
             node = node.getParent();
@@ -965,7 +961,6 @@ public class CodeGenerator {
         }
 
         //searching for the imbrication number of the declaration of the variable to access
-        System.out.println("J'essaie d'accèder à " + nodeToAccess.getType() + " qui a pour valeur " + nodeToAccess.getValue());
         Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
         Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
         varImbrication = varTds.getImbrication();
@@ -1181,6 +1176,18 @@ public class CodeGenerator {
 
         write("; --- END PRINT function (to be add at the beginning of the file)" + " ---");
 
+    }
+
+    private void mettre_valeur_retour_en_registre_apres_appel(String nom_registre, String nom_fonction) throws IOException {
+        //mettre la valeur de retour dans un registre après un appel de fonction
+        Symbol symbol = tds.getSymbol(nom_fonction);
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + nom_fonction);
+        }
+        int nb_parametres = ((FunctionSymbol) symbol).getNbParameters();
+        write("LDR " + nom_registre + ", [R13]");
+        write("ADD R13, R13, #4 ; depiler la valeur de retour");
+        write("ADD R13, R13, #" + (4 * nb_parametres) + " ; depiler les parametres de la fonction");
     }
 }
 
