@@ -1085,8 +1085,14 @@ public class SemanticControls {
                     return ((TypeRecordSymbol) symbol2).getNom();
                 }
                 if (tds.getSymbol(valeur.getValue()) != null) {
-                    return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
+                    try{
+                        return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
+                    } catch (Exception e1) {
+                        FunctionSymbol function = (FunctionSymbol) tds.getSymbol(valeur.getValue(), SymbolType.FUNCTION);
+                        return function.getReturnType();
+                    }
                 } else {
+
                     if (valeur.getType() == NodeType.CALL){
                         if (valeur.getParent().getType() == NodeType.CALL){
                             controleSemantiqueAppelFonction(valeur, tds);

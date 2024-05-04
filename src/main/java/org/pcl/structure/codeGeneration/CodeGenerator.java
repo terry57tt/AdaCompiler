@@ -102,10 +102,7 @@ public class CodeGenerator {
                     generateCallFunctionProcedure(node);
                     break;
                 case COMPARATOR:
-                    // pour l'instant, résultat à la base de la pile
-                    write("; ---  BOOLEAN evaluation ---");
                     generateBoolean(node);
-                    write("; --- END BOOLEAN evaluation ---");
                     return;
                 case RETURN:
                     if (node.getParent().getType() != NodeType.DECL_PROC && node.getParent().getType() != NodeType.DECL_FUNC) {
@@ -175,19 +172,10 @@ public class CodeGenerator {
         }
     }
 
-    private String convertValue(String value) {
-        if ("true".equalsIgnoreCase(value)) {
-            return "1";
-        } else if ("false".equalsIgnoreCase(value)) {
-            return "0";
-        } else {
-            return value;
-        }
-    }
-
     private void generateBoolean(Node node) throws IOException {
         String value = node.getValue();
 
+        // si c'est un opérateur arithmétique
         if (node.getValue().equalsIgnoreCase("-") || node.getValue().equalsIgnoreCase("+")
                 || node.getValue().equalsIgnoreCase("*") || node.getValue().equalsIgnoreCase("/")
                 || node.getValue().equalsIgnoreCase("REM"))
@@ -196,9 +184,9 @@ public class CodeGenerator {
             return;
         }
 
-        // si c'est un appel de fonction ou de procédure
+        // si c'est un appel de fonction
         if (node.getType() == NodeType.CALL) {
-            System.out.println("CALL");
+            generateCallFunctionProcedure(node);
             return;
         }
 
@@ -292,7 +280,7 @@ public class CodeGenerator {
                     break;
             }
             write("STR R3, [R13] ; resultat de la comparaison en sommet de pile"); // on remplace les deux résultats par le résultat de l'opération
-        return;
+            return;
         }
 
         // si c'est une variable
@@ -472,23 +460,23 @@ public class CodeGenerator {
             generateCode(body);
             write("B " + "EndIf" + ifCounter);
             /*
-            * IF CMP r0, #0
-            * BEQ ElSIF0
-            * body du IF
-            * B EndIf0
-            * Calcul de la condition de elsif0
-            * ElSIF0 CMP r0, #0
-            * BEQ ElSIF1
-            * body du ElSIF0
-            * B EndIf0
-            * Calcul de la condition de elsif1
-            * ElSIF1 CMP r0, #0
-            * BEQ ELSE0
-            * body du ElSIF1
-            * B EndIf0
-            * ELSE0 body du ELSE0
-            * EndIf0
-            * */
+             * IF CMP r0, #0
+             * BEQ ElSIF0
+             * body du IF
+             * B EndIf0
+             * Calcul de la condition de elsif0
+             * ElSIF0 CMP r0, #0
+             * BEQ ElSIF1
+             * body du ElSIF0
+             * B EndIf0
+             * Calcul de la condition de elsif1
+             * ElSIF1 CMP r0, #0
+             * BEQ ELSE0
+             * body du ElSIF1
+             * B EndIf0
+             * ELSE0 body du ELSE0
+             * EndIf0
+             * */
             for (int i = 0; i < elseif.size() - 1; i++){
                 Node elseifnode = elseif.get(i);
                 Node elseifcondition = elseifnode.getChildren().get(0);
@@ -537,26 +525,6 @@ public class CodeGenerator {
         }
         write ("EndIf" + ifCounter);
         ifCounter++;
-        // Node comparator = node.getChildren().get(0); // noeud de comparaison
-        // Node trueCase = node.getChildren().get(1); // noeud du cas vrai
-        // Node falseCase = node.getChildren().get(2); // noeud du cas faux
-
-        // int number = ifCounter;
-        // ifCounter++;
-
-        // write("; ---  IF generation ---");
-        // generateBoolean(comparator);
-        // write("LDR R0, [R11, #-4]"); // on récupère le résultat de la comparaison (base de la pile)
-        // write("CMP R0, #1"); // on compare le résultat avec 1
-        // write("BEQ " + ifLabel + number); // si vrai, on va au cas vrai
-        // if (falseCase != null) {
-        //     generateCode(falseCase);
-        // }
-        // write("B " + endLabelIf + number); // on saute le cas vrai
-        // write(ifLabel + number);
-        // generateCode(trueCase);
-        // write(endLabelIf + number);
-        // write("; --- END IF generation ---");
     }
 
     private void generateFor(Node node) throws IOException {
@@ -638,26 +606,26 @@ public class CodeGenerator {
 
     private void generateMultiplyFunction() throws IOException {
         // only multiply two integers
-            write("; --- MULTIPLICATION function (to be add at the beginning of the file)" + " ---");
-            write("; R0 = result , R1 = left operand, R2 = right operand");
-            write("mul"); //multiplication function : to be called with "BL mul"
-            incrementTabulation();
-            write("STMFD SP!, {LR, R1,R2}");
-            write("MOV R11, R13");
-            write("MOV R0, #0");
-            decrementTabulation();
-            write("mul_loop");
-            incrementTabulation();
-            write("LSRS R2, R2, #1");
-            write("ADDCS   R0, R0, R1");
-            write("LSL R1, R1, #1");
-            write("TST R2, R2");
-            write("BNE mul_loop");
-            write("STR R0, [R11, #4*3] ; store the result in the stack");
-            write("MOV R13, R11 ; restore the stack pointer at the end of the function");
-            write("LDMFD SP!, {PC, R1,R2}");
-            decrementTabulation();
-            write("; --- END MULTIPLICATION function ---");
+        write("; --- MULTIPLICATION function (to be add at the beginning of the file)" + " ---");
+        write("; R0 = result , R1 = left operand, R2 = right operand");
+        write("mul"); //multiplication function : to be called with "BL mul"
+        incrementTabulation();
+        write("STMFD SP!, {LR, R1,R2}");
+        write("MOV R11, R13");
+        write("MOV R0, #0");
+        decrementTabulation();
+        write("mul_loop");
+        incrementTabulation();
+        write("LSRS R2, R2, #1");
+        write("ADDCS   R0, R0, R1");
+        write("LSL R1, R1, #1");
+        write("TST R2, R2");
+        write("BNE mul_loop");
+        write("STR R0, [R11, #4*3] ; store the result in the stack");
+        write("MOV R13, R11 ; restore the stack pointer at the end of the function");
+        write("LDMFD SP!, {PC, R1,R2}");
+        decrementTabulation();
+        write("; --- END MULTIPLICATION function ---");
     }
 
     private void generateDivideFunction() throws IOException {
@@ -1045,13 +1013,13 @@ public class CodeGenerator {
             }
             else {
                 if (valeur.getValue().equalsIgnoreCase("Character'Val")){
-                        return "Character";
+                    return "Character";
                 }
                 if (valeur.getValue().equalsIgnoreCase("null")){ return "null"; }
                 return " ";
             }
-            }
         }
+    }
 
     private void generateDeclPrint() throws IOException {
         write("; --- PRINT function (to be add at the beginning of the file)" + " ---");
