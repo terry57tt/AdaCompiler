@@ -58,9 +58,6 @@ public class CodeGenerator {
         generateDivideFunction();
         write("");
         write("");
-        write("program2mainProcedure");
-        write("; ----- MAIN program -----");
-        write("MOV R11, R13");
         generateCode(ast.getRootNode());
     }
 
@@ -79,10 +76,8 @@ public class CodeGenerator {
                     }
                     break;
                 case DECLARATION:
-                    if (node.getChildren() != null) {
-                        for (Node child : node.getChildren()) {
-                            generateCode(child);
-                        }
+                    if (node.getParent().getType() == FILE){
+                        generateCodeDeclarationFuncOrProc(node);
                     }
                     break;
                 case DECL_PROC:
@@ -127,7 +122,22 @@ public class CodeGenerator {
                     }
                     break;
                 case BODY:
-                    if (node.getChildren() != null) {
+                    if (node.getParent().getType() == FILE){
+                        write("program2mainProcedure");
+                        write("; ----- MAIN program -----");
+                        write("MOV R11, R13");
+                        for (Node child : node.getParent().getChildren()){
+                            if (child.getType() == DECLARATION){
+                                generateCodeDeclarationVariable(child);
+                            }
+                        }
+                        if (node.getChildren() != null) {
+                            for (Node child : node.getChildren()) {
+                                generateCode(child);
+                            }
+                        }
+                    }
+                    else if (node.getChildren() != null) {
                         for (Node child : node.getChildren()) {
                             generateCode(child);
                         }
@@ -719,13 +729,37 @@ public class CodeGenerator {
         decrementTabulation();
     }
 
+    private void generateCodeDeclarationVariable(Node node) throws IOException {
+        if (node.getChildren() != null) {
+            for (Node child : node.getChildren()) {
+                if (child.getType() == DECL_VAR || child.getType() == AFFECTATION) {
+                    generateCode(child);
+                }
+            }
+        }
+    }
+
+    private void generateCodeDeclarationFuncOrProc(Node node) throws IOException {
+        if (node.getChildren() != null) {
+            for (Node child : node.getChildren()) {
+                if (child.getType() == DECL_PROC || child.getType() == DECL_FUNC) {
+                    generateCode(child);
+                }
+            }
+        }
+    }
+
     private void generateDeclFunction(Node node) throws IOException {
         String nom_fonction = node.getChildren().get(0).getValue();
+        List<Node> children = node.getChildren();
+        if (children.get(2).getType() == NodeType.DECLARATION) {
+            Node declaration = children.get(2);
+            generateCodeDeclarationFuncOrProc(declaration);
+        }
         write(nom_fonction.toUpperCase()); // Label de la fonction en majuscule
         incrementTabulation();
         write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la fonction");
-        List<Node> children = node.getChildren();
         if (children.get(2).getType() == NodeType.BODY) {
             Node body = children.get(2);
             generateCode(body);
@@ -733,7 +767,7 @@ public class CodeGenerator {
         else {
             if (children.get(2).getType() == NodeType.DECLARATION) {
                 Node declaration = children.get(2);
-                generateCode(declaration);
+                generateCodeDeclarationVariable(declaration);
                 Node body = children.get(3);
                 generateCode(body);
             } else {
@@ -748,11 +782,15 @@ public class CodeGenerator {
 
     private void generateDeclProcedure(Node node) throws IOException {
         String nom_procedure = node.getChildren().get(0).getValue();
+        List<Node> children = node.getChildren();
+        if (children.get(2).getType() == NodeType.DECLARATION) {
+            Node declaration = children.get(2);
+            generateCodeDeclarationFuncOrProc(declaration);
+        }
         write(nom_procedure.toUpperCase()); // Label de la procédure en majuscule
         incrementTabulation();
         write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la procédure");
-        List<Node> children = node.getChildren();
         if (children.get(1).getType() == NodeType.BODY) {
             Node body = children.get(1);
             generateCode(body);
@@ -760,7 +798,7 @@ public class CodeGenerator {
         else {
             if (children.get(1).getType() == NodeType.DECLARATION) {
                 Node declaration = children.get(1);
-                generateCode(declaration);
+                generateCodeDeclarationVariable(declaration);
                 Node body = children.get(2);
                 generateCode(body);
             } else {
@@ -834,6 +872,7 @@ public class CodeGenerator {
 
 
     private void generateDeclVar(Node node) throws IOException {
+        System.out.println("type du node : " + node.getType() + " qui a pour parent : " + node.getParent().getType());
         String nom_variable = node.getChildren().get(0).getValue();
         write("; --- DECLARATION of variable " + nom_variable + " ---");
         write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
@@ -940,8 +979,17 @@ public class CodeGenerator {
                     write("STR R7, [R10, #" + (varSymbol.getDeplacement() - 4) + "] ; variable := " + node.getChild(1).getValue());
                     write("; --- END NON LOCAL VARIABLE AFFECTATION ---");
                 }
-
             }
+        } else {
+            // On est dans le cas d'une affectation et déclaration en même temps : on a même pas besoin de chercher la variable
+            String nom_variable = node.getChildren().get(0).getChildren().get(0).getValue();
+            write("; --- DECLARATION of variable " + nom_variable + " ---");
+            write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
+            write("; --- END DECLARATION of variable " + nom_variable + " ---");
+            write("; --- AFFECTATION of variable " + nom_variable + " ---");
+            generateArithmetic(node.getChild(1));
+            write("LDMFD   r13!, {r0}");
+            write("STR r0, [r13]");
         }
         //TODO : arithmetic
         //TODO case : affectation of a character
@@ -986,7 +1034,7 @@ public class CodeGenerator {
             write("LDR R10, [R10] ; Load the previous static chain");
             write("SUBS R1, R1, #1 ; Decrement the imbrication number");
             write("BNE nonLocalAccessLoop ; Continue until the imbrication number is reached");
-            write("LDR R0, [R10, #" + (varSymbol.getDeplacement() -4) + "] ; Load the value of the variable to access");
+            write("LDR R0, [R10, #" + (varSymbol.getDeplacement() -4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
             write("SUB R13, R13, #4 ; Decrement the stack pointer");
             write("STR R0, [R13] ; Store the value in the stack");
             decrementTabulation();
@@ -994,7 +1042,7 @@ public class CodeGenerator {
         } else {
             write("; --- LOCAL VARIABLE ACCESS ---");
             incrementTabulation();
-            write("LDR R0, [R11, #-" + varSymbol.getDeplacement() + "] ; Load the value of the variable to access");
+            write("LDR R0, [R11, #-" + (varSymbol.getDeplacement()+4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
             write("SUB R13, R13, #4 ; Decrement the stack pointer");
             write("STR R0, [R13] ; Store the value in the stack");
             decrementTabulation();
