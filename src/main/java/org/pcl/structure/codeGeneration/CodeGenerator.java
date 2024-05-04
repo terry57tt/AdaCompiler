@@ -824,7 +824,7 @@ public class CodeGenerator {
             int int_affectation = Integer.parseInt(valeur_affectation);
             write("; --- AFFECTATION of variable " + node.getChild(0).getValue() + " ---");
             write("LDR R7, =" + int_affectation + " ; LDR au lieu de MOV car MOV ne permet pas la gestion des nombres de plus de 8 bits");
-            write("ADD R8, R12, #0" + " ; R8 := @x");
+            write("MOV R8, R13 ; R8 := @x");
             write("STR R7, [R8]" + " ; variable := " + int_affectation);
             write("; --- END AFFECTATION of variable " + node.getChild(0).getValue() + " ---");
         }
@@ -898,7 +898,7 @@ public class CodeGenerator {
                     generateArithmetic(node.getChild(1));
                     write("LDR R7, [R13] ; Get the value of the result of generateArithmetic");
                     write("ADD R13, R13, #4 ; Increment the stack pointer for deletion of the result of generateArithmetic");
-                    write("STR R7, [R11, #" + (-depl) + "]" + " ; variable := " + node.getChild(1).getValue());
+                    write("STR R7, [R11, #" + (-4-depl) + "]" + " ; variable := " + node.getChild(1).getValue());
                     write("; --- END AFFECTATION of variable " + symbol.getName() + " ---");
                 } else {
                     //non local variable case
