@@ -71,6 +71,20 @@ public class CodeGenerator {
         this.tds = globalTds;
         if(node.getType() != null) {
             switch (node.getType()) {
+                case FILE:
+                    if (node.getChildren() != null) {
+                        for (Node child : node.getChildren()) {
+                            generateCode(child);
+                        }
+                    }
+                    break;
+                case DECLARATION:
+                    if (node.getChildren() != null) {
+                        for (Node child : node.getChildren()) {
+                            generateCode(child);
+                        }
+                    }
+                    break;
                 case DECL_PROC:
                     write("BL decl" + declFuncProcCounter + "Procedure");
                     generateDeclProcedure(node);
@@ -112,17 +126,18 @@ public class CodeGenerator {
                         generateReturn(node);
                     }
                     break;
-                case BODY, EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT,
-                        NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, DECLARATION, RECORD, ACCESS, IS, TYPE, VIRGULE, FILE, IDENTIFIER:
+                case BODY:
+                    if (node.getChildren() != null) {
+                        for (Node child : node.getChildren()) {
+                            generateCode(child);
+                        }
+                    }
+                case EXPRESSION, ELSIF, REVERSE, BEGIN, CHAR_VAL, NEW, NULL, FALSE, TRUE, CHARACTER, INTEGER, POINT,
+                        NEGATIVE_SIGN, REM, DIVIDE, MULTIPLY, SUBSTRACTION, ADDITION, SUPERIOR_EQUAL, SUPERIOR, INFERIOR_EQUAL, INFERIOR, EQUAL, SLASH_EQUAL, NOT, THEN, AND, ELSE, OR, INOUT, IN, MODE, MULTIPLE_PARAM, PARAMETERS, INITIALIZATION, FIELD, RECORD, ACCESS, IS, TYPE, VIRGULE, IDENTIFIER:
                     // NO ACTION
                     break;
                 default:
                     throw new IllegalArgumentException("NodeType inconnu : " + node.getType());
-            }
-        }
-        if (node.getChildren() != null) {
-            for (Node child : node.getChildren()) {
-                generateCode(child);
             }
         }
     }
@@ -738,18 +753,18 @@ public class CodeGenerator {
         write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la procédure");
         List<Node> children = node.getChildren();
-        if (children.get(2).getType() == NodeType.BODY) {
-            Node body = children.get(2);
+        if (children.get(1).getType() == NodeType.BODY) {
+            Node body = children.get(1);
             generateCode(body);
         }
         else {
-            if (children.get(2).getType() == NodeType.DECLARATION) {
-                Node declaration = children.get(2);
+            if (children.get(1).getType() == NodeType.DECLARATION) {
+                Node declaration = children.get(1);
                 generateCode(declaration);
-                Node body = children.get(3);
+                Node body = children.get(2);
                 generateCode(body);
             } else {
-                Node body = children.get(2);
+                Node body = children.get(1);
                 generateCode(body);
             }
         }
@@ -802,12 +817,18 @@ public class CodeGenerator {
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateAccessVariable(children.get(i));
                 write("LDMFD   r13!, {r0}");
-                write("STR r0, [r13] ; Empiler le paramètre \" + i");
+                write("STR r0, [r13] ; Empiler le paramètre " + i);
             }
-            write("SUB r13, r13, #4 ; laisser place pour la valeur de retour");
-            write("; TODO : Chainage statique");
-            write("BL " + nom_fonction.toUpperCase());
         }
+        Symbol symbol = tds.getSymbol(nom_fonction);
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + nom_fonction);
+        }
+        if (symbol instanceof FunctionSymbol) {
+            write("SUB r13, r13, #4 ; laisser une place pour la valeur de retour");
+        }
+        write("; TODO : Chainage statique");
+        write("BL " + nom_fonction.toUpperCase());
     }
 
 
@@ -824,7 +845,7 @@ public class CodeGenerator {
             int int_affectation = Integer.parseInt(valeur_affectation);
             write("; --- AFFECTATION of variable " + node.getChild(0).getValue() + " ---");
             write("LDR R7, =" + int_affectation + " ; LDR au lieu de MOV car MOV ne permet pas la gestion des nombres de plus de 8 bits");
-            write("ADD R8, R12, #0" + " ; R8 := @x");
+            write("ADD R8, R13, #0" + " ; R8 := @x");
             write("STR R7, [R8]" + " ; variable := " + int_affectation);
             write("; --- END AFFECTATION of variable " + node.getChild(0).getValue() + " ---");
         }
