@@ -360,11 +360,8 @@ public class CodeGenerator {
 
                     write("; Perform the multiplication");
                     write("BL mul");
+                    write("ADD R13, R13, #8 ; remove param function from stack");
 
-                    write("LDR R0, [R13] ; Get the value of resultat");
-                    write("ADD R13, R13, #4 ; Increment the stack pointer");
-                    write("SUB R13, R13, #4"); // On décale le pointeur de pile
-                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     return;
                 case "/":
                     //TODO
@@ -377,11 +374,8 @@ public class CodeGenerator {
 
                     write("; Perform the division");
                     write("BL div");
-                    write("LDR R0, [R13] ; Get the value of resultat");
                     write("ADD R13, R13, #8 ; Increment the stack pointer");
-
-                    write("SUB R13, R13, #4"); // On décale le pointeur de pile;
-                    write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
+                    write("ADD R13, R13, #4 ; increment the stack pointer");
                     return;
                 case "REM":
                     //TODO res reminder
@@ -394,11 +388,10 @@ public class CodeGenerator {
 
                     write("; Perform the modulo");
                     write("BL div");
+                    write("ADD R13, R13, #8 ; Increment the stack pointer");
                     write("LDR R0, [R13] ; Get the value of resultat");
                     write("ADD R13, R13, #4 ; increment the stack pointer");
                     write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
-                    write("ADD R13, R13, #4 ; increment the stack pointer");
-                    write("SUB R13, R13, #4"); // On décale le pointeur de pile;
                     return;
                 default:
             }
@@ -406,8 +399,8 @@ public class CodeGenerator {
         if (node.getType() == NodeType.CALL) {
             generateCallFunctionProcedure(node);
             mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue());
-            write("STR R0, [R13]");
             write("SUB R13, R13, #4");
+            write("STR R0, [R13]");
         }
         else if (node.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
@@ -416,7 +409,6 @@ public class CodeGenerator {
         } else {
             generateAccessVariable(node);
         }
-        //TODO : cas où on a un appel de fonction
     }
 
     private void generateWhile(Node node) throws IOException {
@@ -632,7 +624,7 @@ public class CodeGenerator {
         write("; R0 = result , R1 = left operand, R2 = right operand");
         write("mul"); //multiplication function : to be called with "BL mul"
         incrementTabulation();
-        write("STMFD SP!, {LR, R1,R2}");
+        write("STMFD SP!, {LR, R0,R1,R2}");
         write("MOV R11, R13");
         write("MOV R0, #0");
         decrementTabulation();
@@ -643,9 +635,9 @@ public class CodeGenerator {
         write("LSL R1, R1, #1");
         write("TST R2, R2");
         write("BNE mul_loop");
-        write("STR R0, [R11, #4*3] ; store the result in the stack");
+        write("STR R0, [R11, #4*6] ; store the result in the stack");
         write("MOV R13, R11 ; restore the stack pointer at the end of the function");
-        write("LDMFD SP!, {PC, R1,R2}");
+        write("LDMFD SP!, {PC, R0,R1,R2}");
         decrementTabulation();
         write("; --- END MULTIPLICATION function ---");
     }
@@ -656,7 +648,7 @@ public class CodeGenerator {
         write("; at the end : R0 = result, R1 = remainder");
         write("div"); //division function : to be called with "BL mul"
         incrementTabulation();
-        write("STMFD SP!, {LR, R2-R5}");
+        write("STMFD SP!, {LR, R0-R5}");
         write("MOV R11, R13 ; save the stack pointer");
         write("MOV R0, #0");
         write("MOV R3, #0");
@@ -696,10 +688,10 @@ public class CodeGenerator {
         decrementTabulation();
         write("div_exit");
         incrementTabulation();
-        write("STR R0, [R11, #4*6] ; store the result in the stack");
-        write("STR R1, [R11, #4*5] ; store the remainder in the stack");
+        write("STR R0, [R11, #4*10] ; store the result in the stack");
+        write("STR R1, [R11, #4*9] ; store the remainder in the stack");
         write("MOV R13, R11 ; restore the stack pointer at the end of the function");
-        write("LDMFD SP!, {PC, R2-R5}");
+        write("LDMFD SP!, {PC, R0-R5}");
         decrementTabulation();
     }
 
