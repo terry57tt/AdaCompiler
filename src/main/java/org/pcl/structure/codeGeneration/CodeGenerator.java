@@ -196,8 +196,11 @@ public class CodeGenerator {
             return;
         }
 
-        // case : variable --> generateAccessVariable
-        // case : function call --> generateCallFunctionProcedure
+        // si c'est un appel de fonction ou de procédure
+        if (node.getType() == NodeType.CALL) {
+            System.out.println("CALL");
+            return;
+        }
 
         // si c'est un nombre, on le met en sommet de pile
         try {
@@ -242,52 +245,58 @@ public class CodeGenerator {
             return;
         }
 
-        // cas où on a un opérateur de comparaison
-        Node left = node.getChildren().get(0);
-        Node right = node.getChildren().get(1);
-        generateBoolean(left);
-        generateBoolean(right);
-        write("LDR R1, [R13, #4] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
-        write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
-        write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
+        // si opérateur de comparaison
+        if(value.equalsIgnoreCase("and") || value.equalsIgnoreCase("or") || value.equalsIgnoreCase("=") || value.equalsIgnoreCase("<") || value.equalsIgnoreCase("<=") || value.equalsIgnoreCase(">") || value.equalsIgnoreCase(">=")) {
+            Node left = node.getChildren().get(0);
+            Node right = node.getChildren().get(1);
+            generateBoolean(left);
+            generateBoolean(right);
+            write("LDR R1, [R13, #4] ; recuperation premiere valeur SP"); // on récupère le résultat de la première opération
+            write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
+            write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
 
-        switch (value){
-            case "=":
-                write("CMP R1, R2; comparaison \""+ value +"\"");
-                write("MOVEQ   R3, #1"); // on met 1 si retourne vrai
-                write("MOVNE   R3, #0"); // 0 sinon
-                break;
-            case "<":
-                write("CMP R1, R2; comparaison \""+ value +"\"");
-                write("MOVLT   R3, #1");
-                write("MOVGE   R3, #0");
-                break;
-            case "<=":
-                write("CMP R1, R2; comparaison \""+ value +"\"");
-                write("MOVLE   R3, #1");
-                write("MOVGT   R3, #0");
-                break;
-            case ">":
-                write("CMP R1, R2; comparaison \""+ value +"\"");
-                write("MOVGT   R3, #1");
-                write("MOVLE   R3, #0");
-                break;
-            case ">=":
-                write("CMP R1, R2; comparaison \""+ value +"\"");
-                write("MOVGE   R3, #1");
-                write("MOVLT   R3, #0");
-                break;
-            case "and":
-                write("AND R3, R1, R2 ; ET logique");
-                break;
-            case "or":
-                write("ORR R3, R1, R2 ; OU logique");
-                break;
-            default:
-                System.out.println("Erreur : opérateur non reconnu");
-                break;
+            switch (value){
+                case "=":
+                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("MOVEQ   R3, #1"); // on met 1 si retourne vrai
+                    write("MOVNE   R3, #0"); // 0 sinon
+                    break;
+                case "<":
+                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("MOVLT   R3, #1");
+                    write("MOVGE   R3, #0");
+                    break;
+                case "<=":
+                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("MOVLE   R3, #1");
+                    write("MOVGT   R3, #0");
+                    break;
+                case ">":
+                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("MOVGT   R3, #1");
+                    write("MOVLE   R3, #0");
+                    break;
+                case ">=":
+                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("MOVGE   R3, #1");
+                    write("MOVLT   R3, #0");
+                    break;
+                case "and":
+                    write("AND R3, R1, R2 ; ET logique");
+                    break;
+                case "or":
+                    write("ORR R3, R1, R2 ; OU logique");
+                    break;
+                default:
+                    System.out.println("Erreur : opérateur non reconnu");
+                    break;
+            }
+            write("STR R3, [R13] ; resultat de la comparaison en sommet de pile"); // on remplace les deux résultats par le résultat de l'opération
+        return;
         }
-        write("STR R3, [R13] ; resultat de la comparaison en sommet de pile"); // on remplace les deux résultats par le résultat de l'opération
+
+        // si c'est une variable
+        generateAccessVariable(node);
     }
 
     /** Wrapper to print comment in ASM file*/

@@ -1,10 +1,12 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Main is
+    a : Integer;
 begin
-   if ((false=true and 5<8) or 18>=18) or (2=2 and not (1=1)) then
-      Put_Line("1");
+   a := 5;
+   if a<=5 then
+      Put(1);
    else
-      Put_Line("2");
+      Put(0);
    end if;
 end Main;
