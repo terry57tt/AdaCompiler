@@ -133,6 +133,7 @@ public class CodeGenerator {
                                 generateCode(child);
                             }
                         }
+                        write("END");
                     }
                     else if (node.getChildren() != null) {
                         for (Node child : node.getChildren()) {
@@ -849,7 +850,6 @@ public class CodeGenerator {
 
 
     private void generateDeclVar(Node node) throws IOException {
-        System.out.println("type du node : " + node.getType() + " qui a pour parent : " + node.getParent().getType());
         String nom_variable = node.getChildren().get(0).getValue();
         write("; --- DECLARATION of variable " + nom_variable + " ---");
         write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
