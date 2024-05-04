@@ -81,15 +81,11 @@ public class CodeGenerator {
                     }
                     break;
                 case DECL_PROC:
-                    write("BL decl" + declFuncProcCounter + "Procedure");
                     generateDeclProcedure(node);
-                    write("decl" + declFuncProcCounter + "Procedure");
                     declFuncProcCounter++;
                     break;
                 case DECL_FUNC:
-                    write("BL decl" + declFuncProcCounter + "Function");
                     generateDeclFunction(node);
-                    write("decl" + declFuncProcCounter + "Function");
                     declFuncProcCounter++;
                     break;
                 case IF:
