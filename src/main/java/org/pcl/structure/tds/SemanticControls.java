@@ -1,5 +1,7 @@
 package org.pcl.structure.tds;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import org.pcl.ColorAnsiCode;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
@@ -1091,9 +1093,19 @@ public class SemanticControls {
                     if (valeur.getType() == NodeType.CALL){
                         if (valeur.getParent().getType() == NodeType.CALL){
                             controleSemantiqueAppelFonction(valeur, tds);
-                            return ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                            FunctionSymbol function = ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION));
+                            if (function == null) {
+                                printError("le symbol " + valeur.getChildren().get(0).getValue() + " n'existe pas", valeur);
+                                return " ";
+                            }
+                            else return function.getReturnType();
                         }
-                        return ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION)).getReturnType();
+                        FunctionSymbol function = ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION));
+                        if (function == null) {
+                            printError("le symbol " + valeur.getChildren().get(0).getValue() + " n'existe pas", valeur);
+                            return " ";
+                        }
+                        else return function.getReturnType();
                     }
                     if (valeur.getValue().equalsIgnoreCase("Character'Val")){
                         try {

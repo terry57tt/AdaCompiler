@@ -13,10 +13,10 @@ procedure Main is
      c : Integer;
    begin
       Simple_Procedure;
-      return 0;
+      return 1000;
    end Return_Int;
 
 begin
    Simple_Procedure;
-   a := fonction_param(a,2);
+   a := fonction_param(10,12);
 end Main;

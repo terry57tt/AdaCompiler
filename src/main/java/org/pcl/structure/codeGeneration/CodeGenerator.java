@@ -155,26 +155,26 @@ public class CodeGenerator {
             String value_type = type_valeur(children.get(0));
             if (value_type.equalsIgnoreCase("integer")) {
                 write("MOV R0, #" + children.get(0).getValue());
-                write("STR R0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase("character")) {
                 write("Char" + children.get(0).getValue().toUpperCase() + "  DCD  " + (int)children.get(0).getValue().charAt(0) + " ; '" + children.get(0).getValue() + "' en ASCII");
                 write("LDR R0, =Char" + children.get(0).getValue().toUpperCase());
                 write("LDR r0, [r0]");
-                write("STR r0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase("boolean")) {
                 write("MOV R0, #" + children.get(0).getValue());
-                write("STR R0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase("null")) {
                 write("MOV R0, #0");
-                write("STR R0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase(" ")) {
                 generateAccessVariable(children.get(0));
                 write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
             else {
                 write("BL " + children.get(0).getValue().toUpperCase());
@@ -184,12 +184,12 @@ public class CodeGenerator {
             if (children.get(0).getType() == NodeType.ADDITION || children.get(0).getType() == NodeType.SUBSTRACTION || children.get(0).getType() == NodeType.MULTIPLY || children.get(0).getType() == NodeType.DIVIDE || children.get(0).getType() == NodeType.REM) {
                 generateArithmetic(children.get(0));
                 write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
             else if (children.get(0).getType() == NodeType.COMPARATOR) {
                 generateBoolean(children.get(0));
                 write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4*4] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
         }
     }
@@ -1020,7 +1020,12 @@ public class CodeGenerator {
     private void generateCodePut(Node node) throws IOException {
         Node value = node.getChild(1);
         write("; --- PUT generation ---");
-        if (value.getToken().getType().equals(TokenType.NUMBER)) {
+        System.out.println(value.getValue() + value.getChildren().get(0).getValue());
+        if (value.getValue().equalsIgnoreCase("Character'Val")){
+            generateArithmetic(value.getChildren().get(0));
+            write("LDMFD   r13!, {r0}");
+        }
+        else if (value.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + value.getValue());
             write("addr0 FILL 12");
             write("LDR R3, =addr0");
@@ -1029,7 +1034,7 @@ public class CodeGenerator {
             write("BL println");
             return;
         }
-        if (value.getToken().getType().equals(TokenType.CHARACTER)){
+        else if (value.getToken().getType().equals(TokenType.CHARACTER)){
             write("MOV R0, #" + (int)value.getValue().charAt(0));
         }
         else {
