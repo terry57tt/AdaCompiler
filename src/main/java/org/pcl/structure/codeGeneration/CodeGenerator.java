@@ -36,6 +36,7 @@ public class CodeGenerator {
     private int ifCounter = 0;
     private int forCounter = 0;
     private int declFuncProcCounter = 0;
+    private int nonLocalAccessAffectationLoopCounter = 0;
 
     public CodeGenerator(SyntaxTree ast, Tds tds) throws IOException {
         if (ast == null || tds == null) {
@@ -529,7 +530,9 @@ public class CodeGenerator {
                 write("BEQ " + "Else" + ifCounter);
                 generateCode(body);
                 write("B " + "EndIf" + ifCounter);
+                write("Else" + ifCounter);
                 generateCode(elsenode);
+                write("B " + "EndIf" + ifCounter);
             }
             else {
                 write("BEQ " + "EndIf" + ifCounter);
@@ -958,17 +961,18 @@ public class CodeGenerator {
                     write("MOV R1, #" + (currentImbrication - varImbrication) + " ; Move to R1 the imbrication number of the variable to access");
                     write("MOV R10, R11 ; Save the current BP");
                     decrementTabulation();
-                    write("nonLocalAccessAffectionLoop");
+                    write("nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter);
                     incrementTabulation();
                     write("ADD R10, R10, #8 ; R10 = static chain");
                     write("LDR R10, [R10] ; Load the previous static chain");
                     write("SUBS R1, R1, #1 ; Decrement the imbrication number");
-                    write("BNE nonLocalAccessAffectationLoop ; Continue until the imbrication number is reached");
+                    write("BNE nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter + " ; Continue until the imbrication number is reached");
                     generateArithmetic(node.getChild(1));
                     write("LDR R7, [R13] ; Get the value of the result of generateArithmetic");
                     write("ADD R13, R13, #4 ; Increment the stack pointer for deletion of the result of generateArithmetic");
                     write("STR R7, [R10, #" + (varSymbol.getDeplacement() - 4) + "] ; variable := " + node.getChild(1).getValue());
                     write("; --- END NON LOCAL VARIABLE AFFECTATION ---");
+                    nonLocalAccessAffectationLoopCounter++;
                 }
             }
         } else {
@@ -1046,7 +1050,6 @@ public class CodeGenerator {
     private void generateCodePut(Node node) throws IOException {
         Node value = node.getChild(1);
         write("; --- PUT generation ---");
-        System.out.println(value.getValue() + value.getChildren().get(0).getValue());
         if (value.getValue().equalsIgnoreCase("Character'Val")){
             generateArithmetic(value.getChildren().get(0));
             write("LDMFD   r13!, {r0}");
