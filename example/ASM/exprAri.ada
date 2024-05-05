@@ -1,14 +1,15 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Main is
-   function getInteger return Integer is
+   function getInteger(c : integer) return Integer is
    begin
-      return 14;
+      return c;
    end getInteger;
 
     a: Integer;
+    b: Integer;
 
 begin
-   a := ((((7 REM 3 * 10 + 5 - 3) / 2) * 20) REM getInteger() ) * 2;
-
+   a := 6 + 8 * 5 ; -- ca vaut 46
+   b:= 7 * 2 + 3 * 2 + 6 * 3; -- donc 14 + 6 + 18 = 38
 end Main;

@@ -1089,8 +1089,12 @@ public class SemanticControls {
                 if (tds.getSymbol(valeur.getValue()) != null) {
                     return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
                 } else {
-
                     if (valeur.getType() == NodeType.CALL){
+                        if (valeur.getChildren().size() == 1){
+                            if (tds.getSymbol(valeur.getChildren().get(0).getValue()) != null) {
+                                return ((VariableSymbol) tds.getSymbol(valeur.getValue())).getType_variable();
+                            }
+                        }
                         if (valeur.getParent().getType() == NodeType.CALL){
                             controleSemantiqueAppelFonction(valeur, tds);
                             FunctionSymbol function = ((FunctionSymbol) tds.getSymbol(valeur.getChildren().get(0).getValue(), SymbolType.FUNCTION));
