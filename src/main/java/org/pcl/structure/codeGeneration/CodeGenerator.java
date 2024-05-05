@@ -624,8 +624,10 @@ public class CodeGenerator {
         write("; R0 = result , R1 = left operand, R2 = right operand");
         write("mul"); //multiplication function : to be called with "BL mul"
         incrementTabulation();
-        write("STMFD SP!, {LR, R0,R1,R2}");
+        write("STMFD SP!, {r11, r14}");
         write("MOV R11, R13");
+        write("LDR R1, [R11, #4*3] ; get the left operand");
+        write("LDR R2, [R11, #4*2] ; get the right operand");
         write("MOV R0, #0");
         decrementTabulation();
         write("mul_loop");
@@ -635,9 +637,9 @@ public class CodeGenerator {
         write("LSL R1, R1, #1");
         write("TST R2, R2");
         write("BNE mul_loop");
-        write("STR R0, [R11, #4*6] ; store the result in the stack");
+        write("STR R0, [R11, #4*4] ; store the result in the stack");
         write("MOV R13, R11 ; restore the stack pointer at the end of the function");
-        write("LDMFD SP!, {PC, R0,R1,R2}");
+        write("LDMFD SP!, {r11, PC}");
         decrementTabulation();
         write("; --- END MULTIPLICATION function ---");
     }
