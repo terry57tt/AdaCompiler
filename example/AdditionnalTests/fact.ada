@@ -16,4 +16,4 @@ procedure Fact is
       if n <= 1 then f := 1; else fact(n-1); f := n * f; end if;
    end;
 
-begin fact(10); printint(f); New_Line; End;
+begin fact(10); printint(f); End;

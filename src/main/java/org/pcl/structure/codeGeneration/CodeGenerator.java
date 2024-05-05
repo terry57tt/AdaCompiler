@@ -650,8 +650,10 @@ public class CodeGenerator {
         write("; at the end : R0 = result, R1 = remainder");
         write("div"); //division function : to be called with "BL mul"
         incrementTabulation();
-        write("STMFD SP!, {LR, R0-R5}");
+        write("STMFD SP!, {r11, r14}");
         write("MOV R11, R13 ; save the stack pointer");
+        write("LDR R1, [R11, #4*3] ; get the left operand");
+        write("LDR R2, [R11, #4*2] ; get the right operand");
         write("MOV R0, #0");
         write("MOV R3, #0");
         write("CMP R1, #0");
@@ -690,10 +692,10 @@ public class CodeGenerator {
         decrementTabulation();
         write("div_exit");
         incrementTabulation();
-        write("STR R0, [R11, #4*10] ; store the result in the stack");
-        write("STR R1, [R11, #4*9] ; store the remainder in the stack");
+        write("STR R0, [R11, #4*5] ; store the result in the stack");
+        write("STR R1, [R11, #4*4] ; store the remainder in the stack");
         write("MOV R13, R11 ; restore the stack pointer at the end of the function");
-        write("LDMFD SP!, {PC, R0-R5}");
+        write("LDMFD SP!, {r11, PC}");
         decrementTabulation();
     }
 
@@ -728,6 +730,17 @@ public class CodeGenerator {
         incrementTabulation();
         write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la fonction");
+        Symbol symbol = tds.getSymbol(nom_fonction);
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + nom_fonction);
+        }
+        if (symbol instanceof FunctionSymbol) {
+            int nb_params = ((FunctionSymbol) symbol).getNbParameters();
+            for (int i= 0; i < nb_params; i++) {
+                write("LDR r0, [r11, #4*" + (nb_params - i + 2) + "] ; Récupérer le paramètre " + (i + 1));
+                write("STMFD r13!, {r0} ; Dépiler le paramètre " + (i + 1));
+            }
+        }
         if (children.get(2).getType() == NodeType.BODY) {
             Node body = children.get(2);
             generateCode(body);
@@ -751,7 +764,7 @@ public class CodeGenerator {
     private void generateDeclProcedure(Node node) throws IOException {
         String nom_procedure = node.getChildren().get(0).getValue();
         List<Node> children = node.getChildren();
-        if (children.get(2).getType() == NodeType.DECLARATION) {
+        if (children.get(1).getType() == NodeType.DECLARATION) {
             Node declaration = children.get(2);
             generateCodeDeclarationFuncOrProc(declaration);
         }
@@ -759,6 +772,17 @@ public class CodeGenerator {
         incrementTabulation();
         write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la procédure");
+        Symbol symbol = tds.getSymbol(nom_procedure);
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + nom_procedure);
+        }
+        if (symbol instanceof ProcedureSymbol) {
+            int nb_params = ((ProcedureSymbol) symbol).getNbParameters();
+            for (int i= 0; i < nb_params; i++) {
+                write("LDR r0, [r11, #4*" + (nb_params - i + 1) + "] ; Récupérer le paramètre " + (i + 1));
+                write("STMFD r13!, {r0} ; Empiler le paramètre " + (i + 1));
+            }
+        }
         if (children.get(1).getType() == NodeType.BODY) {
             Node body = children.get(1);
             generateCode(body);
@@ -1001,7 +1025,7 @@ public class CodeGenerator {
             write("LDR R10, [R10] ; Load the previous static chain");
             write("SUBS R1, R1, #1 ; Decrement the imbrication number");
             write("BNE nonLocalAccessLoop ; Continue until the imbrication number is reached");
-            write("LDR R0, [R10, #" + (varSymbol.getDeplacement() -4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
+            write("LDR R0, [R10, #" + (varSymbol.getDeplacement() - 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
             write("SUB R13, R13, #4 ; Decrement the stack pointer");
             write("STR R0, [R13] ; Store the value in the stack");
             decrementTabulation();
@@ -1009,7 +1033,7 @@ public class CodeGenerator {
         } else {
             write("; --- LOCAL VARIABLE ACCESS ---");
             incrementTabulation();
-            write("LDR R0, [R11, #-" + (varSymbol.getDeplacement()+4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
+            write("LDR R0, [R11, #-" + (varSymbol.getDeplacement()+ 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
             write("SUB R13, R13, #4 ; Decrement the stack pointer");
             write("STR R0, [R13] ; Store the value in the stack");
             decrementTabulation();
