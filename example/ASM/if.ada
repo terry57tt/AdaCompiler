@@ -5,8 +5,12 @@ procedure Main is
 begin
    a := 5;
    if ((false=true and 5<8) or 18>=18) or (2=2 and not (1=1)) then
-      Put(1);
+      if (true) then
+       a := 5;
+       return;
+      end if;
+      a := 4;
    else
-      Put(0);
+      a := 3;
    end if;
 end Main;
