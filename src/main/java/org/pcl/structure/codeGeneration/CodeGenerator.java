@@ -349,6 +349,16 @@ public class CodeGenerator {
                 || node.getValue().equalsIgnoreCase("REM"))
         {
 
+            if (node.getChildren().size() == 1){
+                // case unary operator
+                String valueNegative = node.getChild(0).getValue();
+                write("MOV R0, #" + node.getValue() + valueNegative + " ; Load the value of the number: " + node.getValue() + valueNegative);
+                write("SUB R13, R13, #4");
+                write("STR R0, [R13]");
+                return;
+            }
+
+
             generateArithmeticRecursif( node.getChildren().get(0));
             generateArithmeticRecursif(node.getChildren().get(1));
 
@@ -377,7 +387,6 @@ public class CodeGenerator {
                     write("STR R0, [R13]"); // On stocke le résultat de la comparaison en pile
                     return;
                 case "*":
-                    //TODO
                     write("SUB R13, R13, #4 ; leave value for return");
                     write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
                     write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
@@ -390,7 +399,6 @@ public class CodeGenerator {
 
                     return;
                 case "/":
-                    //TODO
                     write("SUB R13, R13, #8 ; leave value for return");
                     write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
                     write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
@@ -404,7 +412,6 @@ public class CodeGenerator {
                     write("ADD R13, R13, #4 ; increment the stack pointer");
                     return;
                 case "REM":
-                    //TODO res reminder
                     write("SUB R13, R13, #8 ; leave value for return");
                     write("SUB R13, R13, #4; left operand"); // On décale le pointeur de pile
                     write("STR R1, [R13] ; left operand"); // On stocke l'op gauche de la comparaison en pile
@@ -433,8 +440,10 @@ public class CodeGenerator {
             write("SUB R13, R13, #4");
             write("STR R0, [R13]");
         } else {
+            System.out.println("token : " + node.getToken().getValue());
             generateAccessVariable(node);
         }
+
     }
 
     private void generateWhile(Node node) throws IOException {
