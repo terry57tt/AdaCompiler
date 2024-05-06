@@ -7,7 +7,6 @@ import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
 import org.pcl.structure.tree.SyntaxTree;
 
-import javax.lang.model.util.AbstractAnnotationValueVisitor14;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -216,6 +215,17 @@ public class CodeGenerator {
             return;
         }
 
+        // si c'est un caractère, on met son code ASCII en sommet de pile
+        try{
+            if(node.getToken().getType().equals(TokenType.CHARACTER)){
+                int ascii = value.charAt(0);
+                write("MOV R0, #" + ascii);
+                write("SUB R13, R13, #4");
+                write("STR R0, [R13] ; " + ascii + " en sommet de pile");
+                return;
+            }
+        }catch (Exception ignored){}
+
         // si c'est un nombre, on le met en sommet de pile
         try {
             Integer.parseInt(value);
@@ -223,7 +233,7 @@ public class CodeGenerator {
             write("SUB R13, R13, #4");
             write("STR R0, [R13] ; " + value + " en sommet de pile");
             return;
-        } catch (NumberFormatException ignored) {}
+        } catch (Exception ignored) {}
 
         // si "not", on fait le not de la valeur en sommet de pile
         if(value.equalsIgnoreCase("not")) {
@@ -309,7 +319,7 @@ public class CodeGenerator {
             return;
         }
 
-        // si c'est une variable
+        // si c'est une variable (si la variable est un caractère, on considère que son code ASCII va être mis en sommet de pile)
         generateAccessVariable(node);
     }
 

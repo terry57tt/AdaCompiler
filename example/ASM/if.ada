@@ -4,7 +4,7 @@ procedure Main is
     a : Integer;
 begin
    a := 5;
-   if ((false=true and 5<8) or 18>=18) or (2=2 and not (1=1)) then
+   if ((false=true and 5<8) or 'a'='b') or (2=2 and not (1=1)) then
       if (true) then
        a := 5;
        return;
