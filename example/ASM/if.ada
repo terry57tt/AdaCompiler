@@ -27,6 +27,7 @@ begin
       a := 20;
       Put("4");
    else
+
       a := 3;
       Put("3");
    end if;

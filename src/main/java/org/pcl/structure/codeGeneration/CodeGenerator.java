@@ -154,8 +154,13 @@ public class CodeGenerator {
         if (children.size() == 1) {
             String value_type = type_valeur(children.get(0));
             if (value_type.equalsIgnoreCase("integer")) {
-                write("MOV R0, #" + children.get(0).getValue());
-                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                if (children.get(0).getValue().equalsIgnoreCase("-")) {
+                    write("MOV R0, #-" + children.get(0).getChildren().get(0).getValue());
+                    write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                } else {
+                    write("MOV R0, #" + children.get(0).getValue());
+                    write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                }
             }
             else if (value_type.equalsIgnoreCase("character")) {
                 write("Char" + children.get(0).getValue().toUpperCase() + "  DCD  " + (int)children.get(0).getValue().charAt(0) + " ; '" + children.get(0).getValue() + "' en ASCII");
@@ -171,13 +176,16 @@ public class CodeGenerator {
                 write("MOV R0, #0");
                 write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
             }
+            else if (children.get(0).getType() == NodeType.CALL) {
+                generateCallFunctionProcedure(children.get(0));
+                mettre_valeur_retour_en_registre_apres_appel("r0", children.get(0).getChildren().get(0).getValue());
+                write("SUB R13, R13, #4");
+                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+            }
             else if (value_type.equalsIgnoreCase(" ")) {
                 generateAccessVariable(children.get(0));
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
-            }
-            else {
-                write("BL " + children.get(0).getValue().toUpperCase());
             }
         }
         else {
@@ -1038,9 +1046,7 @@ public class CodeGenerator {
         }
 
         //searching for the imbrication number of the declaration of the variable to access
-        System.out.println(nodeToAccess);
         Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
-        System.out.println(currentTds);
         Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
         varImbrication = varTds.getImbrication();
 
