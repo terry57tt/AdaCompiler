@@ -3,6 +3,7 @@ package org.pcl.grammaire;
 import org.pcl.ColorAnsiCode;
 import org.pcl.Token;
 //import org.pcl.ig.PCLWindows;
+import org.pcl.ig.PClWindows;
 import org.pcl.structure.automaton.TokenType;
 import org.pcl.structure.tree.Node;
 import org.pcl.structure.tree.NodeType;
@@ -1873,18 +1874,35 @@ public class Grammar {
             //then
             if (currentNode.getValue().contains("nodeIntr1")
                     && (currentNode.getParent().getValue().equals("nodeIntr1If") || currentNode.getParent().getValue().equals("nodeIntr1Elsif"))) {
-                if (currentNode.indexInBrothers()!=0 && currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("then")
-                        && currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).isFinal()) {
-                    currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).deleteFromParentTransferringChildTokenTo(currentNode); //delete node then
-                    currentNode.setValue("nodeIntr1Then");
-                    currentNode.setMeaningful(true);
-                }
-                if (currentNode.indexInBrothers()!=0 && currentNode.getParent().getChild(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("nodeIntr1Then")
-                        && !currentNode.getValue().contains("Elsif") && !currentNode.getValue().contains("Else")) {
-                    int indexCurrentNode = currentNode.indexInBrothers();
-                    currentNode.deleteFromParent();
-                    currentNode.getParent().getChild(indexCurrentNode - 1).addChild(currentNode);
-                }
+
+                    if (currentNode.indexInBrothers()!=0 && currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("then")
+                            && currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).isFinal()) {
+
+                        if (currentNode.getValue().equals("nodeIntr1If")){
+                            // case imbricated if
+                            int indexCurrentNode = currentNode.indexInBrothers();
+                            Node newNodeThen = new Node("nodeIntr1Then");
+                            newNodeThen.setMeaningful(true);
+                            newNodeThen.setToken(currentNode.getParent().getChildren().get(indexCurrentNode - 1).getToken()); //give then token to newNodeThen
+                            currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).deleteFromParent(); //delete node then
+                            currentNode.getParent().addChild(indexCurrentNode, newNodeThen);
+                            currentNode.deleteFromParent();
+                            newNodeThen.addChild(currentNode);
+                        } else {
+                            currentNode.getParent().getChildren().get(currentNode.indexInBrothers() - 1).deleteFromParentTransferringChildTokenTo(currentNode); //delete node then
+                            currentNode.setValue("nodeIntr1Then");
+                            currentNode.setMeaningful(true);
+                        }
+                    }
+                    if (currentNode.indexInBrothers()!=0
+                            && currentNode.getParent().getChild(currentNode.indexInBrothers() - 1).getValue().equalsIgnoreCase("nodeIntr1Then")
+                            && !currentNode.getValue().contains("Elsif") && !currentNode.getValue().contains("Else")) {
+                        // case : multiple instructions in then
+                        int indexCurrentNode = currentNode.indexInBrothers();
+                        currentNode.deleteFromParent();
+                        currentNode.getParent().getChild(indexCurrentNode - 1).addChild(currentNode);
+                    }
+
             }
             //loop
             if (currentNode.getValue().equalsIgnoreCase("loop") && currentNode.isFinal()) {
@@ -2138,8 +2156,9 @@ public class Grammar {
                 currentNode.setMeaningful(true);
             }
             if (currentNode.getValue().equals("nodeInstrstar") && !currentNode.isMeaningful()) {
+                int indexCurrentNode = currentNode.indexInBrothers();
                 currentNode.deleteFromParent();
-                currentNode.getParent().addChildren(currentNode.getChildren());
+                currentNode.getParent().addChildren(indexCurrentNode, currentNode.getChildren());
                 currentNode.setMeaningful(true);
             }
             if(currentNode.getValue().equals("..") && currentNode.getParent().getValue().equals("nodeIntr1For")){
