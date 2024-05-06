@@ -210,6 +210,9 @@ public class CodeGenerator {
         // si c'est un appel de fonction
         if (node.getType() == NodeType.CALL) {
             generateCallFunctionProcedure(node);
+            mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue());
+            write("SUB R13, R13, #4");
+            write("STR R0, [R13]");
             return;
         }
 
@@ -451,6 +454,8 @@ public class CodeGenerator {
     }
 
     private void generateIf(Node node) throws IOException {
+        int ifcounter_tmp = ifCounter;
+        ifCounter++;
         List<Node> children = node.getChildren();
         Node condition = children.get(0);
         Node body = children.get(1);
@@ -466,14 +471,17 @@ public class CodeGenerator {
                 }
             }
         }
-        write("IF" + ifCounter);
+        write("IF" + ifcounter_tmp);
+        incrementTabulation();
         generateBoolean(condition);
         write("LDMFD   r13!, {r0}");
         write("CMP r0, #0");
         if (elseif.size() > 0){
-            write("BEQ " + "ELSIF" + ifCounter + "0");
+            write("BEQ " + "ELSIF" + ifcounter_tmp + "0");
+            incrementTabulation();
             generateCode(body);
-            write("B " + "EndIf" + ifCounter);
+            decrementTabulation();
+            write("B " + "EndIf" + ifcounter_tmp);
             /*
              * IF CMP r0, #0
              * BEQ ElSIF0
@@ -496,55 +504,58 @@ public class CodeGenerator {
                 Node elseifnode = elseif.get(i);
                 Node elseifcondition = elseifnode.getChildren().get(0);
                 Node elseifbody = elseifnode.getChildren().get(1);
-                write("ELSIF" + ifCounter + i);
+                write("ELSIF" + ifcounter_tmp + i);
+                incrementTabulation();
                 generateBoolean(elseifcondition);
                 write("LDMFD   r13!, {r0}");
                 write("CMP r0, #0");
-                write("BEQ " + "ELSIF" + ifCounter + (i+1));
+                write("BEQ " + "ELSIF" + ifcounter_tmp + (i+1));
                 generateCode(elseifbody);
-                write("B " + "EndIf" + ifCounter);
+                write("B " + "EndIf" + ifcounter_tmp);
+                decrementTabulation();
             }
             Node elseifnode = elseif.get(elseif.size() - 1);
             Node elseifcondition = elseifnode.getChildren().get(0);
             Node elseifbody = elseifnode.getChildren().get(1);
-            write("ELSIF" + ifCounter + (elseif.size() - 1));
+            write("ELSIF" + ifcounter_tmp + (elseif.size() - 1));
             generateBoolean(elseifcondition);
             write("LDMFD   r13!, {r0}");
             write("CMP r0, #0");
             if (elsenode != null){
-                write("BEQ " + "ELSE" + ifCounter);
+                write("BEQ " + "ELSE" + ifcounter_tmp);
                 generateCode(elseifbody);
-                write("B " + "EndIf" + ifCounter);
-                write("ELSE" + ifCounter);
+                write("B " + "EndIf" + ifcounter_tmp);
+                write("ELSE" + ifcounter_tmp);
                 generateCode(elsenode);
-                write("B " + "EndIf" + ifCounter);
+                write("B " + "EndIf" + ifcounter_tmp);
             }
             else {
-                write("BEQ " + "EndIf" + ifCounter);
+                write("BEQ " + "EndIf" + ifcounter_tmp);
                 generateCode(elseifbody);
-                write("B " + "EndIf" + ifCounter);
+                write("B " + "EndIf" + ifcounter_tmp);
             }
         }
         else {
             if (elsenode != null) {
-                write("BEQ " + "Else" + ifCounter);
+                write("BEQ " + "Else" + ifcounter_tmp);
                 generateCode(body);
-                write("B " + "EndIf" + ifCounter);
-                write("Else" + ifCounter);
+                write("B " + "EndIf" + ifcounter_tmp);
+                write("Else" + ifcounter_tmp);
                 generateCode(elsenode);
-                write("B " + "EndIf" + ifCounter);
+                write("B " + "EndIf" + ifcounter_tmp);
             }
             else {
-                write("BEQ " + "EndIf" + ifCounter);
+                write("BEQ " + "EndIf" + ifcounter_tmp);
                 generateCode(body);
-                write("B " + "EndIf" + ifCounter);
+                write("B " + "EndIf" + ifcounter_tmp);
             }
         }
-        write ("EndIf" + ifCounter);
-        ifCounter++;
+        write ("EndIf" + ifcounter_tmp);
     }
 
     private void generateFor(Node node) throws IOException {
+        int forCounter_tmp = forCounter;
+        forCounter++;
         //Empiler la borne inf, puis la borne sup, puis l'incrément
         List<Node> children = node.getChildren();
         String variable_compteur = children.get(0).getValue();
@@ -599,7 +610,7 @@ public class CodeGenerator {
             write("STMFD r13!, {r0} ;empiler l'incrément qui démarre à la borne inf");
         }
         //Pour le for
-        write("FOR" + forCounter);
+        write("FOR" + forCounter_tmp);
         write("LDR r0, [r13] ; Récupérer le compteur");
         if (direction.equalsIgnoreCase("reverse")) {
             write("LDR r1, [r13, #8] ; Récupérer borne inf");
@@ -607,18 +618,18 @@ public class CodeGenerator {
             write("LDR r1, [r13, #4] ; Récupérer borne sup");
         }
         write("CMP r0, r1");
-        write("BEQ end_for" + forCounter);
+        write("BEQ end_for" + forCounter_tmp);
         generateCode(body);
         write("LDR r0, [r13] ; Récupérer le compteur");
         if (direction.equalsIgnoreCase("reverse")) {
             write("SUB r0, r0, #1 ; Décrémenter le compteur");
         } else {
             write("ADD r0, r0, #1 ; Incrémenter le compteur");
+            write("ADD r0, r0, #1 ; Incrémenter le compteur");
         }
         write("STR r0, [r13] ; Sauvegarder le compteur");
-        write("B FOR" + forCounter);
-        write("end_for" + forCounter);
-        forCounter++;
+        write("B FOR" + forCounter_tmp);
+        write("end_for" + forCounter_tmp);
     }
 
     private void generateMultiplyFunction() throws IOException {
@@ -1013,7 +1024,9 @@ public class CodeGenerator {
         }
 
         //searching for the imbrication number of the declaration of the variable to access
+        System.out.println(nodeToAccess);
         Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
+        System.out.println(currentTds);
         Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
         varImbrication = varTds.getImbrication();
 
