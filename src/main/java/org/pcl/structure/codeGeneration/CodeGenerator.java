@@ -37,6 +37,10 @@ public class CodeGenerator {
     private int declFuncProcCounter = 0;
     private int nonLocalAccessAffectationLoopCounter = 0;
 
+    int nonLocalAccessLoopCounter = 0;
+
+    int chainageStatiqueLoopCounter = 0;
+
     public CodeGenerator(SyntaxTree ast, Tds tds) throws IOException {
         if (ast == null || tds == null) {
             throw new IllegalArgumentException("ast et tds ne doivent pas être null");
@@ -156,48 +160,48 @@ public class CodeGenerator {
             if (value_type.equalsIgnoreCase("integer")) {
                 if (children.get(0).getValue().equalsIgnoreCase("-")) {
                     write("MOV R0, #-" + children.get(0).getChildren().get(0).getValue());
-                    write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                    write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
                 } else {
                     write("MOV R0, #" + children.get(0).getValue());
-                    write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                    write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
                 }
             }
             else if (value_type.equalsIgnoreCase("character")) {
                 write("Char" + children.get(0).getValue().toUpperCase() + "  DCD  " + (int)children.get(0).getValue().charAt(0) + " ; '" + children.get(0).getValue() + "' en ASCII");
                 write("LDR R0, =Char" + children.get(0).getValue().toUpperCase());
                 write("LDR r0, [r0]");
-                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase("boolean")) {
                 write("MOV R0, #" + children.get(0).getValue());
-                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase("null")) {
                 write("MOV R0, #0");
-                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (children.get(0).getType() == NodeType.CALL) {
                 generateCallFunctionProcedure(children.get(0));
                 mettre_valeur_retour_en_registre_apres_appel("r0", children.get(0).getChildren().get(0).getValue());
                 write("SUB R13, R13, #4");
-                write("STR R0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase(" ")) {
                 generateAccessVariable(children.get(0));
                 write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
         }
         else {
             if (children.get(0).getType() == NodeType.ADDITION || children.get(0).getType() == NodeType.SUBSTRACTION || children.get(0).getType() == NodeType.MULTIPLY || children.get(0).getType() == NodeType.DIVIDE || children.get(0).getType() == NodeType.REM) {
                 generateArithmetic(children.get(0));
                 write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (children.get(0).getType() == NodeType.COMPARATOR) {
                 generateBoolean(children.get(0));
                 write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4*2] ; Sauvegarder la valeur de retour");
+                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
         }
     }
@@ -764,7 +768,7 @@ public class CodeGenerator {
         }
         write(nom_fonction.toUpperCase()); // Label de la fonction en majuscule
         incrementTabulation();
-        write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
+        write("STMFD r13!, {r10, r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la fonction");
         Symbol symbol = tds.getSymbol(nom_fonction);
         if (symbol == null) {
@@ -773,7 +777,7 @@ public class CodeGenerator {
         if (symbol instanceof FunctionSymbol) {
             int nb_params = ((FunctionSymbol) symbol).getNbParameters();
             for (int i= 0; i < nb_params; i++) {
-                write("LDR r0, [r11, #4*" + (nb_params - i + 2) + "] ; Récupérer le paramètre " + (i + 1));
+                write("LDR r0, [r11, #4*" + (nb_params - i + 3) + "] ; Récupérer le paramètre " + (i + 1));
                 write("STMFD r13!, {r0} ; Dépiler le paramètre " + (i + 1));
             }
         }
@@ -793,7 +797,7 @@ public class CodeGenerator {
             }
         }
         write("MOV r13, r11 ; Restaurer le pointeur de pile original");
-        write("LDMFD r13!, {r11, PC} ; Restaurer les registres et retourner");
+        write("LDMFD r13!, {r10, r11, PC} ; Restaurer les registres et retourner");
         decrementTabulation();
     }
 
@@ -806,7 +810,7 @@ public class CodeGenerator {
         }
         write(nom_procedure.toUpperCase()); // Label de la procédure en majuscule
         incrementTabulation();
-        write("STMFD r13!, {r11, r14} ; Sauvegarde des registres FP et LR en pile");
+        write("STMFD r13!, {r10, r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la procédure");
         Symbol symbol = tds.getSymbol(nom_procedure);
         if (symbol == null) {
@@ -815,7 +819,7 @@ public class CodeGenerator {
         if (symbol instanceof ProcedureSymbol) {
             int nb_params = ((ProcedureSymbol) symbol).getNbParameters();
             for (int i= 0; i < nb_params; i++) {
-                write("LDR r0, [r11, #4*" + (nb_params - i + 1) + "] ; Récupérer le paramètre " + (i + 1));
+                write("LDR r0, [r11, #4*" + (nb_params - i + 2) + "] ; Récupérer le paramètre " + (i + 1));
                 write("STMFD r13!, {r0} ; Empiler le paramètre " + (i + 1));
             }
         }
@@ -835,9 +839,18 @@ public class CodeGenerator {
             }
         }
         write("MOV r13, r11 ; Restaurer le pointeur de pile original");
-        write("LDMFD r13!, {r11, PC} ; Restaurer les registres et retourner");
+        write("LDMFD r13!, {r10, r11, PC} ; Restaurer les registres et retourner");
         decrementTabulation();
     }
+
+    /*avant d'appeler une fonction, on regarde le bloc dans lequel est Nx on est, le bloc dans lequel est déclaré la
+     fonction Ny, et pour trouver le chainage statique actuel, on va remonter Nx - Ny + 1 chainages au dessus.
+
+    Ensuite pour accéder à une variable qui n'est pas local, on fait pareil, on regarde l'endroit où elle est déclaré,
+    on regarde où on est, on remonte Nx - Ny chainage statique de fonctions tel qu'ils ont été calculé au dessus pour
+    y arriver.
+
+    Attention pour pas tout casser sur le placement des valeurs de retour et les paramètres, ajouter 1 partout*/
 
     private void generateCallFunctionProcedure(Node node) throws IOException {
         /* Quand j'appelle une fonction ou une procédure, je dois garder une place pour la valeur de retour si c'est une fonction
@@ -851,7 +864,6 @@ public class CodeGenerator {
             generateCodePut(node);
             return;
         }
-        int shift = 0;
         for (int i = 1; i < children.size(); i++) {
             String value_type = type_valeur(children.get(i));
             if (value_type.equalsIgnoreCase("integer")) {
@@ -893,10 +905,67 @@ public class CodeGenerator {
         if (symbol instanceof FunctionSymbol) {
             write("SUB r13, r13, #4 ; laisser une place pour la valeur de retour");
         }
-        write("; TODO : Chainage statique");
+        write("; Chainage statique");
+        generationChainageStatiqueFonction(node, nom_fonction);
+        write("; fin de la mise en place du chainage statique");
         write("BL " + nom_fonction.toUpperCase());
     }
 
+    /*avant d'appeler une fonction, on regarde le bloc dans lequel est Nx on est, le bloc dans lequel est déclaré la
+     fonction Ny, et pour trouver le chainage statique actuel, on va remonter Nx - Ny + 1 chainages au dessus.
+
+    Ensuite pour accéder à une variable qui n'est pas local, on fait pareil, on regarde l'endroit où elle est déclaré,
+    on regarde où on est, on remonte Nx - Ny chainage statique de fonctions tel qu'ils ont été calculé au dessus pour
+    y arriver.
+
+    Attention pour pas tout casser sur le placement des valeurs de retour et les paramètres, ajouter 1 partout*/
+    private void generationChainageStatiqueFonction(Node node, String nomFonction) throws IOException {
+        int currentImbrication = 0;
+        int fonctionImbrication = 0;
+        Tds currentTds = tds;
+
+        Node callNode = node;
+
+        //searching for the tds (imbrication number) of the varToAffect
+        while(callNode.getParent() != null && callNode.getType() != NodeType.FILE && callNode.getType() != NodeType.DECL_FUNC && callNode.getType() != NodeType.DECL_PROC){
+            if(callNode.getParent() != null) callNode = callNode.getParent();
+            if (callNode.getParent() == null) break;
+        }
+
+        if(callNode.getType() != null && callNode.getType() == NodeType.DECL_FUNC){
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(callNode.firstChild().getValue());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
+            currentImbrication = currentTds.getImbrication();
+
+        } else if (callNode.getType() != null && callNode.getType() == NodeType.DECL_PROC) {
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(callNode.firstChild().getValue());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
+            currentImbrication = currentTds.getImbrication();
+        }
+
+        Symbol symbol = tds.getSymbol(nomFonction);
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + nomFonction);
+        }
+        Tds fonctionTds = currentTds.getTDSfromSymbol(nomFonction);
+        fonctionImbrication = fonctionTds.getImbrication();
+        int shift = 1;
+        if (callNode.getType() == NodeType.FILE) {
+            shift = 0;
+        }
+        //sachant que techniquement le chainage statique se trouve en r10
+        write("MOV R0, #" + (currentImbrication - fonctionImbrication + shift) + " ; nombre de chainage à remonter");
+        write("MOV R10, R11 ;");
+        write("chainageStatiqueLoop" + chainageStatiqueLoopCounter);
+        write("CMP R0, #0 ;");
+        write("BEQ chainageStatiqueEnd" + chainageStatiqueLoopCounter + " ;");
+        write("ADD R10, R10, #4 ; R10 = static chain");
+        write("LDR R10, [R10] ; Load the previous static chain");
+        write("SUBS R0, R0, #1 ; Decrement the imbrication number");
+        write("BNE chainageStatiqueLoop" + chainageStatiqueLoopCounter + " ; Continue until the imbrication number is reached");
+        write("chainageStatiqueEnd" + chainageStatiqueLoopCounter);
+        chainageStatiqueLoopCounter++;
+    }
 
 
     private void generateDeclVar(Node node) throws IOException {
@@ -996,7 +1065,7 @@ public class CodeGenerator {
                     decrementTabulation();
                     write("nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter);
                     incrementTabulation();
-                    write("ADD R10, R10, #8 ; R10 = static chain");
+                    write("ADD R10, R10, #4 ; R10 = static chain");
                     write("LDR R10, [R10] ; Load the previous static chain");
                     write("SUBS R1, R1, #1 ; Decrement the imbrication number");
                     write("BNE nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter + " ; Continue until the imbrication number is reached");
@@ -1056,17 +1125,18 @@ public class CodeGenerator {
             write("MOV R1, #" + (currentImbrication - varImbrication) + " ; Move to R1 the imbrication number of the variable to access");
             write("MOV R10, R11 ; Save the current BP");
             decrementTabulation();
-            write("nonLocalAccessLoop");
+            write("nonLocalAccessLoop" + nonLocalAccessLoopCounter);
             incrementTabulation();
-            write("ADD R10, R10, #8 ; R10 = static chain");
+            write("ADD R10, R10, #4 ; R10 = static chain");
             write("LDR R10, [R10] ; Load the previous static chain");
             write("SUBS R1, R1, #1 ; Decrement the imbrication number");
-            write("BNE nonLocalAccessLoop ; Continue until the imbrication number is reached");
+            write("BNE nonLocalAccessLoop" + nonLocalAccessLoopCounter + " ; Continue until the imbrication number is reached");
             write("LDR R0, [R10, #" + (varSymbol.getDeplacement() - 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
             write("SUB R13, R13, #4 ; Decrement the stack pointer");
             write("STR R0, [R13] ; Store the value in the stack");
             decrementTabulation();
             write("; --- END NON LOCAL VARIABLE ACCESS ---");
+            nonLocalAccessLoopCounter++;
         } else {
             write("; --- LOCAL VARIABLE ACCESS ---");
             incrementTabulation();
