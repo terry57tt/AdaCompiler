@@ -438,8 +438,6 @@ public class CodeGenerator {
             throw new IllegalArgumentException("No body found in while node");
         }
 
-
-
         write("; ---  WHILE generation for " + whileLabel + number + " ---");
         write(whileLabel + number);
         incrementTabulation();
@@ -464,14 +462,17 @@ public class CodeGenerator {
     }
 
     private void generateIf(Node node) throws IOException {
-        int ifcounter_tmp = ifCounter;
+        int if_counter_tmp = ifCounter;
         ifCounter++;
+
         List<Node> children = node.getChildren();
-        Node condition = children.get(0);
-        Node body = children.get(1);
-        List<Node> elseif = new ArrayList<>();
+        Node condition = children.get(0); // 1 : condition
+        Node body = children.get(1); // 2 : body
+
+        List<Node> elseif = new ArrayList<>(); // 3 : elseif et le dernier body est le else
         Node elsenode = null;
-        if (children.size() > 2){
+
+        if (children.size() > 2){ // build list of elseif and else
             for (int i = 2 ; i < children.size(); i++){
                 if (children.get(i).getType() == NodeType.ELSIF) {
                     elseif.add(children.get(i));
@@ -481,17 +482,20 @@ public class CodeGenerator {
                 }
             }
         }
-        write("IF" + ifcounter_tmp);
+
+        write("IF" + if_counter_tmp); // first if
         incrementTabulation();
         generateBoolean(condition);
+
+        // evaluate the condition
         write("LDMFD   r13!, {r0}");
         write("CMP r0, #0");
-        if (elseif.size() > 0){
-            write("BEQ " + "ELSIF" + ifcounter_tmp + "0");
+        if (!elseif.isEmpty()){
+            write("BEQ " + "ELSIF" + if_counter_tmp + "0");
             incrementTabulation();
             generateCode(body);
             decrementTabulation();
-            write("B " + "EndIf" + ifcounter_tmp);
+            write("B " + "EndIf" + if_counter_tmp);
             /*
              * IF CMP r0, #0
              * BEQ ElSIF0
@@ -514,53 +518,53 @@ public class CodeGenerator {
                 Node elseifnode = elseif.get(i);
                 Node elseifcondition = elseifnode.getChildren().get(0);
                 Node elseifbody = elseifnode.getChildren().get(1);
-                write("ELSIF" + ifcounter_tmp + i);
+                write("ELSIF" + if_counter_tmp + i);
                 incrementTabulation();
                 generateBoolean(elseifcondition);
                 write("LDMFD   r13!, {r0}");
                 write("CMP r0, #0");
-                write("BEQ " + "ELSIF" + ifcounter_tmp + (i+1));
+                write("BEQ " + "ELSIF" + if_counter_tmp + (i+1));
                 generateCode(elseifbody);
-                write("B " + "EndIf" + ifcounter_tmp);
+                write("B " + "EndIf" + if_counter_tmp);
                 decrementTabulation();
             }
             Node elseifnode = elseif.get(elseif.size() - 1);
             Node elseifcondition = elseifnode.getChildren().get(0);
             Node elseifbody = elseifnode.getChildren().get(1);
-            write("ELSIF" + ifcounter_tmp + (elseif.size() - 1));
+            write("ELSIF" + if_counter_tmp + (elseif.size() - 1));
             generateBoolean(elseifcondition);
             write("LDMFD   r13!, {r0}");
             write("CMP r0, #0");
             if (elsenode != null){
-                write("BEQ " + "ELSE" + ifcounter_tmp);
+                write("BEQ " + "ELSE" + if_counter_tmp);
                 generateCode(elseifbody);
-                write("B " + "EndIf" + ifcounter_tmp);
-                write("ELSE" + ifcounter_tmp);
+                write("B " + "EndIf" + if_counter_tmp);
+                write("ELSE" + if_counter_tmp);
                 generateCode(elsenode);
-                write("B " + "EndIf" + ifcounter_tmp);
+                write("B " + "EndIf" + if_counter_tmp);
             }
             else {
-                write("BEQ " + "EndIf" + ifcounter_tmp);
+                write("BEQ " + "EndIf" + if_counter_tmp);
                 generateCode(elseifbody);
-                write("B " + "EndIf" + ifcounter_tmp);
+                write("B " + "EndIf" + if_counter_tmp);
             }
         }
         else {
             if (elsenode != null) {
-                write("BEQ " + "Else" + ifcounter_tmp);
+                write("BEQ " + "Else" + if_counter_tmp);
                 generateCode(body);
-                write("B " + "EndIf" + ifcounter_tmp);
-                write("Else" + ifcounter_tmp);
+                write("B " + "EndIf" + if_counter_tmp);
+                write("Else" + if_counter_tmp);
                 generateCode(elsenode);
-                write("B " + "EndIf" + ifcounter_tmp);
+                write("B " + "EndIf" + if_counter_tmp);
             }
             else {
-                write("BEQ " + "EndIf" + ifcounter_tmp);
+                write("BEQ " + "EndIf" + if_counter_tmp);
                 generateCode(body);
-                write("B " + "EndIf" + ifcounter_tmp);
+                write("B " + "EndIf" + if_counter_tmp);
             }
         }
-        write ("EndIf" + ifcounter_tmp);
+        write ("EndIf" + if_counter_tmp);
     }
 
     private void generateFor(Node node) throws IOException {
