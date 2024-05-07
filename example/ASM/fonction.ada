@@ -14,7 +14,7 @@ procedure Main is
    begin
       Simple_Procedure;
       return 1000;
-   end Return_Int;
+   end;
 
 begin
    Simple_Procedure;
