@@ -2112,7 +2112,8 @@ public class Grammar {
                      && !currentNode.getParent().getValue().contains("Multiplication")
                      && !currentNode.getParent().getValue().contains("Division")
                      && !currentNode.getParent().getValue().contains("Rem")
-                     && !currentNode.getParent().getValue().contains("Return")){
+                     && !currentNode.getParent().getValue().contains("Return")
+                     && !currentNode.getParent().getValue().equalsIgnoreCase("return")){
                  Node newNode = new Node("call");
                  newNode.setMeaningful(true);
                  currentNode.getParent().addChild(newNode);
