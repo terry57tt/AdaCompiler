@@ -3,31 +3,27 @@ with Ada.Text_IO; use Ada.Text_IO;
 procedure Main is
         Number : Integer;
         Result : Boolean;
+        iter: Integer := 1;
 
-
-    -- Function to calculate the integer square root using binary search
-    function Integer_Sqrt(X : Integer) return Integer is
-        Low : Integer := 0;
-        High : Integer := X;
-        Mid : Integer;
+    -- Function that calculate abs val
+    function abs_val(X: Integer) return Integer is
     begin
-        if X < 0 then
-            return -1; -- Return -1 for negative numbers
-        elsif X < 2 then
-            return X; -- Return X for 0 or 1
-        else
-            while Low < High loop
-                Mid := (Low + High + 1) / 2; -- Adjusting midpoint towards high
-                if Mid * Mid <= X then
-                    Low := Mid;
-                else
-                    High := Mid - 1;
-                end if;
-            end loop;
-            return Low;
+        if (x < 0) then
+            return x * (-1);
         end if;
-    end Integer_Sqrt;
+        return x;
+    end abs_val;
 
+     -- Function that do the sqrt
+     function Integer_Sqrt(X : Integer; Guess : Integer := 1; Epsilon : Integer := 1) return Integer is
+            New_Guess : Integer := (Guess + X / Guess) / 2;  -- Integer division
+        begin
+            if abs_val(New_Guess - Guess) <= Epsilon then
+                return New_Guess;
+            else
+                return Integer_Sqrt(X, New_Guess, Epsilon);
+            end if;
+     end Integer_Sqrt;
 
     -- Function to check if a number is prime
     function Is_Prime(Num : Integer) return Boolean is
@@ -51,7 +47,7 @@ procedure Main is
 
 -- Main procedure
 begin
-    for iter in 1..15 loop
+    while iter <= 15  loop
         Number := iter;
         Result := Is_Prime(Number);
         if Result = true then
@@ -59,6 +55,7 @@ begin
         else
             put(0);
         end if;
+        iter := iter + 1;
     end loop;
 
 end Main;
