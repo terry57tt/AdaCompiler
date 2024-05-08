@@ -98,7 +98,7 @@ public class CodeGenerator {
                     return;
                 case FOR:
                     generateFor(node);
-                    break;
+                    return;
                 case WHILE:
                     generateWhile(node);
                     return;
@@ -594,7 +594,7 @@ public class CodeGenerator {
         forCounter++;
         //Empiler la borne inf, puis la borne sup, puis l'incrément
         List<Node> children = node.getChildren();
-        String variable_compteur = children.get(0).getValue();
+        String variable_compteur = children.get(0).getValue(); // Nom de la variable compteur
         String direction;
         Node borne_inf;
         Node borne_sup;
@@ -661,11 +661,11 @@ public class CodeGenerator {
             write("SUB r0, r0, #1 ; Décrémenter le compteur");
         } else {
             write("ADD r0, r0, #1 ; Incrémenter le compteur");
-            write("ADD r0, r0, #1 ; Incrémenter le compteur");
         }
         write("STR r0, [r13] ; Sauvegarder le compteur");
         write("B FOR" + forCounter_tmp);
         write("end_for" + forCounter_tmp);
+        write("ADD r13,r13,#12"); // Dépiler les bornes et le compteur
     }
 
     private void generateMultiplyFunction() throws IOException {
