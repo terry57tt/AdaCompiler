@@ -37,6 +37,7 @@ procedure Main is
 
         for I in 2 .. A loop
             if Num REM I = 0 then
+                a:= I;
                 return False;
             end if;
         end loop;

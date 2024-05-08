@@ -438,7 +438,6 @@ public class CodeGenerator {
             write("SUB R13, R13, #4");
             write("STR R0, [R13]");
         } else {
-            System.out.println("token : " + node.getToken().getValue());
             generateAccessVariable(node);
         }
 
@@ -1027,6 +1026,7 @@ public class CodeGenerator {
 //        if(varToAffect.getType() == FILE){
 //            varImbrication = 0;
 //        } else {
+
         Symbol varSymbol;
         if (node.firstChild().getType() != DECL_VAR) {
             varSymbol = currentTds.getSymbol(node.firstChild().getValue());
@@ -1056,6 +1056,7 @@ public class CodeGenerator {
             else {
                 if (varImbrication == currentImbrication) {
                     //local variable case
+                    System.out.println("coucou = " + symbol.getName() + " " + symbol.getDeplacement() + " " + symbol.getType());
                     int depl = symbol.getDeplacement();
                     write("; --- AFFECTATION of variable " + symbol.getName() + " ---");
                     generateArithmetic(node.getChild(1));
@@ -1120,6 +1121,22 @@ public class CodeGenerator {
             currentTds = tds.getTDSfonction(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
+
+        //Pour les variables dans les boucles for, il faut savoir combien on en a croisé
+
+        Node testFor = nodeToAccess;
+        int nbFor_a_remonter = 0;
+        while(testFor.getType() != FILE){
+            testFor = testFor.getParent();
+            if (testFor.getType() == FOR){
+                if (testFor.getChildren().get(0).getValue().equalsIgnoreCase(nodeToAccess.getValue())){
+                    write("LDR r0, [r13, #4*"+ nbFor_a_remonter*3 + "]");
+                    return;
+                }
+                nbFor_a_remonter++;
+            }
+        }
+
 
         //searching for the imbrication number of the declaration of the variable to access
         Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
