@@ -15,7 +15,7 @@ procedure Main is
     end abs_val;
 
      -- Function that do the sqrt
-     function Integer_Sqrt(X : Integer; Guess : Integer := 1; Epsilon : Integer := 1) return Integer is
+     function Integer_Sqrt(X : Integer; Guess : Integer; Epsilon : Integer) return Integer is
             New_Guess : Integer := (Guess + X / Guess) / 2;  -- Integer division
         begin
             if abs_val(New_Guess - Guess) <= Epsilon then
@@ -33,7 +33,7 @@ procedure Main is
             return False;
         end if;
 
-        A := Integer_Sqrt(Num);
+        A := Integer_Sqrt(Num, 1, 1);
 
         for I in 2 .. A loop
             if Num REM I = 0 then
