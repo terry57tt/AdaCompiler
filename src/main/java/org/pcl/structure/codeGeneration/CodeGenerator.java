@@ -180,6 +180,15 @@ public class CodeGenerator {
             else if (value_type.equalsIgnoreCase("null")) {
                 write("MOV R0, #0");
                 write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
+            } else if (children.get(0).getType() == NodeType.ADDITION || children.get(0).getType() == NodeType.SUBSTRACTION || children.get(0).getType() == NodeType.MULTIPLY || children.get(0).getType() == NodeType.DIVIDE || children.get(0).getType() == NodeType.REM) {
+                generateArithmetic(children.get(0));
+                write("LDMFD   r13!, {r0}");
+                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
+            }
+            else if (children.get(0).getType() == NodeType.COMPARATOR) {
+                generateBoolean(children.get(0));
+                write("LDMFD   r13!, {r0}");
+                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (children.get(0).getType() == NodeType.CALL) {
                 generateCallFunctionProcedure(children.get(0));
@@ -189,18 +198,6 @@ public class CodeGenerator {
             }
             else if (value_type.equalsIgnoreCase(" ")) {
                 generateAccessVariable(children.get(0));
-                write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
-            }
-        }
-        else {
-            if (children.get(0).getType() == NodeType.ADDITION || children.get(0).getType() == NodeType.SUBSTRACTION || children.get(0).getType() == NodeType.MULTIPLY || children.get(0).getType() == NodeType.DIVIDE || children.get(0).getType() == NodeType.REM) {
-                generateArithmetic(children.get(0));
-                write("LDMFD   r13!, {r0}");
-                write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
-            }
-            else if (children.get(0).getType() == NodeType.COMPARATOR) {
-                generateBoolean(children.get(0));
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
@@ -1126,6 +1123,9 @@ public class CodeGenerator {
 
         //searching for the imbrication number of the declaration of the variable to access
         Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
+        if (varSymbol == null) {
+            throw new RuntimeException("var symbol not found: " + nodeToAccess.getValue() + "current tds :\n" + currentTds);
+        }
         Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
         varImbrication = varTds.getImbrication();
 
