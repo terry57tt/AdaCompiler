@@ -179,8 +179,8 @@ public class Tds {
                     String type = ((VariableSymbol) symbol).getType_variable();
                     if (type.equalsIgnoreCase("integer")) {
                         depl += 4;
-                    } else  if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("character")) {
-                        depl++;
+                    } else  if (type.equalsIgnoreCase("Boolean") || type.equalsIgnoreCase("character") ) {
+                        depl += 4;
                     } else {
                         symbol.setDeplacement(null);
                     }
