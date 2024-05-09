@@ -2102,6 +2102,7 @@ public class Grammar {
             }
              // function and procedure call without parameters
              if(currentNode.getToken() != null && currentNode.getToken().getType() == TokenType.IDENTIFIER && isNodeNextToken(currentNode, ";")
+                     && currentNode.getParent().getValue().equals("body")
                      && !currentNode.getParent().getValue().equals(":=")
                      && !currentNode.getParent().getValue().equals("call")
                      && !isNodePreviousToken(currentNode, "end")
