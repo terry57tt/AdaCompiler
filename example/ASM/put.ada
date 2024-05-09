@@ -1,7 +1,8 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Main is
-    a : Integer := 1000;
+    b : Integer := 5;
+    a : Integer := b + 2;
 
     procedure coucou(x : Integer) is
     begin

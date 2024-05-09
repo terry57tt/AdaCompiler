@@ -182,7 +182,7 @@ public class Tds {
                     } else  if (type.equalsIgnoreCase("Boolean") || type.equalsIgnoreCase("character") ) {
                         depl += 4;
                     } else {
-                        symbol.setDeplacement(null);
+                        depl += 4;
                     }
                 }
                 case TYPE_RECORD -> {
