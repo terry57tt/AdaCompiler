@@ -174,7 +174,7 @@ public class CodeGenerator {
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase("boolean")) {
-                write("MOV R0, #" + children.get(0).getValue());
+                write("MOV R0, #" + (children.get(0).getValue().equalsIgnoreCase("true") ? "1" : "0"));
                 write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
             else if (value_type.equalsIgnoreCase("null")) {
