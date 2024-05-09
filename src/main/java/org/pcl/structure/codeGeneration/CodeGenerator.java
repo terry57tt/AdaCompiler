@@ -976,11 +976,28 @@ public class CodeGenerator {
 
     private void generateDeclVar(Node node) throws IOException {
         String nom_variable = node.getChildren().get(0).getValue();
-        write("; --- DECLARATION of variable " + nom_variable + " ---");
-        write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
-        write("; --- END DECLARATION of variable " + nom_variable + " ---");
+        Symbol symbol = tds.getSymbol(nom_variable);
+        if (symbol == null) {
+            throw new IllegalArgumentException("Symbol not found in tds : " + nom_variable);
+        }
+        if (symbol instanceof TypeRecordSymbol) {
+            TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) symbol;
+            int size = typeRecordSymbol.getFields().size();
+            write("; --- DECLARATION of variable " + nom_variable + " ---");
+            write(nom_variable.toUpperCase() + " FILL " + Integer.toHexString(size) + " ; place pour réserver le record");
+            write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
+            write("MOV r0, #" + nom_variable.toUpperCase());
+            write("STR r0, [r13]");
+            write("; --- END DECLARATION of variable " + nom_variable + " ---");
+        }
+        else {
+            write("; --- DECLARATION of variable " + nom_variable + " ---");
+            write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
+            write("; --- END DECLARATION of variable " + nom_variable + " ---");
+        }
 
         if(node.getParent().getType() == NodeType.AFFECTATION){
+            System.out.println("On est pas censé passer par là sur le papier");
             // case declaration with affectation
             String valeur_affectation = node.getParent().getChild(1).getValue();
             int int_affectation = Integer.parseInt(valeur_affectation);
@@ -1056,7 +1073,6 @@ public class CodeGenerator {
             else {
                 if (varImbrication == currentImbrication) {
                     //local variable case
-                    System.out.println("coucou = " + symbol.getName() + " " + symbol.getDeplacement() + " " + symbol.getType());
                     int depl = symbol.getDeplacement();
                     write("; --- AFFECTATION of variable " + symbol.getName() + " ---");
                     generateArithmetic(node.getChild(1));
@@ -1137,44 +1153,147 @@ public class CodeGenerator {
             }
         }
 
+        if (nodeToAccess.getType() != NodeType.POINT) {
+            //searching for the imbrication number of the declaration of the variable to access
+            Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
+            if (varSymbol == null) {
+                throw new RuntimeException("var symbol not found: " + nodeToAccess.getValue() + "current tds :\n" + currentTds);
+            }
+            Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
+            varImbrication = varTds.getImbrication();
 
-        //searching for the imbrication number of the declaration of the variable to access
-        Symbol varSymbol = currentTds.getSymbol(nodeToAccess.getValue());
-        if (varSymbol == null) {
-            throw new RuntimeException("var symbol not found: " + nodeToAccess.getValue() + "current tds :\n" + currentTds);
+            if (currentImbrication - varImbrication > 0) {
+                write("; --- NON LOCAL VARIABLE ACCESS ---");
+                incrementTabulation();
+                write("MOV R1, #" + (currentImbrication - varImbrication) + " ; Move to R1 the imbrication number of the variable to access");
+                write("MOV R10, R11 ; Save the current BP");
+                decrementTabulation();
+                write("nonLocalAccessLoop" + nonLocalAccessLoopCounter);
+                incrementTabulation();
+                write("ADD R10, R10, #4 ; R10 = static chain");
+                write("LDR R10, [R10] ; Load the previous static chain");
+                write("SUBS R1, R1, #1 ; Decrement the imbrication number");
+                write("BNE nonLocalAccessLoop" + nonLocalAccessLoopCounter + " ; Continue until the imbrication number is reached");
+                write("LDR R0, [R10, #" + (varSymbol.getDeplacement() - 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
+                write("SUB R13, R13, #4 ; Decrement the stack pointer");
+                write("STR R0, [R13] ; Store the value in the stack");
+                decrementTabulation();
+                write("; --- END NON LOCAL VARIABLE ACCESS ---");
+                nonLocalAccessLoopCounter++;
+            } else {
+                write("; --- LOCAL VARIABLE ACCESS ---");
+                incrementTabulation();
+                write("LDR R0, [R11, #-" + (varSymbol.getDeplacement() + 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
+                write("SUB R13, R13, #4 ; Decrement the stack pointer");
+                write("STR R0, [R13] ; Store the value in the stack");
+                decrementTabulation();
+                write("; --- END LOCAL VARIABLE ACCESS ---");
+            }
         }
-        Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
-        varImbrication = varTds.getImbrication();
-
-        if(currentImbrication - varImbrication > 0){
-            write("; --- NON LOCAL VARIABLE ACCESS ---");
-            incrementTabulation();
-            write("MOV R1, #" + (currentImbrication - varImbrication) + " ; Move to R1 the imbrication number of the variable to access");
-            write("MOV R10, R11 ; Save the current BP");
-            decrementTabulation();
-            write("nonLocalAccessLoop" + nonLocalAccessLoopCounter);
-            incrementTabulation();
-            write("ADD R10, R10, #4 ; R10 = static chain");
-            write("LDR R10, [R10] ; Load the previous static chain");
-            write("SUBS R1, R1, #1 ; Decrement the imbrication number");
-            write("BNE nonLocalAccessLoop" + nonLocalAccessLoopCounter + " ; Continue until the imbrication number is reached");
-            write("LDR R0, [R10, #" + (varSymbol.getDeplacement() - 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
-            write("SUB R13, R13, #4 ; Decrement the stack pointer");
-            write("STR R0, [R13] ; Store the value in the stack");
-            decrementTabulation();
-            write("; --- END NON LOCAL VARIABLE ACCESS ---");
-            nonLocalAccessLoopCounter++;
-        } else {
-            write("; --- LOCAL VARIABLE ACCESS ---");
-            incrementTabulation();
-            write("LDR R0, [R11, #-" + (varSymbol.getDeplacement()+ 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
-            write("SUB R13, R13, #4 ; Decrement the stack pointer");
-            write("STR R0, [R13] ; Store the value in the stack");
-            decrementTabulation();
-            write("; --- END LOCAL VARIABLE ACCESS ---");
+        else {
+            Node nodeRecord = nodeToAccess;
+            String nomStructure = nodeRecord.getChildren().get(0).getValue();
+            List<Integer> deplacements = new ArrayList<>();
+            Symbol varSymbol = currentTds.getSymbol(nomStructure);
+            Tds varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
+            varImbrication = varTds.getImbrication();
+            deplacements.add(varSymbol.getDeplacement());
+            if (nodeRecord.getChildren().get(0).getType() != NodeType.POINT){
+                List<VariableSymbol> fields = ((TypeRecordSymbol) varSymbol).getFields();
+                int numeroChamp = 0;
+                for (VariableSymbol field : fields) {
+                    if (field.getName().equalsIgnoreCase(nodeRecord.getChildren().get(1).getValue())) {
+                        break;
+                    }
+                    numeroChamp++;
+                }
+                if (numeroChamp == fields.size()) {
+                    throw new IllegalArgumentException("Field not found in record : " + nodeRecord.getChildren().get(1).getValue());
+                }
+                deplacements.add(numeroChamp);
+            }
+            else {
+                while (nodeRecord.getType() == NodeType.POINT && nodeRecord.getChildren().get(1).getType() == NodeType.POINT) {
+                    nodeRecord = nodeRecord.getChildren().get(1);
+                    String nomChamp = nodeRecord.getChildren().get(0).getValue();
+                    Symbol Recordsymbol = currentTds.getSymbol(nomChamp);
+                    int numeroChamp = 0;
+                    if (Recordsymbol == null) {
+                        throw new IllegalArgumentException("Symbol not found in tds : " + nomStructure);
+                    }
+                    if (Recordsymbol instanceof TypeRecordSymbol) {
+                        TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) Recordsymbol;
+                        for (VariableSymbol field : typeRecordSymbol.getFields()) {
+                            if (field.getName().equalsIgnoreCase(nodeRecord.getChildren().get(1).getChildren().get(0).getValue())) {
+                                deplacements.add(field.getDeplacement());
+                                break;
+                            }
+                            numeroChamp++;
+                        }
+                        if (numeroChamp == typeRecordSymbol.getFields().size()) {
+                            throw new IllegalArgumentException("Field not found in record : " + nodeToAccess.getChildren().get(1).getValue());
+                        }
+                        deplacements.add(numeroChamp);
+                    }
+                }
+                nodeRecord = nodeRecord.getChildren().get(1);
+                String nomChamp = nodeRecord.getChildren().get(0).getValue();
+                Symbol Recordsymbol = currentTds.getSymbol(nomChamp);
+                int numeroChamp = 0;
+                if (Recordsymbol == null) {
+                    throw new IllegalArgumentException("Symbol not found in tds : " + nomStructure);
+                }
+                if (Recordsymbol instanceof TypeRecordSymbol) {
+                    TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) Recordsymbol;
+                    for (VariableSymbol field : typeRecordSymbol.getFields()) {
+                        if (field.getName().equalsIgnoreCase(nodeRecord.getChildren().get(1).getValue())) {
+                            deplacements.add(field.getDeplacement());
+                            break;
+                        }
+                        numeroChamp++;
+                    }
+                    if (numeroChamp == typeRecordSymbol.getFields().size()) {
+                        throw new IllegalArgumentException("Field not found in record : " + nodeToAccess.getChildren().get(1).getValue());
+                    }
+                    deplacements.add(numeroChamp);
+                }
+            }
+            //Une fois que tout cela est fini, on a la liste des déplacements à faire pour accéder à la variable
+            if (currentImbrication - varImbrication > 0) {
+                write("; --- NON LOCAL VARIABLE ACCESS ---");
+                incrementTabulation();
+                write("MOV R1, #" + (currentImbrication - varImbrication) + " ; Move to R1 the imbrication number of the variable to access");
+                write("MOV R10, R11 ; Save the current BP");
+                decrementTabulation();
+                write("nonLocalAccessLoop" + nonLocalAccessLoopCounter);
+                incrementTabulation();
+                write("ADD R10, R10, #4 ; R10 = static chain");
+                write("LDR R10, [R10] ; Load the previous static chain");
+                write("SUBS R1, R1, #1 ; Decrement the imbrication number");
+                write("BNE nonLocalAccessLoop" + nonLocalAccessLoopCounter + " ; Continue until the imbrication number is reached");
+                write("LDR R0, [R10, #" + (varSymbol.getDeplacement() - 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
+                for (int i = 1; i < deplacements.size(); i++) {
+                    write("LDR R0, [R0, #" + deplacements.get(i) * 4 + "] ; Load the value of the field " + i);
+                }
+                write("SUB R13, R13, #4 ; Decrement the stack pointer");
+                write("STR R0, [R13] ; Store the value in the stack");
+                decrementTabulation();
+                write("; --- END NON LOCAL VARIABLE ACCESS ---");
+                nonLocalAccessLoopCounter++;
+            } else {
+                write("; --- LOCAL VARIABLE ACCESS ---");
+                incrementTabulation();
+                write("LDR R0, [R11, #-" + (varSymbol.getDeplacement() + 4) + "] ; Load the value of the variable to access" + " " + varSymbol.getName());
+                //C'est ici qu'il faut faire les déplacements, on sait que dans r0, il y a l'adresse de l'endroit où se trouve la structure
+                for (int i = 1; i < deplacements.size(); i++) {
+                    write("LDR R0, [R0, #" + deplacements.get(i) * 4 + "] ; Load the value of the field " + i);
+                }
+                write("SUB R13, R13, #4 ; Decrement the stack pointer");
+                write("STR R0, [R13] ; Store the value in the stack");
+                decrementTabulation();
+                write("; --- END LOCAL VARIABLE ACCESS ---");
+            }
         }
-
-
     }
 
     private void generateCodePut(Node node) throws IOException {
@@ -1202,7 +1321,19 @@ public class CodeGenerator {
             //c'est une variable donc faut la chercher par la fonction accessVariable
             generateAccessVariable(value);
             write("LDMFD   r13!, {r0}");
-            Symbol symbol = tds.getSymbol(value.getValue());
+            Tds currentTds = tds;
+            while(node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC){
+                node = node.getParent();
+            }
+            if(node.getParent().getType() == NodeType.DECL_FUNC){
+                FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+                currentTds = tds.getTDSfonction(functionSymbol.getName());
+
+            } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+                ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+                currentTds = tds.getTDSfonction(procedureSymbol.getName());
+            }
+            Symbol symbol = currentTds.getSymbol(value.getValue());
             if (symbol == null) {
                 throw new IllegalArgumentException("Symbol not found in tds : " + value.getValue());
             }
@@ -1265,8 +1396,6 @@ public class CodeGenerator {
         write("STR r1, [r12] ; début de l'affichage du caractère");
         write("ADD r12, r12, #4");
         write("STR r0, [r12] ; caractère à afficher");
-        write("ADD r12, r12, #4");
-        write("STR r1, [r12] ; fin de l'affichage du caractère");
         write("ADD r12, r12, #4");
         write("MOV r13, r11 ; restore the stack pointer at the end of the function");
         write("LDMFD r13!, {r11, PC}");
