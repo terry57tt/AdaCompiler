@@ -1031,7 +1031,7 @@ public class CodeGenerator {
         if (node.firstChild().getType() != DECL_VAR) {
             varSymbol = currentTds.getSymbol(node.firstChild().getValue());
             if(varSymbol == null){
-                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
+                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getValue() + " of type : " + node.firstChild().getType());
             }
             varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
             varImbrication = varTds.getImbrication();
