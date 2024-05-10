@@ -976,7 +976,22 @@ public class CodeGenerator {
 
     private void generateDeclVar(Node node) throws IOException {
         String nom_variable = node.getChildren().get(0).getValue();
-        Symbol symbol = tds.getSymbol(nom_variable);
+        Tds currentTds = tds;
+        Node Decl = node;
+        while(Decl.getParent() != null && Decl.getType() != NodeType.FILE && Decl.getType() != NodeType.DECL_FUNC && Decl.getType() != NodeType.DECL_PROC){
+            if(Decl.getParent() != null) Decl = Decl.getParent();
+            if (Decl.getParent() == null) break;
+        }
+
+        if(Decl.getType() != null && Decl.getType() == NodeType.DECL_FUNC){
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(Decl.firstChild().getValue());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
+
+        } else if (Decl.getType() != null && Decl.getType() == NodeType.DECL_PROC) {
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(Decl.firstChild().getValue());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
+        }
+        Symbol symbol = currentTds.getSymbol(nom_variable);
         if (symbol == null) {
             throw new IllegalArgumentException("Symbol not found in tds :###8 " + nom_variable);
         }
@@ -1146,6 +1161,8 @@ public class CodeGenerator {
             if (testFor.getType() == FOR){
                 if (testFor.getChildren().get(0).getValue().equalsIgnoreCase(nodeToAccess.getValue())){
                     write("LDR r0, [r13, #4*"+ nbFor_a_remonter*3 + "]");
+                    write("SUB r13, r13, #4 ; Decrement the stack pointer");
+                    write("STR r0, [r13] ; Store the value in the stack");
                     return;
                 }
                 nbFor_a_remonter++;
