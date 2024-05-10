@@ -339,14 +339,13 @@ vérifier que la valeur affecté correspond au type de déclaration
                 Tds tds_function = new Tds(nom_fonction);
                 tds.addChild(tds_function);
                 for (ParamSymbol paramSymbol: paramSymbols) {
-                    tds_function.addSymbol(paramSymbol);
                     String type_variable = paramSymbol.getType_variable();
                     if (tds.containsSymbol(type_variable, SymbolType.TYPE_RECORD)) {
                         TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_variable, SymbolType.TYPE_RECORD);
                         StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, paramSymbol.getName(), type_variable, typeRecordSymbol.getFields());
                         tds_function.addSymbol(structureSymbol);
                     }
-                    if (tds.containsSymbol(type_variable, SymbolType.TYPE_ACCESS)) {
+                    else if (tds.containsSymbol(type_variable, SymbolType.TYPE_ACCESS)) {
                         TypeAccessSymbol typeAccessSymbol = (TypeAccessSymbol) tds.getSymbol(type_variable, SymbolType.TYPE_ACCESS);
                         String type_pointe = typeAccessSymbol.getTypePointe();
                         if (tds.containsSymbol(type_pointe, SymbolType.TYPE_RECORD)) {
@@ -354,6 +353,9 @@ vérifier que la valeur affecté correspond au type de déclaration
                             StructureSymbol structureSymbol = new StructureSymbol(SymbolType.STRUCTURE, 0, paramSymbol.getName(), type_pointe, typeRecordSymbol.getFields());
                             tds_function.addSymbol(structureSymbol);
                         }
+                    }
+                    else {
+                        tds_function.addSymbol(paramSymbol);
                     }
                 }
 

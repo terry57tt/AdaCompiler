@@ -169,9 +169,10 @@ public class Tds {
                     if (type.equalsIgnoreCase("integer")) {
                         depl += 4;
                     } else  if (type.equalsIgnoreCase("char") || type.equalsIgnoreCase("character")) {
-                        depl++;
+                        depl += 4;
                     } else {
-                        symbol.setDeplacement(null);
+                        symbol.setDeplacement(depl);
+                        depl += 4;
                     }
                 }
                 case VARIABLE -> {
@@ -182,8 +183,14 @@ public class Tds {
                     } else  if (type.equalsIgnoreCase("Boolean") || type.equalsIgnoreCase("character") ) {
                         depl += 4;
                     } else {
+                        symbol.setDeplacement(depl);
                         depl += 4;
                     }
+                }
+                case STRUCTURE -> {
+                    symbol.setDeplacement(depl);
+                    depl += 4;
+                    // Not implemented
                 }
                 case TYPE_RECORD -> {
                     symbol.setDeplacement(null);

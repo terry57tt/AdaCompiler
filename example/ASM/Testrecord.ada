@@ -47,7 +47,7 @@ procedure Record_Test is
    test: Character;
 
 begin
-   test := Create_S('a', Create_R('x', 'y'), 'z').D.G;
+   test := Create_S('a', Create_R('x', 'y'), 'z').D.A;
    V := Create_R('2', '6');
 
    if V = Create_R('8', '8') then
@@ -56,5 +56,4 @@ begin
 
    test := Create_T(Create_S('2', Create_R('b', 'c'), 'd'), 'e').G.D.A;
    test := Create_T(Create_S('a', Create_R('b', 'c'), 'd'), 'e').G.D.B;
-
 end Record_Test;
