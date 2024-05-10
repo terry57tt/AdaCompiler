@@ -34,7 +34,7 @@ public class CodeGenerator {
     private int whileCounter = 0;
     private int ifCounter = 0;
     private int forCounter = 0;
-    private int declFuncProcCounter = 0;
+    private int nbChampCounter = 0;
     private int nonLocalAccessAffectationLoopCounter = 0;
 
     int nonLocalAccessLoopCounter = 0;
@@ -73,7 +73,7 @@ public class CodeGenerator {
             return;
         }
         this.tds = globalTds;
-        if(node.getType() != null) {
+        if (node.getType() != null) {
             switch (node.getType()) {
                 case FILE:
                     if (node.getChildren() != null) {
@@ -83,17 +83,15 @@ public class CodeGenerator {
                     }
                     break;
                 case DECLARATION:
-                    if (node.getParent().getType() == FILE){
+                    if (node.getParent().getType() == FILE) {
                         generateCodeDeclarationFuncOrProc(node);
                     }
                     break;
                 case DECL_PROC:
                     generateDeclProcedure(node);
-                    declFuncProcCounter++;
                     break;
                 case DECL_FUNC:
                     generateDeclFunction(node);
-                    declFuncProcCounter++;
                     break;
                 case IF:
                     generateIf(node);
@@ -122,12 +120,12 @@ public class CodeGenerator {
                     }
                     break;
                 case BODY:
-                    if (node.getParent().getType() == FILE){
+                    if (node.getParent().getType() == FILE) {
                         write("program2mainProcedure");
                         write("; ----- MAIN program -----");
                         write("MOV R11, R13");
-                        for (Node child : node.getParent().getChildren()){
-                            if (child.getType() == DECLARATION){
+                        for (Node child : node.getParent().getChildren()) {
+                            if (child.getType() == DECLARATION) {
                                 generateCodeDeclarationVariable(child);
                             }
                         }
@@ -137,8 +135,7 @@ public class CodeGenerator {
                             }
                         }
                         write("END");
-                    }
-                    else if (node.getChildren() != null) {
+                    } else if (node.getChildren() != null) {
                         for (Node child : node.getChildren()) {
                             generateCode(child);
                         }
@@ -168,35 +165,29 @@ public class CodeGenerator {
                     write("MOV R0, #" + children.get(0).getValue());
                     write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
                 }
-            }
-            else if (value_type.equalsIgnoreCase("character")) {
-                write("MOV r0, #" + (int)children.get(0).getValue().charAt(0) + " ; '" + children.get(0).getValue() + "' en ASCII");
+            } else if (value_type.equalsIgnoreCase("character")) {
+                write("MOV r0, #" + (int) children.get(0).getValue().charAt(0) + " ; '" + children.get(0).getValue() + "' en ASCII");
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
-            }
-            else if (value_type.equalsIgnoreCase("boolean")) {
+            } else if (value_type.equalsIgnoreCase("boolean")) {
                 write("MOV R0, #" + (children.get(0).getValue().equalsIgnoreCase("true") ? "1" : "0"));
                 write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
-            }
-            else if (value_type.equalsIgnoreCase("null")) {
+            } else if (value_type.equalsIgnoreCase("null")) {
                 write("MOV R0, #0");
                 write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             } else if (children.get(0).getType() == NodeType.ADDITION || children.get(0).getType() == NodeType.SUBSTRACTION || children.get(0).getType() == NodeType.MULTIPLY || children.get(0).getType() == NodeType.DIVIDE || children.get(0).getType() == NodeType.REM) {
                 generateArithmetic(children.get(0));
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
-            }
-            else if (children.get(0).getType() == NodeType.COMPARATOR) {
+            } else if (children.get(0).getType() == NodeType.COMPARATOR) {
                 generateBoolean(children.get(0));
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
-            }
-            else if (children.get(0).getType() == NodeType.CALL) {
+            } else if (children.get(0).getType() == NodeType.CALL) {
                 generateCallFunctionProcedure(children.get(0));
                 mettre_valeur_retour_en_registre_apres_appel("r0", children.get(0).getChildren().get(0).getValue());
                 write("SUB R13, R13, #4");
                 write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
-            }
-            else if (value_type.equalsIgnoreCase(" ")) {
+            } else if (value_type.equalsIgnoreCase(" ")) {
                 generateAccessVariable(children.get(0));
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
@@ -210,8 +201,7 @@ public class CodeGenerator {
         // si c'est un opérateur arithmétique
         if (node.getValue().equalsIgnoreCase("-") || node.getValue().equalsIgnoreCase("+")
                 || node.getValue().equalsIgnoreCase("*") || node.getValue().equalsIgnoreCase("/")
-                || node.getValue().equalsIgnoreCase("REM"))
-        {
+                || node.getValue().equalsIgnoreCase("REM")) {
             generateArithmetic(node);
             return;
         }
@@ -226,15 +216,16 @@ public class CodeGenerator {
         }
 
         // si c'est un caractère, on met son code ASCII en sommet de pile
-        try{
-            if(node.getToken().getType().equals(TokenType.CHARACTER)){
+        try {
+            if (node.getToken().getType().equals(TokenType.CHARACTER)) {
                 int ascii = value.charAt(0);
                 write("MOV R0, #" + ascii);
                 write("SUB R13, R13, #4");
                 write("STR R0, [R13] ; " + ascii + " en sommet de pile");
                 return;
             }
-        }catch (Exception ignored){}
+        } catch (Exception ignored) {
+        }
 
         // si c'est un nombre, on le met en sommet de pile
         try {
@@ -243,10 +234,11 @@ public class CodeGenerator {
             write("SUB R13, R13, #4");
             write("STR R0, [R13] ; " + value + " en sommet de pile");
             return;
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         // si "not", on fait le not de la valeur en sommet de pile
-        if(value.equalsIgnoreCase("not")) {
+        if (value.equalsIgnoreCase("not")) {
             generateBoolean(node.getChildren().get(0));
             write("LDR R0, [R13]");
             write("EOR R0, R0, #1 ; NOT logique");
@@ -255,7 +247,7 @@ public class CodeGenerator {
         }
 
         // si signe négatif, on prend l'opposé de la valeur en sommet de pile
-        if(value.equalsIgnoreCase("-")) {
+        if (value.equalsIgnoreCase("-")) {
             generateBoolean(node.getChildren().get(0));
             write("LDR R0, [R13]");
             write("RSB R0, R0, #0 ; opposé");
@@ -264,7 +256,7 @@ public class CodeGenerator {
         }
 
         // si "true" ou "false", on met 1 ou 0 en sommet de pile
-        if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
             write("MOV R0, #" + (value.equalsIgnoreCase("true") ? "1" : "0"));
             write("SUB R13, R13, #4");
             write("STR R0, [R13] ; " + value + " en sommet de pile");
@@ -272,7 +264,7 @@ public class CodeGenerator {
         }
 
         // si "null", on met NULL en sommet de pile
-        if(value.equalsIgnoreCase("null")) {
+        if (value.equalsIgnoreCase("null")) {
             write("MOV R0, #" + nullValue);
             write("SUB R13, R13, #4");
             write("STR R0, [R13] ; NULL en sommet de pile");
@@ -280,7 +272,7 @@ public class CodeGenerator {
         }
 
         // si opérateur de comparaison
-        if(value.equalsIgnoreCase("and") || value.equalsIgnoreCase("or") || value.equalsIgnoreCase("=") || value.equalsIgnoreCase("<") || value.equalsIgnoreCase("<=") || value.equalsIgnoreCase(">") || value.equalsIgnoreCase(">=")) {
+        if (value.equalsIgnoreCase("and") || value.equalsIgnoreCase("or") || value.equalsIgnoreCase("=") || value.equalsIgnoreCase("<") || value.equalsIgnoreCase("<=") || value.equalsIgnoreCase(">") || value.equalsIgnoreCase(">=")) {
             Node left = node.getChildren().get(0);
             Node right = node.getChildren().get(1);
             generateBoolean(left);
@@ -289,29 +281,29 @@ public class CodeGenerator {
             write("LDR R2, [R13] ; recuperation deuxieme valeur SP+4"); // on récupère le résultat de la deuxième opération
             write("ADD R13, R13, #4"); // on décrémente le pointeur de pile
 
-            switch (value){
+            switch (value) {
                 case "=":
-                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("CMP R1, R2; comparaison \"" + value + "\"");
                     write("MOVEQ   R3, #1"); // on met 1 si retourne vrai
                     write("MOVNE   R3, #0"); // 0 sinon
                     break;
                 case "<":
-                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("CMP R1, R2; comparaison \"" + value + "\"");
                     write("MOVLT   R3, #1");
                     write("MOVGE   R3, #0");
                     break;
                 case "<=":
-                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("CMP R1, R2; comparaison \"" + value + "\"");
                     write("MOVLE   R3, #1");
                     write("MOVGT   R3, #0");
                     break;
                 case ">":
-                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("CMP R1, R2; comparaison \"" + value + "\"");
                     write("MOVGT   R3, #1");
                     write("MOVLE   R3, #0");
                     break;
                 case ">=":
-                    write("CMP R1, R2; comparaison \""+ value +"\"");
+                    write("CMP R1, R2; comparaison \"" + value + "\"");
                     write("MOVGE   R3, #1");
                     write("MOVLT   R3, #0");
                     break;
@@ -333,7 +325,9 @@ public class CodeGenerator {
         generateAccessVariable(node);
     }
 
-    /** Wrapper to print comment in ASM file*/
+    /**
+     * Wrapper to print comment in ASM file
+     */
     private void generateArithmetic(Node node) throws IOException {
         write("; ---  ARITHMETIC evaluation ---");
         generateArithmeticRecursif(node);
@@ -344,10 +338,9 @@ public class CodeGenerator {
 
         if (node.getValue().equalsIgnoreCase("-") || node.getValue().equalsIgnoreCase("+")
                 || node.getValue().equalsIgnoreCase("*") || node.getValue().equalsIgnoreCase("/")
-                || node.getValue().equalsIgnoreCase("REM"))
-        {
+                || node.getValue().equalsIgnoreCase("REM")) {
 
-            if (node.getChildren().size() == 1){
+            if (node.getChildren().size() == 1) {
                 // case unary operator
                 String valueNegative = node.getChild(0).getValue();
                 write("MOV R0, #" + node.getValue() + valueNegative + " ; Load the value of the number: " + node.getValue() + valueNegative);
@@ -357,7 +350,7 @@ public class CodeGenerator {
             }
 
 
-            generateArithmeticRecursif( node.getChildren().get(0));
+            generateArithmeticRecursif(node.getChildren().get(0));
             generateArithmeticRecursif(node.getChildren().get(1));
 
             write("; Right Operand");
@@ -367,8 +360,6 @@ public class CodeGenerator {
             write("; Left Operand");
             write("LDR R1, [R13] ; Get the value of left operand");
             write("ADD R13, R13, #4 ; increment the stack pointer");
-
-
 
 
             switch (node.getValue().toUpperCase()) {
@@ -432,8 +423,7 @@ public class CodeGenerator {
             mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue());
             write("SUB R13, R13, #4");
             write("STR R0, [R13]");
-        }
-        else if (node.getToken().getType().equals(TokenType.NUMBER)) {
+        } else if (node.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + node.getValue() + " ; Load the value of the number: " + node.getValue());
             write("SUB R13, R13, #4");
             write("STR R0, [R13]");
@@ -490,12 +480,11 @@ public class CodeGenerator {
         List<Node> elseif = new ArrayList<>(); // 3 : elseif et le dernier body est le else
         Node elsenode = null;
 
-        if (children.size() > 2){ // build list of elseif and else
-            for (int i = 2 ; i < children.size(); i++){
+        if (children.size() > 2) { // build list of elseif and else
+            for (int i = 2; i < children.size(); i++) {
                 if (children.get(i).getType() == NodeType.ELSIF) {
                     elseif.add(children.get(i));
-                }
-                else if (children.get(i).getType() == NodeType.BODY){
+                } else if (children.get(i).getType() == NodeType.BODY) {
                     elsenode = children.get(i);
                 }
             }
@@ -508,7 +497,7 @@ public class CodeGenerator {
         // evaluate the condition
         write("LDMFD   r13!, {r0}");
         write("CMP r0, #0");
-        if (!elseif.isEmpty()){
+        if (!elseif.isEmpty()) {
             write("BEQ " + "ELSIF" + if_counter_tmp + "0");
             incrementTabulation();
             generateCode(body);
@@ -532,7 +521,7 @@ public class CodeGenerator {
              * ELSE0 body du ELSE0
              * EndIf0
              * */
-            for (int i = 0; i < elseif.size() - 1; i++){
+            for (int i = 0; i < elseif.size() - 1; i++) {
                 Node elseifnode = elseif.get(i);
                 Node elseifcondition = elseifnode.getChildren().get(0);
                 Node elseifbody = elseifnode.getChildren().get(1);
@@ -541,7 +530,7 @@ public class CodeGenerator {
                 generateBoolean(elseifcondition);
                 write("LDMFD   r13!, {r0}");
                 write("CMP r0, #0");
-                write("BEQ " + "ELSIF" + if_counter_tmp + (i+1));
+                write("BEQ " + "ELSIF" + if_counter_tmp + (i + 1));
                 generateCode(elseifbody);
                 write("B " + "EndIf" + if_counter_tmp);
                 decrementTabulation();
@@ -553,21 +542,19 @@ public class CodeGenerator {
             generateBoolean(elseifcondition);
             write("LDMFD   r13!, {r0}");
             write("CMP r0, #0");
-            if (elsenode != null){
+            if (elsenode != null) {
                 write("BEQ " + "ELSE" + if_counter_tmp);
                 generateCode(elseifbody);
                 write("B " + "EndIf" + if_counter_tmp);
                 write("ELSE" + if_counter_tmp);
                 generateCode(elsenode);
                 write("B " + "EndIf" + if_counter_tmp);
-            }
-            else {
+            } else {
                 write("BEQ " + "EndIf" + if_counter_tmp);
                 generateCode(elseifbody);
                 write("B " + "EndIf" + if_counter_tmp);
             }
-        }
-        else {
+        } else {
             if (elsenode != null) {
                 write("BEQ " + "Else" + if_counter_tmp);
                 generateCode(body);
@@ -575,14 +562,13 @@ public class CodeGenerator {
                 write("Else" + if_counter_tmp);
                 generateCode(elsenode);
                 write("B " + "EndIf" + if_counter_tmp);
-            }
-            else {
+            } else {
                 write("BEQ " + "EndIf" + if_counter_tmp);
                 generateCode(body);
                 write("B " + "EndIf" + if_counter_tmp);
             }
         }
-        write ("EndIf" + if_counter_tmp);
+        write("EndIf" + if_counter_tmp);
     }
 
     private void generateFor(Node node) throws IOException {
@@ -600,8 +586,7 @@ public class CodeGenerator {
             borne_inf = children.get(3);
             borne_sup = children.get(4);
             body = children.get(5);
-        }
-        else {
+        } else {
             direction = "in";
             borne_inf = children.get(2);
             borne_sup = children.get(3);
@@ -615,8 +600,7 @@ public class CodeGenerator {
             generateAccessVariable(borne_inf);
             write("LDMFD   r13!, {r0}");
             write("STMFD r13!, {r0}");
-        }
-        else if (type_borne_inf.equalsIgnoreCase("integer")) {
+        } else if (type_borne_inf.equalsIgnoreCase("integer")) {
             write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
             write("MOV R0, #" + borne_inf.getValue());
             write("STR r0, [r13] ; Empiler la borne inf");
@@ -627,8 +611,7 @@ public class CodeGenerator {
             generateAccessVariable(borne_sup);
             write("LDMFD   r13!, {r0}");
             write("STMFD r13!, {r0}");
-        }
-        else if (type_borne_sup.equalsIgnoreCase("integer")) {
+        } else if (type_borne_sup.equalsIgnoreCase("integer")) {
             write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
             write("MOV R0, #" + borne_sup.getValue());
             write("STR r0, [r13] ; Empiler la borne sup");
@@ -782,7 +765,7 @@ public class CodeGenerator {
         }
         if (symbol instanceof FunctionSymbol) {
             int nb_params = ((FunctionSymbol) symbol).getNbParameters();
-            for (int i= 0; i < nb_params; i++) {
+            for (int i = 0; i < nb_params; i++) {
                 write("LDR r0, [r11, #4*" + (nb_params - i + 3) + "] ; Récupérer le paramètre " + (i + 1));
                 write("STMFD r13!, {r0} ; Dépiler le paramètre " + (i + 1));
             }
@@ -790,8 +773,7 @@ public class CodeGenerator {
         if (children.get(2).getType() == NodeType.BODY) {
             Node body = children.get(2);
             generateCode(body);
-        }
-        else {
+        } else {
             if (children.get(2).getType() == NodeType.DECLARATION) {
                 Node declaration = children.get(2);
                 generateCodeDeclarationVariable(declaration);
@@ -824,7 +806,7 @@ public class CodeGenerator {
         }
         if (symbol instanceof ProcedureSymbol) {
             int nb_params = ((ProcedureSymbol) symbol).getNbParameters();
-            for (int i= 0; i < nb_params; i++) {
+            for (int i = 0; i < nb_params; i++) {
                 write("LDR r0, [r11, #4*" + (nb_params - i + 2) + "] ; Récupérer le paramètre " + (i + 1));
                 write("STMFD r13!, {r0} ; Empiler le paramètre " + (i + 1));
             }
@@ -832,8 +814,7 @@ public class CodeGenerator {
         if (children.get(1).getType() == NodeType.BODY) {
             Node body = children.get(1);
             generateCode(body);
-        }
-        else {
+        } else {
             if (children.get(1).getType() == NodeType.DECLARATION) {
                 Node declaration = children.get(1);
                 generateCodeDeclarationVariable(declaration);
@@ -866,7 +847,7 @@ public class CodeGenerator {
         List<NodeType> comparator = Arrays.asList(new NodeType[]{NodeType.EQUAL, NodeType.SLASH_EQUAL, NodeType.SUPERIOR, NodeType.SUPERIOR_EQUAL, NodeType.INFERIOR, NodeType.INFERIOR_EQUAL, NodeType.COMPARATOR, NodeType.AND, NodeType.OR});
         List<Node> children = node.getChildren();
         String nom_fonction = node.getChildren().get(0).getValue();
-        if ( nom_fonction.equalsIgnoreCase("PUT")) {
+        if (nom_fonction.equalsIgnoreCase("PUT")) {
             generateCodePut(node);
             return;
         }
@@ -876,31 +857,26 @@ public class CodeGenerator {
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 write("MOV R0, #" + children.get(i).getValue());
                 write("STR r0, [r13] ; Empiler le paramètre " + i);
-            }
-            else if (value_type.equalsIgnoreCase("character")){
+            } else if (value_type.equalsIgnoreCase("character")) {
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
-                write("MOV r0, #"+ (int)children.get(i).getValue().charAt(0) + " ; '" + children.get(i).getValue() + "' en ASCII");
+                write("MOV r0, #" + (int) children.get(i).getValue().charAt(0) + " ; '" + children.get(i).getValue() + "' en ASCII");
                 write("STR r0, [r13] ; Empiler le paramètre " + i);
-            }
-            else if (operators.contains(children.get(i).getType())){
+            } else if (operators.contains(children.get(i).getType())) {
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateArithmetic(children.get(i));
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
-            }
-            else if (comparator.contains(children.get(i).getType())){
+            } else if (comparator.contains(children.get(i).getType())) {
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateBoolean(children.get(i));
                 write("LDMFD   r13!, {r0}");
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
-            }
-            else if (children.get(i).getType() == NodeType.CALL){
+            } else if (children.get(i).getType() == NodeType.CALL) {
                 generateCallFunctionProcedure(children.get(i));
                 mettre_valeur_retour_en_registre_apres_appel("r0", children.get(i).getChildren().get(0).getValue());
                 write("SUB R13, R13, #4");
                 write("STR R0, [R13] ; empiler le paramètre");
-            }
-            else if (value_type.equalsIgnoreCase(" ")){
+            } else if (value_type.equalsIgnoreCase(" ")) {
                 //c'est une variable donc faut la chercher par la fonction accessVariable
                 write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
                 generateAccessVariable(children.get(i));
@@ -937,12 +913,12 @@ public class CodeGenerator {
         Node callNode = node;
 
         //searching for the tds (imbrication number) of the varToAffect
-        while(callNode.getParent() != null && callNode.getType() != NodeType.FILE && callNode.getType() != NodeType.DECL_FUNC && callNode.getType() != NodeType.DECL_PROC){
-            if(callNode.getParent() != null) callNode = callNode.getParent();
+        while (callNode.getParent() != null && callNode.getType() != NodeType.FILE && callNode.getType() != NodeType.DECL_FUNC && callNode.getType() != NodeType.DECL_PROC) {
+            if (callNode.getParent() != null) callNode = callNode.getParent();
             if (callNode.getParent() == null) break;
         }
 
-        if(callNode.getType() != null && callNode.getType() == NodeType.DECL_FUNC){
+        if (callNode.getType() != null && callNode.getType() == NodeType.DECL_FUNC) {
             FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(callNode.firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
@@ -982,12 +958,12 @@ public class CodeGenerator {
         String nom_variable = node.getChildren().get(0).getValue();
         Tds currentTds = tds;
         Node Decl = node;
-        while(Decl.getParent() != null && Decl.getType() != NodeType.FILE && Decl.getType() != NodeType.DECL_FUNC && Decl.getType() != NodeType.DECL_PROC){
-            if(Decl.getParent() != null) Decl = Decl.getParent();
+        while (Decl.getParent() != null && Decl.getType() != NodeType.FILE && Decl.getType() != NodeType.DECL_FUNC && Decl.getType() != NodeType.DECL_PROC) {
+            if (Decl.getParent() != null) Decl = Decl.getParent();
             if (Decl.getParent() == null) break;
         }
 
-        if(Decl.getType() != null && Decl.getType() == NodeType.DECL_FUNC){
+        if (Decl.getType() != null && Decl.getType() == NodeType.DECL_FUNC) {
             FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(Decl.firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
 
@@ -1000,23 +976,23 @@ public class CodeGenerator {
             throw new IllegalArgumentException("Symbol not found in tds :###8 " + nom_variable);
         }
         if (symbol instanceof StructureSymbol) {
-            StructureSymbol StructureSymbol = (StructureSymbol) symbol;
-            int size = StructureSymbol.getFields().size();
+            StructureSymbol structureSymbol = (StructureSymbol) symbol;
+            int size = structureSymbol.getFields().size();
             write("; --- DECLARATION of variable " + nom_variable + " ---");
-            write(nom_variable.toUpperCase()+ structureCounter + " FILL 0x" + Integer.toHexString(size * 4) + " ; place pour réserver le record");
+            write(nom_variable.toUpperCase() + structureCounter + " FILL 0x" + Integer.toHexString(size * 4) + " ; place pour réserver le record");
+            declarer_structure(structureSymbol);
             write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
-            write("LDR r0, =" + nom_variable.toUpperCase()+ structureCounter + " ; Load the address of the structure");
+            write("LDR r0, =" + nom_variable.toUpperCase() + structureCounter + " ; Load the address of the structure");
             write("STR r0, [r13]");
             write("; --- END DECLARATION of variable " + nom_variable + " ---");
             structureCounter++;
-        }
-        else {
+        } else {
             write("; --- DECLARATION of variable " + nom_variable + " ---");
             write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
             write("; --- END DECLARATION of variable " + nom_variable + " ---");
         }
 
-        if(node.getParent().getType() == NodeType.AFFECTATION){
+        if (node.getParent().getType() == NodeType.AFFECTATION) {
             System.out.println("On est pas censé passer par là sur le papier");
             // case declaration with affectation
             String valeur_affectation = node.getParent().getChild(1).getValue();
@@ -1038,16 +1014,16 @@ public class CodeGenerator {
         Tds currentTds = tds;
 
         //searching for the tds (imbrication number) of the varToAffect
-        while(varToAffect.getParent() != null && varToAffect.getType() != NodeType.FILE && varToAffect.getType() != NodeType.DECL_FUNC && varToAffect.getType() != NodeType.DECL_PROC){
-            if(varToAffect.getParent() != null) varToAffect = varToAffect.getParent();
+        while (varToAffect.getParent() != null && varToAffect.getType() != NodeType.FILE && varToAffect.getType() != NodeType.DECL_FUNC && varToAffect.getType() != NodeType.DECL_PROC) {
+            if (varToAffect.getParent() != null) varToAffect = varToAffect.getParent();
             if (varToAffect.getParent() == null) break;
         }
 
-        if(varToAffect.getType() == null && varToAffect.getType() == NodeType.FILE){
+        if (varToAffect.getType() == null && varToAffect.getType() == NodeType.FILE) {
             varToAffect = varToAffect.getParent();
         }
 
-        if(varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_FUNC){
+        if (varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_FUNC) {
             FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(varToAffect.firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
@@ -1074,19 +1050,22 @@ public class CodeGenerator {
                 }
                 varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
                 varImbrication = varTds.getImbrication();
-            }
-            else {
-                varSymbol = currentTds.getSymbol(node.firstChild().getChildren().get(0).getValue());
+            } else {
+                Node nodeRecord = node.firstChild();
+                while (nodeRecord.getType() == POINT) {
+                    nodeRecord = nodeRecord.firstChild();
+                }
+                String nomStructure = nodeRecord.getValue();
+                varSymbol = currentTds.getSymbol(nomStructure);
                 if (varSymbol == null) {
                     throw new IllegalArgumentException("Symbol not found in tds :###10 " + node.firstChild().getType());
                 }
                 varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
                 varImbrication = varTds.getImbrication();
             }
-        }
-        else {
+        } else {
             varSymbol = currentTds.getSymbol(node.firstChild().getChildren().get(0).getValue());
-            if(varSymbol == null){
+            if (varSymbol == null) {
                 throw new IllegalArgumentException("Symbol not found in tds :###5 " + node.firstChild().getType());
             }
             varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
@@ -1095,7 +1074,7 @@ public class CodeGenerator {
 //        }
 
         // case : affectation of an integer
-        if(node.firstChild().getType() != DECL_VAR){
+        if (node.firstChild().getType() != DECL_VAR) {
             // case : affectation of a local variable not in a declaration
             if (node.getChildren().get(0).getType() != POINT) {
                 Symbol symbol = currentTds.getSymbol(node.getChild(0).getValue());
@@ -1132,8 +1111,7 @@ public class CodeGenerator {
                         nonLocalAccessAffectationLoopCounter++;
                     }
                 }
-            }
-            else {
+            } else {
                 Node nodeRecord = node.getChildren().get(0);
                 String nomStructure = nodeRecord.getChildren().get(0).getValue();
                 List<Integer> deplacements = getListeDeplacement(nodeRecord, currentTds);
@@ -1145,12 +1123,11 @@ public class CodeGenerator {
                     generateArithmetic(node.getChild(1));
                     write("LDR R7, [R13] ; Get the value of the result of generateArithmetic");
                     write("ADD R13, R13, #4 ; Increment the stack pointer for deletion of the result of generateArithmetic");
-                    System.out.println(depl);
                     write("LDR R0, [R11, #" + (-4 - depl) + "]" + " ; variable := " + node.getChild(1).getValue());
-                    for (int i = 1; i < deplacements.size()-1; i++) {
-                        write("LDR R0, [R0, #" + deplacements.get(i) * 4 + "] ; Load the value of the field " + i);
+                    for (int i = 1; i < deplacements.size() - 1; i++) {
+                        write("LDR R0, [R0, #" + (deplacements.get(i)-1) * 4 + "] ; Load the value of the field " + i);
                     }
-                    write("STR R7, [R0, #" + deplacements.get(deplacements.size()-1) * 4 + "] ; variable := " + node.getChild(1).getValue());
+                    write("STR R7, [R0, #" + (deplacements.get(deplacements.size() - 1) - 1) * 4 + "] ; variable := " + node.getChild(1).getValue());
                     write("; --- END AFFECTATION of variable " + varSymbol.getName() + " ---");
                 } else {
                     //non local variable case
@@ -1170,10 +1147,10 @@ public class CodeGenerator {
                     write("LDR R7, [R13] ; Get the value of the result of generateArithmetic");
                     write("ADD R13, R13, #4 ; Increment the stack pointer for deletion of the result of generateArithmetic");
                     write("LDR R0, [R10, #" + (-4 - depl) + "]" + " ; variable := " + node.getChild(1).getValue());
-                    for (int i = 1; i < deplacements.size()-1; i++) {
-                        write("LDR R0, [R0, #" + deplacements.get(i) * 4 + "] ; Load the value of the field " + i);
+                    for (int i = 1; i < deplacements.size() - 1; i++) {
+                        write("LDR R0, [R0, #" + (deplacements.get(i)-1) * 4 + "] ; Load the value of the field " + i);
                     }
-                    write("STR R7, [R0, #" + deplacements.get(deplacements.size()-1) * 4 + "] ; variable := " + node.getChild(1).getValue());
+                    write("STR R7, [R0, #" + (deplacements.get(deplacements.size() - 1)-1) * 4 + "] ; variable := " + node.getChild(1).getValue());
                     write("; --- END NON LOCAL VARIABLE AFFECTATION ---");
                     nonLocalAccessAffectationLoopCounter++;
                 }
@@ -1192,12 +1169,11 @@ public class CodeGenerator {
                 write("; --- DECLARATION of variable " + nom_variable + " ---");
                 write(nom_variable.toUpperCase() + structureCounter + " FILL 0x" + Integer.toHexString(size * 4) + " ; place pour réserver le record");
                 write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
-                write("LDR r0, =" + nom_variable.toUpperCase()+ structureCounter + " ; Load the address of the structure");
+                write("LDR r0, =" + nom_variable.toUpperCase() + structureCounter + " ; Load the address of the structure");
                 write("STR r0, [r13]");
                 write("; --- END DECLARATION of variable " + nom_variable + " ---");
                 structureCounter++;
-            }
-            else {
+            } else {
                 write("; --- DECLARATION of variable " + nom_variable + " ---");
                 write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
                 write("; --- END DECLARATION of variable " + nom_variable + " ---");
@@ -1217,10 +1193,10 @@ public class CodeGenerator {
         int varImbrication;
         Tds currentTds = tds;
         //searching for the tds (imbrication number) of the nodeToAccess
-        while(node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC){
+        while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
             node = node.getParent();
         }
-        if(node.getParent().getType() == NodeType.DECL_FUNC){
+        if (node.getParent().getType() == NodeType.DECL_FUNC) {
             FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
@@ -1235,11 +1211,11 @@ public class CodeGenerator {
 
         Node testFor = nodeToAccess;
         int nbFor_a_remonter = 0;
-        while(testFor.getType() != FILE){
+        while (testFor.getType() != FILE) {
             testFor = testFor.getParent();
-            if (testFor.getType() == FOR){
-                if (testFor.getChildren().get(0).getValue().equalsIgnoreCase(nodeToAccess.getValue())){
-                    write("LDR r0, [r13, #4*"+ nbFor_a_remonter*3 + "]");
+            if (testFor.getType() == FOR) {
+                if (testFor.getChildren().get(0).getValue().equalsIgnoreCase(nodeToAccess.getValue())) {
+                    write("LDR r0, [r13, #4*" + nbFor_a_remonter * 3 + "]");
                     write("SUB r13, r13, #4 ; Decrement the stack pointer");
                     write("STR r0, [r13] ; Store the value in the stack");
                     return;
@@ -1284,8 +1260,7 @@ public class CodeGenerator {
                 decrementTabulation();
                 write("; --- END LOCAL VARIABLE ACCESS ---");
             }
-        }
-        else {
+        } else {
             List<Integer> deplacements = getListeDeplacement(nodeToAccess, currentTds);
             Node nodeRecord = nodeToAccess;
             String nomStructure;
@@ -1294,11 +1269,10 @@ public class CodeGenerator {
                 nodeRecord = nodeRecord.getChildren().get(0);
             }
             //Une fois qu'on a termniné, on est au dernier point tout en bas deux cas se présentent :  call ou nom de structure
-            if (nodeRecord.getChildren().get(0).getType() == CALL){
+            if (nodeRecord.getChildren().get(0).getType() == CALL) {
                 varImbrication = currentImbrication;
                 cas_particulier_fonction = 1;
-            }
-            else {
+            } else {
                 nomStructure = nodeRecord.getChildren().get(0).getValue();
                 Symbol symbol = currentTds.getSymbol(nomStructure);
                 if (symbol == null) {
@@ -1324,12 +1298,12 @@ public class CodeGenerator {
                 if (cas_particulier_fonction == 1) {
                     write("LDR R0, [R13] ; Load the value of the variable to access");
                     write("ADD R13, R13, #4 ; retirer la valeur de retour");
-                }
-                else {
-                    write("LDR R0, [R10, #" + (deplacements.get(0) - 4) + "] ; Load the value of the variable to access");
+                } else {
+                    write("LDR R0, [R10, #" + (deplacements.get(0) - 1) + "] ; Load the value of the variable to access");
                 }
                 for (int i = 1; i < deplacements.size(); i++) {
-                    write("LDR R0, [R0, #" + deplacements.get(i) * 4 + "] ; Load the value of the field " + i);
+                    write("MOV r1, r0");
+                    write("LDR R0, [R0, #" + (deplacements.get(i)-1) * 4 + "] ; Load the value of the field " + i);
                 }
                 write("SUB R13, R13, #4 ; Decrement the stack pointer");
                 write("STR R0, [R13] ; Store the value in the stack");
@@ -1339,16 +1313,15 @@ public class CodeGenerator {
             } else {
                 write("; --- LOCAL VARIABLE ACCESS ---");
                 incrementTabulation();
-                if (cas_particulier_fonction == 1){
+                if (cas_particulier_fonction == 1) {
                     write("LDR R0, [R13] ; Load the value of the variable to access");
                     write("ADD R13, R13, #4 ; retirer la valeur de retour");
-                }
-                else {
-                    write("LDR R0, [R11, #-" + (deplacements.get(0) * 4) + "] ; Load the value of the variable to access");
+                } else {
+                    write("LDR R0, [R11, #-" + ((deplacements.get(0)-1) * 4) + "] ; Load the value of the variable to access");
                 }
                 //C'est ici qu'il faut faire les déplacements, on sait que dans r0, il y a l'adresse de l'endroit où se trouve la structure
                 for (int i = 1; i < deplacements.size(); i++) {
-                    write("LDR R0, [R0, #" + deplacements.get(i) * 4 + "] ; Load the value of the field " + i);
+                    write("LDR R0, [R0, #" + (deplacements.get(i)-1) * 4 + "] ; Load the value of the field " + i);
                 }
                 write("SUB R13, R13, #4 ; Decrement the stack pointer");
                 write("STR R0, [R13] ; Store the value in the stack");
@@ -1362,32 +1335,28 @@ public class CodeGenerator {
         Node value = node.getChild(1);
         String type_valeur = type_valeur(value);
         write("; --- PUT generation ---");
-        if (value.getValue().equalsIgnoreCase("Character'Val")){
+        if (value.getValue().equalsIgnoreCase("Character'Val")) {
             generateArithmetic(value.getChildren().get(0));
             write("LDMFD   r13!, {r0}");
             write("MOV R1, #1");
-        }
-        else if (value.getToken().getType().equals(TokenType.NUMBER)) {
+        } else if (value.getToken().getType().equals(TokenType.NUMBER)) {
             write("MOV R0, #" + value.getValue());
             write("MOV R1, #2");
-        }
-        else if (value.getToken().getType().equals(TokenType.CHARACTER)){
-            write("MOV R0, #" + (int)value.getValue().charAt(0));
+        } else if (value.getToken().getType().equals(TokenType.CHARACTER)) {
+            write("MOV R0, #" + (int) value.getValue().charAt(0));
             write("MOV R1, #1");
-        }
-        else if (value.getValue().equalsIgnoreCase("true") || value.getValue().equalsIgnoreCase("false")) {
+        } else if (value.getValue().equalsIgnoreCase("true") || value.getValue().equalsIgnoreCase("false")) {
             write("MOV R0, #" + (value.getValue().equalsIgnoreCase("true") ? 1 : 0));
             write("MOV R1, #3");
-        }
-        else {
+        } else {
             //c'est une variable donc faut la chercher par la fonction accessVariable
             generateAccessVariable(value);
             write("LDMFD   r13!, {r0}");
             Tds currentTds = tds;
-            while(node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC){
+            while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
                 node = node.getParent();
             }
-            if(node.getParent().getType() == NodeType.DECL_FUNC){
+            if (node.getParent().getType() == NodeType.DECL_FUNC) {
                 FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
                 currentTds = tds.getTDSfonction(functionSymbol.getName());
 
@@ -1402,11 +1371,9 @@ public class CodeGenerator {
             VariableSymbol variableSymbol = (VariableSymbol) symbol;
             if (variableSymbol.getType_variable().equalsIgnoreCase("integer")) {
                 write("MOV R1, #2");
-            }
-            else if (variableSymbol.getType_variable().equalsIgnoreCase("Character")) {
+            } else if (variableSymbol.getType_variable().equalsIgnoreCase("Character")) {
                 write("MOV R1, #1");
-            }
-            else if (variableSymbol.getType_variable().equalsIgnoreCase("boolean")) {
+            } else if (variableSymbol.getType_variable().equalsIgnoreCase("boolean")) {
                 write("MOV R1, #3");
             }
         }
@@ -1435,12 +1402,13 @@ public class CodeGenerator {
                 return "boolean";
             } else if (valeur.getToken() != null && valeur.getToken().getType() == TokenType.CHARACTER) {
                 return "Character";
-            }
-            else {
-                if (valeur.getValue().equalsIgnoreCase("Character'Val")){
+            } else {
+                if (valeur.getValue().equalsIgnoreCase("Character'Val")) {
                     return "Character";
                 }
-                if (valeur.getValue().equalsIgnoreCase("null")){ return "null"; }
+                if (valeur.getValue().equalsIgnoreCase("null")) {
+                    return "null";
+                }
                 return " ";
             }
         }
@@ -1487,7 +1455,7 @@ public class CodeGenerator {
             nodeRecord = nodeRecord.getChildren().get(0);
         }
         //Une fois qu'on a termniné, on est au dernier point tout en bas deux cas se présentent :  call ou nom de structure
-        if (nodeRecord.getChildren().get(0).getType() == CALL){
+        if (nodeRecord.getChildren().get(0).getType() == CALL) {
             String nomFonction = nodeRecord.getChildren().get(0).getChildren().get(0).getValue();
             Symbol symbol = currentTds.getSymbol(nomFonction);
             TypeRecordSymbol typeRecordSymbol = null;
@@ -1506,7 +1474,7 @@ public class CodeGenerator {
                 throw new IllegalArgumentException("Symbol not found in tds :###20 " + nodeRecord.getChildren().get(0).getValue());
             }
             deplacements.add(0);
-            if (nodeRecord.getParent().getType() != POINT){
+            if (nodeRecord.getParent().getType() != POINT) {
                 String nomChamp = nodeRecord.getChildren().get(1).getValue();
                 int numeroChamp = 0;
                 for (VariableSymbol field : typeRecordSymbol.getFields()) {
@@ -1519,8 +1487,7 @@ public class CodeGenerator {
                     throw new IllegalArgumentException("Field not found in record : " + typeRecordSymbol.getName());
                 }
                 deplacements.add(numeroChamp);
-            }
-            else{
+            } else {
                 while (nodeRecord.getParent().getType() != NodeType.POINT) {
                     nodeRecord = nodeRecord.getParent();
                     String nomChamp = nodeRecord.getChildren().get(1).getValue();
@@ -1539,8 +1506,7 @@ public class CodeGenerator {
                     deplacements.add(numeroChamp);
                 }
             }
-        }
-        else {
+        } else {
             nomStructure = nodeRecord.getChildren().get(0).getValue();
             Symbol varSymbol = currentTds.getSymbol(nomStructure);
             StructureSymbol typeRecordSymbol = (StructureSymbol) varSymbol;
@@ -1548,7 +1514,7 @@ public class CodeGenerator {
                 throw new IllegalArgumentException("Symbol not found in tds :###14 " + nomStructure);
             }
             deplacements.add(varSymbol.getDeplacement());
-            if (nodeRecord.getParent().getType() != POINT){
+            if (nodeRecord.getParent().getType() != POINT) {
                 String nomChamp = nodeRecord.getChildren().get(1).getValue();
                 int numeroChamp = 0;
                 for (VariableSymbol field : typeRecordSymbol.getFields()) {
@@ -1561,8 +1527,7 @@ public class CodeGenerator {
                     throw new IllegalArgumentException("Field not found in record : " + typeRecordSymbol.getName());
                 }
                 deplacements.add(numeroChamp);
-            }
-            else{
+            } else {
                 while (nodeRecord.getParent().getType() != NodeType.POINT) {
                     nodeRecord = nodeRecord.getParent();
                     String nomChamp = nodeRecord.getChildren().get(1).getValue();
@@ -1584,6 +1549,48 @@ public class CodeGenerator {
         }
         return deplacements;
     }
+
+    private void declarer_structure(StructureSymbol structureSymbol) throws IOException {
+        int numeroChamp = 0;
+        for (VariableSymbol field : structureSymbol.getFields()) {
+            numeroChamp++;
+            String type_valeur = field.getType_variable();
+            if (!(type_valeur.equalsIgnoreCase("integer") || type_valeur.equalsIgnoreCase("boolean") || type_valeur.equalsIgnoreCase("Character"))) {
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_valeur);
+                if (typeRecordSymbol == null) {
+                    throw new IllegalArgumentException("Symbol not found in tds :###4 " + type_valeur);
+                }
+                write(typeRecordSymbol.getName().toUpperCase() + structureCounter + "_" + nbChampCounter + " FILL 0x" + Integer.toHexString(typeRecordSymbol.getFields().size() * 4) + " ; place pour réserver le record");
+                write("LDR r0, =" + typeRecordSymbol.getName().toUpperCase() + structureCounter + "_" + nbChampCounter + " ; Load the address of the structure");
+                write("LDR r1, =" + structureSymbol.getName().toUpperCase() + (structureCounter));
+                write("STR r0, [r1, #" + (numeroChamp - 1) * 4 + "]");
+                nbChampCounter++;
+                declarer_structure(typeRecordSymbol);
+            }
+        }
+    }
+
+    private void declarer_structure(TypeRecordSymbol structureSymbol) throws IOException {
+        int numeroChamp = 0;
+        for (VariableSymbol field : structureSymbol.getFields()) {
+            numeroChamp++;
+            String type_valeur = field.getType_variable();
+            if (!(type_valeur.equalsIgnoreCase("integer") || type_valeur.equalsIgnoreCase("boolean") || type_valeur.equalsIgnoreCase("Character"))) {
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_valeur);
+                if (typeRecordSymbol == null) {
+                    throw new IllegalArgumentException("Symbol not found in tds :###4 " + type_valeur);
+                }
+                write(typeRecordSymbol.getName().toUpperCase() + structureCounter + "_" + nbChampCounter + " FILL 0x" + Integer.toHexString(typeRecordSymbol.getFields().size() * 4) + " ; place pour réserver le record");
+                write("LDR r0, =" + typeRecordSymbol.getName().toUpperCase() + structureCounter + "_" + nbChampCounter + " ; Load the address of the structure");
+                write("LDR r1, =" + structureSymbol.getName().toUpperCase() + (structureCounter));
+                write("STR r0, [r1, #" + (numeroChamp - 1) * 4 + "]");
+                nbChampCounter++;
+                declarer_structure(typeRecordSymbol);
+            }
+        }
+    }
 }
+
+
 
 
