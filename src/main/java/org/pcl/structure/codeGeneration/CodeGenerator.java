@@ -978,7 +978,7 @@ public class CodeGenerator {
         String nom_variable = node.getChildren().get(0).getValue();
         Symbol symbol = tds.getSymbol(nom_variable);
         if (symbol == null) {
-            throw new IllegalArgumentException("Symbol not found in tds : " + nom_variable);
+            throw new IllegalArgumentException("Symbol not found in tds :###8 " + nom_variable);
         }
         if (symbol instanceof TypeRecordSymbol) {
             TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) symbol;
@@ -1044,11 +1044,12 @@ public class CodeGenerator {
 //            varImbrication = 0;
 //        } else {
 
+
         Symbol varSymbol;
         if (node.firstChild().getType() != DECL_VAR) {
             varSymbol = currentTds.getSymbol(node.firstChild().getValue());
             if(varSymbol == null){
-                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
+                throw new IllegalArgumentException("Symbol not found in tds :###7 " + node.firstChild().getType());
             }
             varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
             varImbrication = varTds.getImbrication();
@@ -1056,7 +1057,7 @@ public class CodeGenerator {
         else {
             varSymbol = currentTds.getSymbol(node.firstChild().getChildren().get(0).getValue());
             if(varSymbol == null){
-                throw new IllegalArgumentException("Symbol not found in tds : " + node.firstChild().getType());
+                throw new IllegalArgumentException("Symbol not found in tds :###5 " + node.firstChild().getType());
             }
             varTds = currentTds.getTDSfromSymbol(varSymbol.getName());
             varImbrication = varTds.getImbrication();
@@ -1068,7 +1069,7 @@ public class CodeGenerator {
             // case : affectation of a local variable not in a declaration
             Symbol symbol = currentTds.getSymbol(node.getChild(0).getValue());
             if (symbol == null) {
-                throw new IllegalArgumentException("Symbol not found in tds : " + node.getChild(0).getChild(0).getValue());
+                throw new IllegalArgumentException("Symbol not found in tds :###6 " + node.getChild(0).getChild(0).getValue());
             }
             else {
                 if (varImbrication == currentImbrication) {
@@ -1112,8 +1113,6 @@ public class CodeGenerator {
             write("LDMFD   r13!, {r0}");
             write("STR r0, [r13]");
         }
-        //TODO : arithmetic
-        //TODO case : affectation of a character
     }
 
     private void generateAccessVariable(Node nodeToAccess) throws IOException {
@@ -1219,7 +1218,7 @@ public class CodeGenerator {
                     Symbol Recordsymbol = currentTds.getSymbol(nomChamp);
                     int numeroChamp = 0;
                     if (Recordsymbol == null) {
-                        throw new IllegalArgumentException("Symbol not found in tds : " + nomStructure);
+                        throw new IllegalArgumentException("Symbol not found in tds :###3 " + nomStructure);
                     }
                     if (Recordsymbol instanceof TypeRecordSymbol) {
                         TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) Recordsymbol;
@@ -1241,7 +1240,7 @@ public class CodeGenerator {
                 Symbol Recordsymbol = currentTds.getSymbol(nomChamp);
                 int numeroChamp = 0;
                 if (Recordsymbol == null) {
-                    throw new IllegalArgumentException("Symbol not found in tds : " + nomStructure);
+                    throw new IllegalArgumentException("Symbol not found in tds :##1 " + nomStructure);
                 }
                 if (Recordsymbol instanceof TypeRecordSymbol) {
                     TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) Recordsymbol;
@@ -1335,7 +1334,7 @@ public class CodeGenerator {
             }
             Symbol symbol = currentTds.getSymbol(value.getValue());
             if (symbol == null) {
-                throw new IllegalArgumentException("Symbol not found in tds : " + value.getValue());
+                throw new IllegalArgumentException("Symbol not found in tds :###2 " + value.getValue());
             }
             VariableSymbol variableSymbol = (VariableSymbol) symbol;
             if (variableSymbol.getType_variable().equalsIgnoreCase("integer")) {
