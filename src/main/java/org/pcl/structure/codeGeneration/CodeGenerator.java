@@ -340,15 +340,13 @@ public class CodeGenerator {
                 || node.getValue().equalsIgnoreCase("*") || node.getValue().equalsIgnoreCase("/")
                 || node.getValue().equalsIgnoreCase("REM")) {
 
-            if (node.getChildren().size() == 1) {
-                // case unary operator
-                String valueNegative = node.getChild(0).getValue();
-                write("MOV R0, #" + node.getValue() + valueNegative + " ; Load the value of the number: " + node.getValue() + valueNegative);
-                write("SUB R13, R13, #4");
-                write("STR R0, [R13]");
+            if (node.getType() == NodeType.NEGATIVE_SIGN) {
+                generateArithmeticRecursif(node.getChildren().get(0));
+                write("LDR R0, [R13]");
+                write("RSB R0, R0, #0 ; opposé");
+                write("STR R0, [R13] ; opposé en sommet de pile");
                 return;
             }
-
 
             generateArithmeticRecursif(node.getChildren().get(0));
             generateArithmeticRecursif(node.getChildren().get(1));
