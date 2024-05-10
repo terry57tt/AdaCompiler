@@ -247,7 +247,7 @@ public class CodeGenerator {
         }
 
         // si signe négatif, on prend l'opposé de la valeur en sommet de pile
-        if (value.equalsIgnoreCase("-")) {
+        if (node.getType() == NodeType.NEGATIVE_SIGN) {
             generateBoolean(node.getChildren().get(0));
             write("LDR R0, [R13]");
             write("RSB R0, R0, #0 ; opposé");
