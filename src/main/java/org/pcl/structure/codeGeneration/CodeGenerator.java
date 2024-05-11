@@ -194,6 +194,8 @@ public class CodeGenerator {
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             }
         }
+        write("MOV r13, r11 ; Restaurer le pointeur de pile original");
+        write("LDMFD r13!, {r10, r11, PC} ; Restaurer les registres et retourner");
     }
 
     private void generateBoolean(Node node) throws IOException {
@@ -598,18 +600,18 @@ public class CodeGenerator {
             //c'est une variable donc faut la chercher par la fonction accessVariable
             generateAccessVariable(borne_inf);
             write("LDMFD   r13!, {r0}");
-            write("STMFD r13!, {r0}");
+            write("STMFD r13!, {r0} ; empiler la borne inf");
         } else if (type_borne_inf.equalsIgnoreCase("integer")) {
             write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
             write("MOV R0, #" + borne_inf.getValue());
             write("STR r0, [r13] ; Empiler la borne inf");
         }
         String type_borne_sup = type_valeur(borne_sup);
-        if (borne_sup.getValue().equalsIgnoreCase(" ")) {
+        if (type_borne_sup.equalsIgnoreCase(" ")) {
             //c'est une variable donc faut la chercher par la fonction accessVariable
             generateAccessVariable(borne_sup);
             write("LDMFD   r13!, {r0}");
-            write("STMFD r13!, {r0}");
+            write("STMFD r13!, {r0} ; Empiler la borne sup");
         } else if (type_borne_sup.equalsIgnoreCase("integer")) {
             write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
             write("MOV R0, #" + borne_sup.getValue());
@@ -783,8 +785,6 @@ public class CodeGenerator {
                 generateCode(body);
             }
         }
-        write("MOV r13, r11 ; Restaurer le pointeur de pile original");
-        write("LDMFD r13!, {r10, r11, PC} ; Restaurer les registres et retourner");
         decrementTabulation();
     }
 
@@ -1126,7 +1126,6 @@ public class CodeGenerator {
                     for (int i = 1; i < deplacements.size() - 1; i++) {
                         write("LDR R0, [R0, #" + (deplacements.get(i)) * 4 + "] ; Load the value of the field " + i);
                     }
-                    System.out.println(deplacements);
                     write("STR R7, [R0, #" + (deplacements.get(deplacements.size() - 1)) * 4 + "] ; variable := " + node.getChild(1).getValue());
                     write("; --- END AFFECTATION of variable " + varSymbol.getName() + " ---");
                 } else {
@@ -1150,7 +1149,6 @@ public class CodeGenerator {
                     for (int i = 1; i < deplacements.size() - 1; i++) {
                         write("LDR R0, [R0, #" + (deplacements.get(i)) * 4 + "] ; Load the value of the field " + i);
                     }
-                    System.out.println(deplacements);
                     write("STR R7, [R0, #" + (deplacements.get(deplacements.size() - 1)) * 4 + "] ; variable := " + node.getChild(1).getValue());
                     write("; --- END NON LOCAL VARIABLE AFFECTATION ---");
                     nonLocalAccessAffectationLoopCounter++;
@@ -1178,11 +1176,11 @@ public class CodeGenerator {
                 write("; --- DECLARATION of variable " + nom_variable + " ---");
                 write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
                 write("; --- END DECLARATION of variable " + nom_variable + " ---");
-            }
-            write("; --- AFFECTATION of variable " + nom_variable + " ---");
-            generateArithmetic(node.getChild(1));
-            write("LDMFD   r13!, {r0}");
-            write("STR r0, [r13]");
+                write("; --- AFFECTATION of variable " + nom_variable + " ---");
+                generateArithmetic(node.getChild(1));
+                write("LDMFD   r13!, {r0}");
+                write("STR r0, [r13]");
+            };
         }
     }
 
