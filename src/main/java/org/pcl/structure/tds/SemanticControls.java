@@ -110,7 +110,7 @@ public class SemanticControls {
                 Node field = point.getChildren().get(1);
                 Symbol symbolStructure = tds.getSymbol(typeNoeudPoint, SymbolType.TYPE_RECORD);
                 if (symbolStructure == null) {
-                    printError(typeNoeudPoint + " is not a declared structure", point);
+                    printError(typeNoeudPoint + " is not a declared structure ###", point);
                     return;
                 }
                 List<VariableSymbol> fields = ((TypeRecordSymbol) symbolStructure).getFields();
@@ -264,6 +264,7 @@ public class SemanticControls {
                 List<VariableSymbol> fields = ((StructureSymbol) symbolStructure).getFields();
                 for (VariableSymbol field1 : fields) {
                     if (field1.getName().equalsIgnoreCase(field.getValue())) {
+                        System.out.println("field1.getType_variable() : " + field1.getType_variable());
                         return field1.getType_variable();
                     }
                 }
