@@ -600,10 +600,16 @@ public class CodeGenerator {
             //c'est une variable donc faut la chercher par la fonction accessVariable
             generateAccessVariable(borne_inf);
             write("LDMFD   r13!, {r0}");
+            if (direction.equalsIgnoreCase("reverse")){
+                write("SUB r0, r0, #1");
+            }
             write("STMFD r13!, {r0} ; empiler la borne inf");
         } else if (type_borne_inf.equalsIgnoreCase("integer")) {
             write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
             write("MOV R0, #" + borne_inf.getValue());
+            if (direction.equalsIgnoreCase("reverse")){
+                write("SUB r0, r0, #1");
+            }
             write("STR r0, [r13] ; Empiler la borne inf");
         }
         String type_borne_sup = type_valeur(borne_sup);
@@ -611,10 +617,16 @@ public class CodeGenerator {
             //c'est une variable donc faut la chercher par la fonction accessVariable
             generateAccessVariable(borne_sup);
             write("LDMFD   r13!, {r0}");
+            if (!direction.equalsIgnoreCase("reverse")) {
+                write("ADD r0, r0, #1");
+            }
             write("STMFD r13!, {r0} ; Empiler la borne sup");
         } else if (type_borne_sup.equalsIgnoreCase("integer")) {
             write("SUB R13, R13, #4 ; Décrémenter le pointeur de pile");
             write("MOV R0, #" + borne_sup.getValue());
+            if (!direction.equalsIgnoreCase("reverse")){
+                write("ADD r0, r0, #1");
+            }
             write("STR r0, [r13] ; Empiler la borne sup");
         }
         //initialisation : on met dans la pile : borne inf, borne sup, compteur initialisé à borne inf
@@ -1222,11 +1234,6 @@ public class CodeGenerator {
         }
         if (numero_For != 0) {
             int taille_TDS = currentTds.getNbVariables();
-            System.out.println("Je veux la variable : " + nodeToAccess.getValue());
-            System.out.println("Taille TDS : " + taille_TDS);
-            System.out.println("Numero For : " + numero_For);
-            System.out.println("NbFor a remonter : " + nbFor_a_remonter);
-            System.out.println("On va chercher à : " + (taille_TDS + (nbFor_a_remonter - numero_For+1)*3)*4 + " dans la pile");
             write("LDR r0, [r11, #-" + (taille_TDS + (nbFor_a_remonter - numero_For + 1)*3)*4 + "]");
             write("SUB R13, R13, #4 ; Decrement the stack pointer");
             write("STR r0, [R13] ; Store the value in the stack");
@@ -1361,29 +1368,45 @@ public class CodeGenerator {
             //c'est une variable donc faut la chercher par la fonction accessVariable
             generateAccessVariable(value);
             write("LDMFD   r13!, {r0}");
-            Tds currentTds = tds;
-            while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
-                node = node.getParent();
+            Node testFor = node;
+            int nbFor_a_remonter = 0;
+            int numero_For = 0;
+            while (testFor.getType() != FILE) {
+                testFor = testFor.getParent();
+                if (testFor.getType() == FOR) {
+                    nbFor_a_remonter++;
+                    if (testFor.getChildren().get(0).getValue().equalsIgnoreCase(value.getValue())) {
+                        numero_For = nbFor_a_remonter;
+                    }
+                }
             }
-            if (node.getParent().getType() == NodeType.DECL_FUNC) {
-                FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
-                currentTds = tds.getTDSfonction(functionSymbol.getName());
+            if (numero_For != 0) {
+                write("MOV r1, #2");
+            } else {
+                Tds currentTds = tds;
+                while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
+                    node = node.getParent();
+                }
+                if (node.getParent().getType() == NodeType.DECL_FUNC) {
+                    FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+                    currentTds = tds.getTDSfonction(functionSymbol.getName());
 
-            } else if (node.getParent().getType() == NodeType.DECL_PROC) {
-                ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
-                currentTds = tds.getTDSfonction(procedureSymbol.getName());
-            }
-            Symbol symbol = currentTds.getSymbol(value.getValue());
-            if (symbol == null) {
-                throw new IllegalArgumentException("Symbol not found in tds :###2 " + value.getValue());
-            }
-            VariableSymbol variableSymbol = (VariableSymbol) symbol;
-            if (variableSymbol.getType_variable().equalsIgnoreCase("integer")) {
-                write("MOV R1, #2");
-            } else if (variableSymbol.getType_variable().equalsIgnoreCase("Character")) {
-                write("MOV R1, #1");
-            } else if (variableSymbol.getType_variable().equalsIgnoreCase("boolean")) {
-                write("MOV R1, #3");
+                } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+                    ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+                    currentTds = tds.getTDSfonction(procedureSymbol.getName());
+                }
+                Symbol symbol = currentTds.getSymbol(value.getValue());
+                if (symbol == null) {
+                    throw new IllegalArgumentException("Symbol not found in tds :###2 " + value.getValue());
+                }
+                VariableSymbol variableSymbol = (VariableSymbol) symbol;
+                if (variableSymbol.getType_variable().equalsIgnoreCase("integer")) {
+                    write("MOV R1, #2");
+                } else if (variableSymbol.getType_variable().equalsIgnoreCase("Character")) {
+                    write("MOV R1, #1");
+                } else if (variableSymbol.getType_variable().equalsIgnoreCase("boolean")) {
+                    write("MOV R1, #3");
+                }
             }
         }
         write("SUB r13, r13, #4");
