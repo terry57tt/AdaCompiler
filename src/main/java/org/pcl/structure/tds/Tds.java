@@ -125,6 +125,16 @@ public class Tds {
         return false;
     }
 
+    public int getNbVariables() {
+        int nb = 0;
+        for (Symbol symbol : symbols) {
+            if (symbol.getType() != TYPE_ACCESS && symbol.getType() != TYPE_RECORD && symbol.getType() != FUNCTION && symbol.getType() != PROCEDURE) {
+                nb++;
+            }
+        }
+        return nb;
+    }
+
     public Symbol getSymbol(String SymbolName, SymbolType type) {
         if (type == VARIABLE) {
             for (Symbol symbol : symbols) {

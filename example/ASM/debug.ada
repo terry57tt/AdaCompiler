@@ -33,6 +33,10 @@ procedure Main is
             return False;
         end if;
 
+        if Num = 2 then
+            return True;
+        end if;
+
         A := Integer_Sqrt(Num, 1, 1);
 
         for I in 2 .. A loop
@@ -48,17 +52,6 @@ procedure Main is
 
 -- Main procedure
 begin
-    while iter <= 5  loop
-        Number := iter;
-        Result := Is_Prime(Number);
-        if Result = true then
-            put(Number);
-            put(true);
-        else
-            put(Number);
-            put(false);
-        end if;
-        iter := iter + 1;
-    end loop;
-
+    Result := Is_Prime(11);
+    put(Result);
 end Main;

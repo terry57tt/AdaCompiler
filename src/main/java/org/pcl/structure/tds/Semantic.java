@@ -424,7 +424,14 @@ vérifier que la valeur affecté correspond au type de déclaration
                 String direction = children.get(1).getValue();
                 String borne_inf = children.get(2).getValue();
                 String borne_sup = children.get(3).getValue();
-                Node loop = children.get(4);
+                Node loop;
+                if (children.get(2).getValue().equalsIgnoreCase("reverse")){
+                    loop = children.get(5);
+                }
+                else {
+                    loop = children.get(4);
+                }
+
                 Tds tds_for = new Tds("for");
                 tds.addChild(tds_for);
                 VariableSymbol variableSymbol = new VariableSymbol(SymbolType.VARIABLE, 0, variable_compteur, "INTEGER", true);

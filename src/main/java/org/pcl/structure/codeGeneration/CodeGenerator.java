@@ -1210,17 +1210,27 @@ public class CodeGenerator {
 
         Node testFor = nodeToAccess;
         int nbFor_a_remonter = 0;
+        int numero_For = 0;
         while (testFor.getType() != FILE) {
             testFor = testFor.getParent();
             if (testFor.getType() == FOR) {
-                if (testFor.getChildren().get(0).getValue().equalsIgnoreCase(nodeToAccess.getValue())) {
-                    write("LDR r0, [r13, #4*" + nbFor_a_remonter * 3 + "]");
-                    write("SUB r13, r13, #4 ; Decrement the stack pointer");
-                    write("STR r0, [r13] ; Store the value in the stack");
-                    return;
-                }
                 nbFor_a_remonter++;
+                if (testFor.getChildren().get(0).getValue().equalsIgnoreCase(nodeToAccess.getValue())) {
+                    numero_For = nbFor_a_remonter;
+                }
             }
+        }
+        if (numero_For != 0) {
+            int taille_TDS = currentTds.getNbVariables();
+            System.out.println("Je veux la variable : " + nodeToAccess.getValue());
+            System.out.println("Taille TDS : " + taille_TDS);
+            System.out.println("Numero For : " + numero_For);
+            System.out.println("NbFor a remonter : " + nbFor_a_remonter);
+            System.out.println("On va chercher à : " + (taille_TDS + (nbFor_a_remonter - numero_For+1)*3)*4 + " dans la pile");
+            write("LDR r0, [r11, #-" + (taille_TDS + (nbFor_a_remonter - numero_For + 1)*3)*4 + "]");
+            write("SUB R13, R13, #4 ; Decrement the stack pointer");
+            write("STR r0, [R13] ; Store the value in the stack");
+            return;
         }
 
         if (nodeToAccess.getType() != NodeType.POINT) {
