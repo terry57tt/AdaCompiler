@@ -1175,14 +1175,25 @@ public class CodeGenerator {
                 throw new IllegalArgumentException("Symbol not found in tds :###8 " + nom_variable);
             }
             if (symbol instanceof StructureSymbol) {
-                StructureSymbol StructureSymbol = (StructureSymbol) symbol;
-                int size = StructureSymbol.getFields().size();
+                StructureSymbol structureSymbol = (StructureSymbol) symbol;
+                int size = structureSymbol.getFields().size();
                 write("; --- DECLARATION of variable " + nom_variable + " ---");
                 write(nom_variable.toUpperCase() + structureCounter + " FILL 0x" + Integer.toHexString(size * 4) + " ; place pour réserver le record");
+                declarer_structure(structureSymbol);
                 write("SUB R13, R13, #4 ; place dans la pile pour la variable " + nom_variable);
                 write("LDR r0, =" + nom_variable.toUpperCase() + structureCounter + " ; Load the address of the structure");
                 write("STR r0, [r13]");
                 write("; --- END DECLARATION of variable " + nom_variable + " ---");
+                write("; --- AFFECTATION of variable " + nom_variable + " ---");
+                //Il faut recopier tous les élements de la structure dans la structure que l'on vient de déclarer
+                StructureSymbol structureSymbolToAffect = (StructureSymbol) varTds.getSymbol(nom_variable);
+                if (structureSymbolToAffect == null) {
+                    throw new IllegalArgumentException("Symbol not found in tds :###8 " + nom_variable);
+                }
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(structureSymbolToAffect.getType_variable());
+                write("STMFD r13!, {r0}");
+                generateAccessVariable(node.getChild(1));
+                affecter_structure(typeRecordSymbol);
                 structureCounter++;
             } else {
                 write("; --- DECLARATION of variable " + nom_variable + " ---");
@@ -1517,7 +1528,7 @@ public class CodeGenerator {
                     numeroChamp++;
                 }
                 if (numeroChamp == typeRecordSymbol.getFields().size()) {
-                    throw new IllegalArgumentException("Field not found in record : " + typeRecordSymbol.getName());
+                    throw new IllegalArgumentException("Field not found in record :####### " + typeRecordSymbol.getName());
                 }
                 deplacements.add(numeroChamp);
             } else {
@@ -1534,7 +1545,7 @@ public class CodeGenerator {
                         numeroChamp++;
                     }
                     if (numeroChamp == nomType.getFields().size()) {
-                        throw new IllegalArgumentException("Field not found in record : " + nomType.getName());
+                        throw new IllegalArgumentException("Field not found in record : ###" + nomType.getName());
                     }
                     deplacements.add(numeroChamp);
                     nodeRecord = nodeRecord.getParent();
@@ -1558,7 +1569,7 @@ public class CodeGenerator {
                     numeroChamp++;
                 }
                 if (numeroChamp == typeRecordSymbol.getFields().size()) {
-                    throw new IllegalArgumentException("Field not found in record : " + typeRecordSymbol.getName());
+                    throw new IllegalArgumentException("Field not found in record : ##2" + typeRecordSymbol.getName());
                 }
                 deplacements.add(numeroChamp);
             } else {
@@ -1623,6 +1634,38 @@ public class CodeGenerator {
                 write("STR r0, [r1, #" + (numeroChamp - 1) * 4 + "]");
                 nbChampCounter++;
                 declarer_structure(typeRecordSymbol);
+            }
+        }
+    }
+
+    //ce qu'il faudrait c'est que à chaque fois qu'on appelle la fonction : r0 contient l'adresse de la structure declarée
+    //et que r1, contienne l'adresse de la structure à affecter.
+    private void affecter_structure(TypeRecordSymbol structureSymbol) throws IOException {
+        int numeroChamp = 0;
+        //On commence par récupérer l'adresse de la structure à affecter
+        //On rappelle que dans r0 se trouve l'adresse de la structure déclaré
+        //r1 est le truc qu'on veut affecter, on va recopier "chaque valeur de r1 dans r0"
+        write("LDR r0, [r13, #4] ; Load the address of the structure declared");
+        write("LDR r1, [r13] ; Load the address of the structure to affect");
+        for (VariableSymbol field : structureSymbol.getFields()) {
+            numeroChamp++;
+            String type_valeur = field.getType_variable();
+            if (!(type_valeur.equalsIgnoreCase("integer") || type_valeur.equalsIgnoreCase("boolean") || type_valeur.equalsIgnoreCase("Character"))) {
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_valeur);
+                if (typeRecordSymbol == null) {
+                    throw new IllegalArgumentException("Symbol not found in tds :###4 " + type_valeur);
+                }
+                write("LDR r4, [r0, #" + (numeroChamp - 1) * 4 + "]");
+                write("LDR r3, [r1, #" + (numeroChamp - 1) * 4 + "]");
+                write("STMFD r13!, {r4}");
+                write("STMFD r13!, {r3}");
+                affecter_structure(typeRecordSymbol);
+                write("ADD r13, r13, #8 ; depiler les valeurs de la structure");
+                write("LDR r0, [r13, #4] ; Load the address of the structure declared");
+                write("LDR r1, [r13] ; Load the address of the structure to affect");
+            } else {
+                write("LDR r3, [r1, #" + (numeroChamp - 1) * 4 + "]");
+                write("STR r3, [r0, #" + (numeroChamp - 1) * 4 + "] ; affectation du champ " + numeroChamp);
             }
         }
     }

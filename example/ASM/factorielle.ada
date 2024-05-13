@@ -16,6 +16,6 @@ procedure Factorial is
 
 begin
    N := 5;
-   Result := Factorial (N);
+   Result := Factorial(N);
    Put(Result);
 end Factorial;
