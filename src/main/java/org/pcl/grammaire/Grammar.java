@@ -1678,6 +1678,7 @@ public class Grammar {
                     currentNode.getParent().getChildren().set(indexCurrentNode, currentNode.getChildren().get(0));
                     currentNode.getChildren().get(0).setParent(currentNode.getParent());
                 }
+
                 if (currentNode.getChildren().isEmpty() && !currentNode.isFinal()){
                     currentNode.deleteFromParent();
                 }
@@ -2102,7 +2103,8 @@ public class Grammar {
             }
              // function and procedure call without parameters
              if(currentNode.getToken() != null && currentNode.getToken().getType() == TokenType.IDENTIFIER && isNodeNextToken(currentNode, ";")
-                     && currentNode.getParent().getValue().equals("body")
+                     && (currentNode.getParent().getValue().equals("body")
+                            || (currentNode.getParent().getValue().equals("nodeIntr1") && currentNode.getParent().getParent().getValue().equals("body")))
                      && !currentNode.getParent().getValue().equals(":=")
                      && !currentNode.getParent().getValue().equals("call")
                      && !isNodePreviousToken(currentNode, "end")
