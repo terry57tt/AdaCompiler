@@ -22,6 +22,8 @@ procedure Record_Test is
    function parametre_struct (coucou : test) return integer is
         copie : test := coucou;
     begin
+        copie.A := 1000;
+        copie.B := 100;
         return copie.A + copie.B;
     end parametre_struct;
 
@@ -29,7 +31,6 @@ procedure Record_Test is
 
     function parametre_struct2(coucou : test3) return integer is
         copie : test3 := coucou;
-
     begin
         return copie.C + copie.D.A + copie.D.B;
     end parametre_struct;
@@ -43,6 +44,7 @@ begin
    coucou2.D.B := 5;
 
    a := parametre_struct(coucou);
+   put(a);
    a := parametre_struct(coucou);
    put(a);
 
