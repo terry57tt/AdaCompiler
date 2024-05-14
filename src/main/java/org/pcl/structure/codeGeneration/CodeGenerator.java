@@ -185,7 +185,7 @@ public class CodeGenerator {
                 write("STR r0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             } else if (children.get(0).getType() == NodeType.CALL) {
                 generateCallFunctionProcedure(children.get(0));
-                mettre_valeur_retour_en_registre_apres_appel("r0", children.get(0).getChildren().get(0).getValue());
+                mettre_valeur_retour_en_registre_apres_appel("r0", children.get(0).getChildren().get(0).getValue(), children.get(0));
                 write("SUB R13, R13, #4");
                 write("STR R0, [R11, #4*3] ; Sauvegarder la valeur de retour");
             } else if (value_type.equalsIgnoreCase(" ")) {
@@ -212,7 +212,7 @@ public class CodeGenerator {
         // si c'est un appel de fonction
         if (node.getType() == NodeType.CALL) {
             generateCallFunctionProcedure(node);
-            mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue());
+            mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue(), node);
             write("SUB R13, R13, #4");
             write("STR R0, [R13]");
             return;
@@ -421,7 +421,7 @@ public class CodeGenerator {
         }
         if (node.getType() == NodeType.CALL) {
             generateCallFunctionProcedure(node);
-            mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue());
+            mettre_valeur_retour_en_registre_apres_appel("r0", node.getChildren().get(0).getValue(), node);
             write("SUB R13, R13, #4");
             write("STR R0, [R13]");
         } else if (node.getToken().getType().equals(TokenType.NUMBER)) {
@@ -772,7 +772,19 @@ public class CodeGenerator {
         incrementTabulation();
         write("STMFD r13!, {r10, r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la fonction");
-        Symbol symbol = tds.getSymbol(nom_fonction);
+        Tds currentTds = tds;
+        while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
+            node = node.getParent();
+        }
+        if (node.getParent().getType() == NodeType.DECL_FUNC) {
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
+
+        } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
+        }
+        Symbol symbol = currentTds.getSymbol(nom_fonction);
         if (symbol == null) {
             throw new IllegalArgumentException("Symbol not found in tds : " + nom_fonction);
         }
@@ -811,7 +823,19 @@ public class CodeGenerator {
         incrementTabulation();
         write("STMFD r13!, {r10, r11, r14} ; Sauvegarde des registres FP et LR en pile");
         write("MOV r11, r13 ; Déplacer le pointeur de pile sur l'environnement de la procédure");
-        Symbol symbol = tds.getSymbol(nom_procedure);
+        Tds currentTds = tds;
+        while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
+            node = node.getParent();
+        }
+        if (node.getParent().getType() == NodeType.DECL_FUNC) {
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
+
+        } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
+        }
+        Symbol symbol = currentTds.getSymbol(nom_procedure);
         if (symbol == null) {
             throw new IllegalArgumentException("Symbol not found in tds : " + nom_procedure);
         }
@@ -884,7 +908,7 @@ public class CodeGenerator {
                 write("STR r0, [r13] ; Empiler le paramètre \" + i");
             } else if (children.get(i).getType() == NodeType.CALL) {
                 generateCallFunctionProcedure(children.get(i));
-                mettre_valeur_retour_en_registre_apres_appel("r0", children.get(i).getChildren().get(0).getValue());
+                mettre_valeur_retour_en_registre_apres_appel("r0", children.get(i).getChildren().get(0).getValue(), node);
                 write("SUB R13, R13, #4");
                 write("STR R0, [R13] ; empiler le paramètre");
             } else if (value_type.equalsIgnoreCase(" ")) {
@@ -895,7 +919,19 @@ public class CodeGenerator {
                 write("STR r0, [r13] ; Empiler le paramètre " + i);
             }
         }
-        Symbol symbol = tds.getSymbol(nom_fonction);
+        Tds currentTds = tds;
+        while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
+            node = node.getParent();
+        }
+        if (node.getParent().getType() == NodeType.DECL_FUNC) {
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
+
+        } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
+        }
+        Symbol symbol = currentTds.getSymbol(nom_fonction);
         if (symbol == null) {
             throw new IllegalArgumentException("Symbol not found in tds : " + nom_fonction);
         }
@@ -930,17 +966,17 @@ public class CodeGenerator {
         }
 
         if (callNode.getType() != null && callNode.getType() == NodeType.DECL_FUNC) {
-            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(callNode.firstChild().getValue());
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(callNode.firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
 
         } else if (callNode.getType() != null && callNode.getType() == NodeType.DECL_PROC) {
-            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(callNode.firstChild().getValue());
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(callNode.firstChild().getValue());
             currentTds = tds.getTDSfonction(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
 
-        Symbol symbol = tds.getSymbol(nomFonction);
+        Symbol symbol = tds.getSymbolAbsolu(nomFonction);
         if (symbol == null) {
             throw new IllegalArgumentException("Symbol not found in tds : " + nomFonction);
         }
@@ -951,7 +987,7 @@ public class CodeGenerator {
             shift = 0;
         }
         //sachant que techniquement le chainage statique se trouve en r10
-        write("MOV R0, #" + (currentImbrication - fonctionImbrication + shift) + " ; nombre de chainage à remonter");
+        write("MOV R0, #" + (currentImbrication - fonctionImbrication) + " ; nombre de chainage à remonter");
         write("MOV R10, R11 ;");
         write("chainageStatiqueLoop" + chainageStatiqueLoopCounter);
         write("CMP R0, #0 ;");
@@ -975,11 +1011,11 @@ public class CodeGenerator {
         }
 
         if (Decl.getType() != null && Decl.getType() == NodeType.DECL_FUNC) {
-            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(Decl.firstChild().getValue());
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(Decl.firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
 
         } else if (Decl.getType() != null && Decl.getType() == NodeType.DECL_PROC) {
-            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(Decl.firstChild().getValue());
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(Decl.firstChild().getValue());
             currentTds = tds.getTDSfonction(procedureSymbol.getName());
         }
         Symbol symbol = currentTds.getSymbol(nom_variable);
@@ -1035,12 +1071,12 @@ public class CodeGenerator {
         }
 
         if (varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_FUNC) {
-            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(varToAffect.firstChild().getValue());
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(varToAffect.firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
 
         } else if (varToAffect.getType() != null && varToAffect.getType() == NodeType.DECL_PROC) {
-            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(varToAffect.firstChild().getValue());
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(varToAffect.firstChild().getValue());
             currentTds = tds.getTDSfonction(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
@@ -1190,7 +1226,7 @@ public class CodeGenerator {
                 if (structureSymbolToAffect == null) {
                     throw new IllegalArgumentException("Symbol not found in tds :###8 " + nom_variable);
                 }
-                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(structureSymbolToAffect.getType_variable());
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbolAbsolu(structureSymbolToAffect.getType_variable());
                 write("STMFD r13!, {r0}");
                 generateAccessVariable(node.getChild(1));
                 affecter_structure(typeRecordSymbol);
@@ -1219,12 +1255,12 @@ public class CodeGenerator {
             node = node.getParent();
         }
         if (node.getParent().getType() == NodeType.DECL_FUNC) {
-            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
             currentTds = tds.getTDSfonction(functionSymbol.getName());
             currentImbrication = currentTds.getImbrication();
 
         } else if (node.getParent().getType() == NodeType.DECL_PROC) {
-            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
             currentTds = tds.getTDSfonction(procedureSymbol.getName());
             currentImbrication = currentTds.getImbrication();
         }
@@ -1399,11 +1435,11 @@ public class CodeGenerator {
                     node = node.getParent();
                 }
                 if (node.getParent().getType() == NodeType.DECL_FUNC) {
-                    FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+                    FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
                     currentTds = tds.getTDSfonction(functionSymbol.getName());
 
                 } else if (node.getParent().getType() == NodeType.DECL_PROC) {
-                    ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbol(node.getParent().firstChild().getValue());
+                    ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
                     currentTds = tds.getTDSfonction(procedureSymbol.getName());
                 }
                 Symbol symbol = currentTds.getSymbol(value.getValue());
@@ -1476,9 +1512,21 @@ public class CodeGenerator {
         write("; --- END PRINT function (to be add at the beginning of the file)" + " ---");
     }
 
-    private void mettre_valeur_retour_en_registre_apres_appel(String nom_registre, String nom_fonction) throws IOException {
+    private void mettre_valeur_retour_en_registre_apres_appel(String nom_registre, String nom_fonction, Node node) throws IOException {
         //mettre la valeur de retour dans un registre après un appel de fonction
-        Symbol symbol = tds.getSymbol(nom_fonction);
+        Tds currentTds = tds;
+        while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
+            node = node.getParent();
+        }
+        if (node.getParent().getType() == NodeType.DECL_FUNC) {
+            FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(functionSymbol.getName());
+
+        } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+            ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+            currentTds = tds.getTDSfonction(procedureSymbol.getName());
+        }
+        Symbol symbol = currentTds.getSymbol(nom_fonction);
         if (symbol == null) {
             throw new IllegalArgumentException("Symbol not found in tds : " + nom_fonction);
         }
@@ -1512,7 +1560,7 @@ public class CodeGenerator {
                 typeRecordSymbol = (TypeRecordSymbol) currentTds.getSymbol(typeRetour);
             }
             generateCallFunctionProcedure(nodeRecord.getChildren().get(0));
-            mettre_valeur_retour_en_registre_apres_appel("r0", nodeRecord.getChildren().get(0).getChildren().get(0).getValue());
+            mettre_valeur_retour_en_registre_apres_appel("r0", nodeRecord.getChildren().get(0).getChildren().get(0).getValue(), nodeRecord.getChildren().get(0));
             write("STMFD r13!, {r0}");
             if (typeRecordSymbol == null) {
                 throw new IllegalArgumentException("Symbol not found in tds :###20 " + nodeRecord.getChildren().get(0).getValue());
@@ -1604,7 +1652,7 @@ public class CodeGenerator {
             numeroChamp++;
             String type_valeur = field.getType_variable();
             if (!(type_valeur.equalsIgnoreCase("integer") || type_valeur.equalsIgnoreCase("boolean") || type_valeur.equalsIgnoreCase("Character"))) {
-                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_valeur);
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbolAbsolu(type_valeur);
                 if (typeRecordSymbol == null) {
                     throw new IllegalArgumentException("Symbol not found in tds :###4 " + type_valeur);
                 }
@@ -1624,7 +1672,7 @@ public class CodeGenerator {
             numeroChamp++;
             String type_valeur = field.getType_variable();
             if (!(type_valeur.equalsIgnoreCase("integer") || type_valeur.equalsIgnoreCase("boolean") || type_valeur.equalsIgnoreCase("Character"))) {
-                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_valeur);
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbolAbsolu(type_valeur);
                 if (typeRecordSymbol == null) {
                     throw new IllegalArgumentException("Symbol not found in tds :###4 " + type_valeur);
                 }
@@ -1651,7 +1699,7 @@ public class CodeGenerator {
             numeroChamp++;
             String type_valeur = field.getType_variable();
             if (!(type_valeur.equalsIgnoreCase("integer") || type_valeur.equalsIgnoreCase("boolean") || type_valeur.equalsIgnoreCase("Character"))) {
-                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbol(type_valeur);
+                TypeRecordSymbol typeRecordSymbol = (TypeRecordSymbol) tds.getSymbolAbsolu(type_valeur);
                 if (typeRecordSymbol == null) {
                     throw new IllegalArgumentException("Symbol not found in tds :###4 " + type_valeur);
                 }

@@ -227,6 +227,23 @@ public class Tds {
         return null;
     }
 
+    public Symbol getSymbolAbsolu(String SymbolName){
+        for (Symbol symbol : symbols) {
+            if (symbol.getName().equalsIgnoreCase(SymbolName)) {
+                return symbol;
+            }
+        }
+        if (child != null) {
+            for (Tds tdsEnfant : child){
+                Symbol symbol = tdsEnfant.getSymbolAbsolu(SymbolName);
+                if (symbol != null){
+                    return symbol;
+                }
+            }
+        }
+        return null;
+    }
+
     public Tds getTDSfromSymbol(String SymbolName) {
         for (Symbol symbol : symbols) {
             if (symbol.getName().equalsIgnoreCase(SymbolName)) {
