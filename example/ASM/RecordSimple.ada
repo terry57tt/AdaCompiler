@@ -19,7 +19,7 @@ procedure Record_Test is
 
    coucou2 : test3;
 
-   function parametre_struct (coucou : test) return integer is
+   function parametre_struct(coucou : test) return integer is
         copie : test := coucou;
     begin
         copie.A := 1000;
@@ -47,6 +47,7 @@ begin
    put(a);
    a := parametre_struct(coucou);
    put(a);
+   put(coucou.A);
 
    a := parametre_struct2(coucou2);
    put(a);

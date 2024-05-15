@@ -1428,29 +1428,33 @@ public class CodeGenerator {
             if (numero_For != 0) {
                 write("MOV r1, #2");
             } else {
-                Tds currentTds = tds;
-                while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
-                    node = node.getParent();
-                }
-                if (node.getParent().getType() == NodeType.DECL_FUNC) {
-                    FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
-                    currentTds = tds.getTDSfonction(functionSymbol.getName());
+                if (value.getType() != NodeType.POINT) {
+                    Tds currentTds = tds;
+                    while (node.getParent().getType() != NodeType.FILE && node.getParent().getType() != NodeType.DECL_FUNC && node.getParent().getType() != NodeType.DECL_PROC) {
+                        node = node.getParent();
+                    }
+                    if (node.getParent().getType() == NodeType.DECL_FUNC) {
+                        FunctionSymbol functionSymbol = (FunctionSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+                        currentTds = tds.getTDSfonction(functionSymbol.getName());
 
-                } else if (node.getParent().getType() == NodeType.DECL_PROC) {
-                    ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
-                    currentTds = tds.getTDSfonction(procedureSymbol.getName());
-                }
-                Symbol symbol = currentTds.getSymbol(value.getValue());
-                if (symbol == null) {
-                    throw new IllegalArgumentException("Symbol not found in tds :###2 " + value.getValue());
-                }
-                VariableSymbol variableSymbol = (VariableSymbol) symbol;
-                if (variableSymbol.getType_variable().equalsIgnoreCase("integer")) {
-                    write("MOV R1, #2");
-                } else if (variableSymbol.getType_variable().equalsIgnoreCase("Character")) {
-                    write("MOV R1, #1");
-                } else if (variableSymbol.getType_variable().equalsIgnoreCase("boolean")) {
-                    write("MOV R1, #3");
+                    } else if (node.getParent().getType() == NodeType.DECL_PROC) {
+                        ProcedureSymbol procedureSymbol = (ProcedureSymbol) tds.getSymbolAbsolu(node.getParent().firstChild().getValue());
+                        currentTds = tds.getTDSfonction(procedureSymbol.getName());
+                    }
+                    Symbol symbol = currentTds.getSymbol(value.getValue());
+                    if (symbol == null) {
+                        throw new IllegalArgumentException("Symbol not found in tds :###2 " + value.getValue());
+                    }
+                    VariableSymbol variableSymbol = (VariableSymbol) symbol;
+                    if (variableSymbol.getType_variable().equalsIgnoreCase("integer")) {
+                        write("MOV R1, #2");
+                    } else if (variableSymbol.getType_variable().equalsIgnoreCase("Character")) {
+                        write("MOV R1, #1");
+                    } else if (variableSymbol.getType_variable().equalsIgnoreCase("boolean")) {
+                        write("MOV R1, #3");
+                    }
+                } else {
+                    write("MOV R1, #2 ;entier par défaut");
                 }
             }
         }
