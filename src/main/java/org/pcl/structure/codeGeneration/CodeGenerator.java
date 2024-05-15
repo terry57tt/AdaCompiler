@@ -992,7 +992,6 @@ public class CodeGenerator {
         write("chainageStatiqueLoop" + chainageStatiqueLoopCounter);
         write("CMP R0, #0 ;");
         write("BEQ chainageStatiqueEnd" + chainageStatiqueLoopCounter + " ;");
-        write("ADD R10, R10, #4 ; R10 = static chain");
         write("LDR R10, [R10] ; Load the previous static chain");
         write("SUBS R0, R0, #1 ; Decrement the imbrication number");
         write("BNE chainageStatiqueLoop" + chainageStatiqueLoopCounter + " ; Continue until the imbrication number is reached");
