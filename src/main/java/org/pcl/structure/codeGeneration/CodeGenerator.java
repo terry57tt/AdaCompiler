@@ -1145,7 +1145,7 @@ public class CodeGenerator {
                         decrementTabulation();
                         write("nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter);
                         incrementTabulation();
-                        write("ADD R10, R10, #4 ; R10 = static chain");
+                        
                         write("LDR R10, [R10] ; Load the previous static chain");
                         write("SUBS R1, R1, #1 ; Decrement the imbrication number");
                         write("BNE nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter + " ; Continue until the imbrication number is reached");
@@ -1185,7 +1185,7 @@ public class CodeGenerator {
                     decrementTabulation();
                     write("nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter);
                     incrementTabulation();
-                    write("ADD R10, R10, #4 ; R10 = static chain");
+                    
                     write("LDR R10, [R10] ; Load the previous static chain");
                     write("SUBS R1, R1, #1 ; Decrement the imbrication number");
                     write("BNE nonLocalAccessAffectationLoop" + nonLocalAccessAffectationLoopCounter + " ; Continue until the imbrication number is reached");
@@ -1303,7 +1303,7 @@ public class CodeGenerator {
                 decrementTabulation();
                 write("nonLocalAccessLoop" + nonLocalAccessLoopCounter);
                 incrementTabulation();
-                write("ADD R10, R10, #4 ; R10 = static chain");
+                
                 write("LDR R10, [R10] ; Load the previous static chain");
                 write("SUBS R1, R1, #1 ; Decrement the imbrication number");
                 write("BNE nonLocalAccessLoop" + nonLocalAccessLoopCounter + " ; Continue until the imbrication number is reached");
@@ -1353,7 +1353,6 @@ public class CodeGenerator {
                 decrementTabulation();
                 write("nonLocalAccessLoop" + nonLocalAccessLoopCounter);
                 incrementTabulation();
-                write("ADD R10, R10, #4 ; R10 = static chain");
                 write("LDR R10, [R10] ; Load the previous static chain");
                 write("SUBS R1, R1, #1 ; Decrement the imbrication number");
                 write("BNE nonLocalAccessLoop" + nonLocalAccessLoopCounter + " ; Continue until the imbrication number is reached");
